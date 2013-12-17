@@ -22,7 +22,7 @@ public:
         Q_ASSERT(hasInput());
         QString result;
         foreach (const QString& line, m_input)
-            result += line + "\n";
+            result += line;
         return result;
     }
     void clear() {
@@ -33,6 +33,10 @@ public:
     JsInputSplitter& operator<<(const QString& line) {
         countBraces(line);
         m_input << line;
+        if (state() == InStringLiteral)
+            m_input << "\\n";
+        else
+            m_input << "\n";
         return *this;
     }
 
@@ -52,6 +56,7 @@ private:
             case '*':
                 return InComment;
             case '"':
+            case '\'':
                 return InStringLiteral;
             default:
                 return Normal;
@@ -84,16 +89,22 @@ private:
                     if (prevChar == '/')
                         // C++ comment
                         return;
+                    break;
+                case '"':
+                case '\'':
+                    m_braces += c;
                 }
                 break;
             case InComment:
                 if (c == '/' && prevChar == '*')
                     m_braces.chop(1);
                 break;
-            case InStringLiteral:
-                if (c == '"' && prevChar != '\\')
+            case InStringLiteral: {
+                QChar match = m_braces[m_braces.size()-1];
+                if (c == match && prevChar != '\\')
                     m_braces.chop(1);
                 break;
+            }
             default:
                 Q_ASSERT(false);
             }
