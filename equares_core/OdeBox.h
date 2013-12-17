@@ -13,7 +13,11 @@ public:
         m_param("parameters", this, PortFormat(OdeTraits::ParamCount).setFixed()),
         m_state("state", this, PortFormat(OdeTraits::VarCount+1).setFixed()),
         m_rhs("oderhs", this, PortFormat(OdeTraits::VarCount).setFixed())
-        {}
+    {
+        m_param.setHelpString(tr("Parameters of the system"));
+        m_state.setHelpString(tr("System state, including the time (last entry)"));
+        m_rhs.setHelpString(tr("ODE right hand side"));
+    }
 
     // Box interface
     InputPorts inputPorts() const {
@@ -35,7 +39,7 @@ public:
     }
     inline RuntimeBox *newRuntimeBox() const;
 
-private:
+protected:
     mutable InputPort m_param;
     mutable InputPort m_state;
     mutable OutputPort m_rhs;

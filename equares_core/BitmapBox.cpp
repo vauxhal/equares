@@ -8,6 +8,8 @@ BitmapBox::BitmapBox(QObject *parent) :
     Box(parent),
     m_dump("input", this)
 {
+    m_dump.setHelpString(tr("2D input for bitmap"));
+    setHelpString(tr("Outputs 2D input data to a bitmap in the PNG format"));
 }
 
 InputPorts BitmapBox::inputPorts() const {
@@ -16,6 +18,10 @@ InputPorts BitmapBox::inputPorts() const {
 
 OutputPorts BitmapBox::outputPorts() const {
     return OutputPorts();
+}
+
+BoxPropertyList BitmapBox::boxProperties() const {
+    return BoxPropertyList() << BoxProperty("fileName", tr("The name of the output bitmap file"));
 }
 
 void BitmapBox::checkPortFormat() const

@@ -14,6 +14,7 @@ public:
 
     InputPorts inputPorts() const;
     OutputPorts outputPorts() const;
+    BoxPropertyList boxProperties() const;
     void checkPortFormat() const;
     bool propagatePortFormat();
 

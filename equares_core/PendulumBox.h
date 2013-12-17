@@ -28,7 +28,7 @@ class EQUARES_CORESHARED_EXPORT PendulumBox :
 {
     Q_OBJECT
 public:
-    explicit PendulumBox(QObject *parent = 0) : OdeBox<PendulumOdeTraits>(parent) {}
+    explicit PendulumBox(QObject *parent = 0);
 };
 
 #endif // PENDULUMBOX_H

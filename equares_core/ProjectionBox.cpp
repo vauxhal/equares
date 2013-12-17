@@ -17,6 +17,11 @@ OutputPorts ProjectionBox::outputPorts() const {
     return OutputPorts() << &m_out;
 }
 
+BoxPropertyList ProjectionBox::boxProperties() const {
+    return BoxPropertyList()
+        << BoxProperty("indices", tr("Indices of input entries that make the output of the projection"));
+}
+
 void ProjectionBox::checkPortFormat() const
 {
     if (m_out.format() != PortFormat(m_indices.size()))

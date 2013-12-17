@@ -59,6 +59,10 @@ OutputPorts CanvasBox::outputPorts() const {
     return OutputPorts() << &m_out;
 }
 
+BoxPropertyList CanvasBox::boxProperties() const {
+    return BoxPropertyList() << BoxProperty("param", tr("Data range and resolution for both dimension"));
+}
+
 void CanvasBox::checkPortFormat() const
 {
     if (m_in.format() != PortFormat(2))

@@ -16,6 +16,11 @@ OutputPorts DumpBox::outputPorts() const {
     return OutputPorts();
 }
 
+BoxPropertyList DumpBox::boxProperties() const {
+    return BoxPropertyList()
+        << BoxProperty("fileName", tr("The name of the output text file"));
+}
+
 void DumpBox::checkPortFormat() const
 {
     if (!m_dump.format().isValid())

@@ -6,7 +6,10 @@
 #include <QDebug>
 
 #include <iostream>
+#include <fstream>
 #include <string>
+
+using namespace std;
 
 class JsInputSplitter
 {
@@ -132,25 +135,14 @@ private:
     }
 };
 
-int main(int argc, char **argv)
+void runFile(QScriptEngine& engine, istream& is)
 {
-#ifdef __linux__
-    Q_INIT_RESOURCE(equares_core);
-#endif // __linux__
-
-    QCoreApplication app(argc, argv);
-    QScriptEngine engine;
-
-    initBoxFactory();
-    registerEquaresScriptTypes(&engine);
-
     JsInputSplitter jsis;
     QRegExp rxExit("^\\s*exit\\s*$");
     forever {
-        using namespace std;
         string line;
-        getline(cin, line);
-        if(cin.fail())
+        getline(is, line);
+        if(is.fail())
             break;
         try {
             jsis << QString::fromUtf8(line.c_str());
@@ -178,7 +170,163 @@ int main(int argc, char **argv)
             cout << result.toString().toStdString() << endl;
         }
     }
+}
 
-    return 0;
+void runFiles(QScriptEngine& engine, const QStringList& inputFileNames)
+{
+    if (inputFileNames.isEmpty())
+        runFile(engine, cin);
+    else
+        foreach (const QString& fileName, inputFileNames) {
+            // TODO better: handle unicode file names
+            ifstream is(fileName.toLatin1().constData());
+            if (is.fail()) {
+                cerr << "WARNING: Failed to open input file '" << fileName.toLatin1().constData() << "', skipping" << endl;
+            }
+            else
+                runFile(engine, is);
+        }
+}
+
+inline ostream& operator<<(ostream& os, const QString& s) {
+    os << s.toUtf8().constData();
+    return os;
+}
+
+template<class Container, class Printer>
+inline void printContainer(ostream& os, const Container& c, const Printer& p, const QString& delimiter) {
+    bool first = true;
+    foreach (typename Container::value_type x, c) {
+        if (first)
+            first = false;
+        else
+            os << delimiter;
+        p(os, x);
+    }
+}
+
+inline QString escapeString(const QString& s) {
+    // TODO
+    return s;
+}
+
+template< class X >
+struct SimplePrinter {
+    void operator()(ostream& os, const X& x) const {
+        os << x;
+    }
+};
+template<>
+struct SimplePrinter<QString> {
+    void operator()(ostream& os, const QString& x) const {
+        os << "'" << escapeString(x) << "'";
+    }
+};
+
+struct NamePrinter {
+    void operator()(ostream& os, const Named *x) const {
+        os << x->name();
+    }
+    void operator()(ostream& os, const Named& x) const {
+        os << x.name();
+    }
+};
+
+struct PortPrinter {
+    void operator()(ostream& os, const Port *port) const {
+        os << "{name: '" << port->name() + "'";
+        if (port->format().isFixed()) {
+            os << ", format: [";
+            printContainer(os, port->format().size(), SimplePrinter<int>(), ", ");
+            os << "]";
+        }
+        if (!port->helpString().isEmpty())
+            os << ", help: '" << escapeString(port->helpString()) << "'";
+        if (port->entryHints().hasHints()) {
+            os << ", hints: [";
+            printContainer(os, port->entryHints().hints(), SimplePrinter<QString>(), ", ");
+            os << "]";
+        }
+        os << "}";
+    }
+};
+
+struct BoxPropPrinter {
+    void operator()(ostream& os, const BoxProperty& boxProp) const {
+        os << "{name: '" << boxProp.name
+           << "', help: '" << escapeString(boxProp.helpString) << "'}";
+    }
+};
+
+void describeSystem(QScriptEngine& engine)
+{
+    Q_UNUSED(engine);
+    foreach (const QString& name, BoxFactory::boxTypes()) {
+        Box::Ptr box(BoxFactory::newBox(name));
+        cout << name << " = {" << endl;
+        cout << "  inputs: [\n    ";
+        printContainer(cout, box->inputPorts(), PortPrinter(), ",\n    ");
+        cout << "\n  ],\n  outputs: [\n    ";
+        printContainer(cout, box->outputPorts(), PortPrinter(), ",\n    ");
+        cout << "\n  ],\n  properties: [\n    ";
+        printContainer(cout, box->boxProperties(), BoxPropPrinter(), ",\n    ");
+        cout << "\n  ]";
+        if (!box->helpString().isEmpty())
+            cout << ",\n  help: '" << escapeString(box->helpString()) << "'";
+        cout << "\n}" << endl;
+    }
+}
+
+int main(int argc, char **argv)
+{
+#ifdef __linux__
+    Q_INIT_RESOURCE(equares_core);
+#endif // __linux__
+
+    QCoreApplication app(argc, argv);
+
+    try {
+        // Parse command line arguments
+        enum Mode { RunMode, DescribeMode } mode = RunMode;
+        QStringList inputFileNames;
+        QStringList args = app.arguments();
+        args.removeFirst();
+        foreach (QString arg, args) {
+            if (arg.isEmpty())
+                continue;
+            if (arg[0] == '-' && arg.size() == 2) {
+                switch (arg[1].toLatin1()) {
+                case 'd':
+                    mode = DescribeMode;
+                    break;
+                default:
+                    throw EquaresException(QString("Unrecognized option '%1'").arg(arg));
+                }
+            }
+            inputFileNames << arg;
+        }
+
+        QScriptEngine engine;
+
+        initBoxFactory();
+        registerEquaresScriptTypes(&engine);
+
+        switch (mode) {
+        case RunMode:
+            runFiles(engine, inputFileNames);
+            break;
+        case DescribeMode:
+            describeSystem(engine);
+            break;
+        default:
+            Q_ASSERT(false);
+        }
+
+        return 0;
+    }
+    catch(const exception& e) {
+        cerr << "ERROR: " << e.what() << endl;
+        return -1;
+    }
 }
 

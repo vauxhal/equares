@@ -298,15 +298,49 @@ PropRefClass(WithPortFormat, PortFormat, format)
 
 PropClass(WithSimulation, Simulation*, Simulation*, simulation, setSimulation)
 
+PropClass(WithHelpString, QString, const QString&, helpString, setHelpString)
+
+class PortEntryHints
+{
+public:
+    bool hasHints() const {
+        return !m_hints.isEmpty();
+    }
+    QStringList hints() const {
+        return m_hints;
+    }
+    PortEntryHints& setHints(const QStringList& hints) {
+        m_hints = hints;
+        return *this;
+    }
+
+private:
+    QStringList m_hints;
+};
+
+PropRefClass(WithPortEntryHints, PortEntryHints, entryHints)
+
+struct BoxProperty
+{
+    explicit BoxProperty(const QString& name, const QString& helpString) :
+        name(name), helpString(helpString) {}
+    QString name;
+    QString helpString;
+};
+typedef QList<BoxProperty> BoxPropertyList;
+
 class Box :
     public QObject,
     protected QScriptable,
     public Named,
-    public WithSimulation
+    public WithSimulation,
+    public WithHelpString
 {
     Q_OBJECT
     Q_PROPERTY(QString name READ name WRITE setName)
 public:
+    typedef QSharedPointer<Box> Ptr;
+
     typedef Box* (*Ctor)();
 
     explicit Box(QObject *parent = 0) : QObject(parent) {}
@@ -314,6 +348,9 @@ public:
 
     virtual InputPorts inputPorts() const = 0;
     virtual OutputPorts outputPorts() const = 0;
+    virtual BoxPropertyList boxProperties() const {
+        return BoxPropertyList();
+    }
     virtual void checkPortFormat() const = 0;
     virtual bool propagatePortFormat() = 0;
 
@@ -323,7 +360,9 @@ public:
 class Port :
     public OwnedBy<Box>,
     public WithPortFormat,
-    public Named
+    public Named,
+    public WithHelpString,
+    public WithPortEntryHints
 {
 public:
     Port() {}
