@@ -1,4 +1,5 @@
-#define CLASSNAME <X>
+// #define CLASSNAME <X>
+#define CLASSNAME X
 extern "C" {
 void *newInstance() { return new CLASSNAME(); }
 void deleteInstance(void *p) {

@@ -134,7 +134,7 @@ private:
 
 int main(int argc, char **argv)
 {
-//    Q_INIT_RESOURCE(defaultprototypes);
+    Q_INIT_RESOURCE(equares_core);
 
     QCoreApplication app(argc, argv);
     QScriptEngine engine;

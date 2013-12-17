@@ -6,7 +6,73 @@ counterParam = new Param
 
 initState = new Param
 
-ode = new DoublePendulum
+ode = new CxxOde
+ode.name = "code"
+ode.src = "
+struct X {
+    int paramCount() const {
+        return 5;   // l1, m1, l2, m2, g
+    }
+    int varCount() const {
+        return 4;   // q1, q2, dq1, dq2
+    }
+
+    // Auxiliary parameters
+    double
+        L1,
+        M1,
+        L2,
+        M2,
+        G,
+        L12,
+        L22,
+        L12m,
+        L22m,
+        L1L2,
+        L1mg,
+        L2mg;
+    void prepare(const double *param) {
+        L1 = param[0];
+        M1 = param[1];
+        L2 = param[2];
+        M2 = param[3];
+        G = param[4];
+        L12 = L1*L1;
+        L22 = L2*L2;
+        L12m = L12*M1;
+        L22m = L22*M2;
+        L1L2 = L1*L2;
+        L1mg = L1*M1*G;
+        L2mg = L2*M2*G;
+    }
+
+    void rhs(double *out, const double *param, const double *state) const {
+        out[0] = state[2];
+        out[1] = state[3];
+        double
+            PHI = state[0],
+            PSI = state[1],
+            DPHI = state[2],
+            DPSI = state[3],
+            sphi = sin(PHI),
+            spsi = sin(PSI),
+            sdif = sin(PSI-PHI),
+            cdif = cos(PSI-PHI),
+            A = L12m + L22m,
+            B = L1L2*M2*cdif,
+            C = L22m,
+            c1 = L1L2*M2*sdif,
+            F1 = c1*DPSI*DPSI - (L1mg+L2mg)*sphi,
+            F2 = -c1*DPHI*DPHI - L2mg*spsi,
+            D = A*C - B*B,
+            D1 = F1*C - F2*B,
+            D2 = A*F2 - B*F1;
+        out[2] = D1/D;
+        out[3] = D2/D;
+    }
+};
+"
+
 solver = new Rk4
 psec = new CrossSection
 proj = new Projection

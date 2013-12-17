@@ -1,4 +1,4 @@
-names = function(x) { for(n in x) print(n) }
+names = function(x) { for(var n in x) print(n) }
 param = new Param
 initstate = new Param
 rk4h = new Param

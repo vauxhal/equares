@@ -1,7 +1,7 @@
 <RCC>
     <qresource prefix="/cxx">
-        <file>res/OdeFileHeader.cpp</file>
-        <file>res/OdeClass.cpp</file>
-        <file>res/OdeFileFooter.cpp</file>
+        <file alias="OdeFileHeader.cpp">res/OdeFileHeader.cpp</file>
+        <file alias="OdeClass.cpp">res/OdeClass.cpp</file>
+        <file alias="OdeFileFooter.cpp">res/OdeFileFooter.cpp</file>
     </qresource>
 </RCC>

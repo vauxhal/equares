@@ -305,6 +305,7 @@ class Box :
     public WithSimulation
 {
     Q_OBJECT
+    Q_PROPERTY(QString name READ name WRITE setName)
 public:
     typedef Box* (*Ctor)();
 
