@@ -5,6 +5,53 @@
 #include <QRegExp>
 #include <QProcess>
 
+#ifdef _WIN32
+#define PLATFORM WINDOWS
+
+static void buildLib(const QDir& dir) {
+    QString buildFileName = "build_msvs.bat";
+    QFileInfo fi(dir.absoluteFilePath(buildFileName));
+    if (!fi.exists()) {
+        if (!QFile::copy(":/cxx/"+buildFileName, fi.absoluteFilePath()))
+            throw EquaresException(QString("Failed to copy library build file to '%1'")
+                .arg(fi.absoluteFilePath()));
+    }
+    QProcess proc;
+    QString cmdline = "cmd /C " + buildFileName + " ode.cpp";
+    proc.setWorkingDirectory(dir.absolutePath());
+    proc.start(cmdline);
+    if (!proc.waitForFinished())
+        throw EquaresException("Failed to build dll-file (timed out)");
+    if (proc.exitCode() != 0)
+        throw EquaresException(QString("Failed to build library file:\n%1").arg(
+            QString::fromUtf8(proc.readAllStandardError())));
+    Q_ASSERT(QFileInfo(dir.absoluteFilePath("ode.dll")).exists());
+}
+
+#endif // _WIN32
+
+#ifdef __linux__
+#define PLATFORM LINUX
+
+static void buildLib(const QDir& dir) {
+    QString cmdline = "g++ -Wall -shared -Wl,-soname,ode.so -fPIC -O2 -o ode.so ode.cpp";
+    QProcess proc;
+    proc.setWorkingDirectory(dir.absolutePath());
+    proc.start(cmdline);
+    if (!proc.waitForFinished())
+        throw EquaresException("Failed to build so-file (timed out)");
+    if (proc.exitCode() != 0)
+        throw EquaresException(QString("Failed to build library file:\n%1").arg(
+            QString::fromUtf8(proc.readAllStandardError())));
+    Q_ASSERT(QFileInfo(dir.absoluteFilePath("ode.so")).exists());
+}
+
+#endif // __linux__
+
+#ifndef PLATFORM
+#error "Unknown platform"
+#endif // !PLATFORM
+
 REGISTER_BOX(OdeCxxBox, "CxxOde")
 
 OdeCxxBox::OdeCxxBox(QObject *parent) :
@@ -74,18 +121,7 @@ OdeCxxBox& OdeCxxBox::setSrc(const QString& src)
     }
 
     // Build library
-    {
-        QString cmdline = "g++ -Wall -shared -Wl,-soname,ode.so -fPIC -O2 -o ode.so ode.cpp";
-        QProcess proc;
-        proc.setWorkingDirectory(dir.absolutePath());
-        proc.start(cmdline);
-        if (!proc.waitForFinished())
-            throw EquaresException("Failed to build so-file (timed out)");
-        if (proc.exitCode() != 0)
-            throw EquaresException(QString("Failed to build library file:\n%1").arg(
-                QString::fromUtf8(proc.readAllStandardError())));
-        Q_ASSERT(QFileInfo(dir.absoluteFilePath("ode.so")).exists());
-    }
+    buildLib(dir);
 
     // Load library
     QString libName = dir.absoluteFilePath(fi.baseName());

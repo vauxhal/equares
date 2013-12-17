@@ -3,5 +3,6 @@
         <file alias="OdeFileHeader.cpp">res/OdeFileHeader.cpp</file>
         <file alias="OdeClass.cpp">res/OdeClass.cpp</file>
         <file alias="OdeFileFooter.cpp">res/OdeFileFooter.cpp</file>
+        <file alias="build_msvs.bat">res/build_msvs.bat</file>
     </qresource>
 </RCC>

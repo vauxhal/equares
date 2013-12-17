@@ -9,6 +9,7 @@ class EQUARES_CORESHARED_EXPORT OdeCxxBox : public Box
 {
     Q_OBJECT
     Q_PROPERTY(QString src READ src WRITE setSrc)
+    Q_PROPERTY(QString srcExample READ srcExample)
 public:
     explicit OdeCxxBox(QObject *parent = 0);
 
