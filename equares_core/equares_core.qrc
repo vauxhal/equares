@@ -1,0 +1,7 @@
+<RCC>
+    <qresource prefix="/cxx">
+        <file>res/OdeFileHeader.cpp</file>
+        <file>res/OdeClass.cpp</file>
+        <file>res/OdeFileFooter.cpp</file>
+    </qresource>
+</RCC>

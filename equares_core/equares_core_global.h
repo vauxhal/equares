@@ -1,0 +1,12 @@
+#ifndef EQUARES_CORE_GLOBAL_H
+#define EQUARES_CORE_GLOBAL_H
+
+#include <QtCore/qglobal.h>
+
+#if defined(EQUARES_CORE_LIBRARY)
+#  define EQUARES_CORESHARED_EXPORT Q_DECL_EXPORT
+#else
+#  define EQUARES_CORESHARED_EXPORT Q_DECL_IMPORT
+#endif
+
+#endif // EQUARES_CORE_GLOBAL_H

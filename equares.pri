@@ -1,0 +1,5 @@
+INCLUDEPATH += ../
+
+DESTDIR = $$OUT_PWD/../bin
+
+LIBS += -L$$DESTDIR

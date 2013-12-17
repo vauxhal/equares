@@ -1,0 +1,13 @@
+mkdir build-equares-prof
+cd build-equares-prof
+# rm -rf *
+qmake ../equares/equares.pro "CONFIG+=debug" "QMAKE_CXXFLAGS+=-pg -O2" "QMAKE_LFLAGS+=-pg -O2" "DEFINES+=EQUARES_CORE_STATIC"
+make
+cd bin
+./equares_con <../../equares/scripts/test_05_psec.js
+gprof equares_con >log_dp.txt
+mv gmon.out gmon_dp.out
+./equares_con <../../equares/scripts/test_08_psec_jsode.js
+gprof equares_con >log_jsode.txt
+mv gmon.out gmon_jsode.out
+

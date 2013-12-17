@@ -1,0 +1,9 @@
+!.gitignore
+*.user*
+*.pro2
+*.orig
+*.prl
+*~
+*.autosave
+*.qch
+
