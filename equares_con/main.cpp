@@ -249,6 +249,12 @@ struct SimplePrinter<QString> {
     }
 };
 
+struct VerbatimStringPrinter {
+    void operator()(ostream& os, const QString& x) const {
+        os << x;
+    }
+};
+
 struct NamePrinter {
     void operator()(ostream& os, const Named *x) const {
         os << x->name();
@@ -301,6 +307,9 @@ void describeSystem(QScriptEngine& engine)
             cout << ",\n  help: '" << escapeString(box->helpString()) << "'";
         cout << "\n}" << endl;
     }
+    cout << "\nboxTypes = [\n  ";
+    printContainer(cout, BoxFactory::boxTypes(), SimplePrinter<QString>(), ",\n  " );
+    cout << "\n]\n";
 }
 
 int main(int argc, char **argv)
@@ -315,6 +324,7 @@ int main(int argc, char **argv)
         // Parse command line arguments
         enum Mode { RunMode, DescribeMode } mode = RunMode;
         QStringList inputFileNames;
+        bool forceInteractive = false;
         QStringList args = app.arguments();
         args.removeFirst();
         foreach (QString arg, args) {
@@ -325,11 +335,15 @@ int main(int argc, char **argv)
                 case 'd':
                     mode = DescribeMode;
                     break;
+                case 'i':
+                    forceInteractive = true;
+                    break;
                 default:
                     throw EquaresException(QString("Unrecognized option '%1'").arg(arg));
                 }
             }
-            inputFileNames << arg;
+            else
+                inputFileNames << arg;
         }
 
         QScriptEngine engine;
@@ -340,6 +354,9 @@ int main(int argc, char **argv)
         switch (mode) {
         case RunMode:
             runFiles(engine, inputFileNames);
+            if (inputFileNames.isEmpty())
+                // Standard input is already processed
+                forceInteractive = false;
             break;
         case DescribeMode:
             describeSystem(engine);
@@ -347,6 +364,10 @@ int main(int argc, char **argv)
         default:
             Q_ASSERT(false);
         }
+
+        if (forceInteractive)
+            // Process standard input
+            runFiles(engine, QStringList());
 
         return 0;
     }
