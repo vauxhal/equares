@@ -83,3 +83,10 @@ unix:!symbian {
 
 RESOURCES += \
     equares_core.qrc
+
+windows: {
+    system(echo set CXXFLAGS = $$QMAKE_CXXFLAGS >$$DESTDIR/buildsetup.bat)
+    system(echo set LINKFLAGS = $$QMAKE_LFLAGS >>$$DESTDIR/buildsetup.bat)
+    system(echo set PATH = $$(PATH) >>$$DESTDIR/buildsetup.bat)
+    system(echo set CXX = $$QMAKE_CXX >>$$DESTDIR/buildsetup.bat)
+}
