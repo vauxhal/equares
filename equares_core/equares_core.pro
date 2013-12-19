@@ -84,9 +84,16 @@ unix:!symbian {
 RESOURCES += \
     equares_core.qrc
 
-windows: {
-    system(echo set CXXFLAGS = $$QMAKE_CXXFLAGS >$$DESTDIR/buildsetup.bat)
-    system(echo set LINKFLAGS = $$QMAKE_LFLAGS >>$$DESTDIR/buildsetup.bat)
-    system(echo set PATH = $$(PATH) >>$$DESTDIR/buildsetup.bat)
-    system(echo set CXX = $$QMAKE_CXX >>$$DESTDIR/buildsetup.bat)
+contains(QMAKESPEC, ^.*msvc.*$) {
+    MAKE_COMMAND = nmake
+} else {
+    MAKE_COMMAND = make
 }
+
+equaresbuildspecs.output = $$DESTDIR/buildpath.txt $$DESTDIR/makecmd.txt
+equaresbuildspecs.commands = \
+    echo $$(PATH) >$$DESTDIR/buildpath.txt $$escape_expand(\\n\\t) \
+    echo $$MAKE_COMMAND >$$DESTDIR/makecmd.txt
+
+QMAKE_EXTRA_TARGETS += equaresbuildspecs
+POST_TARGETDEPS += equaresbuildspecs

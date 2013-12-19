@@ -4,5 +4,6 @@
         <file alias="OdeClass.cpp">res/OdeClass.cpp</file>
         <file alias="OdeFileFooter.cpp">res/OdeFileFooter.cpp</file>
         <file alias="build_msvs.bat">res/build_msvs.bat</file>
+        <file alias="ode.pro">res/ode.pro</file>
     </qresource>
 </RCC>

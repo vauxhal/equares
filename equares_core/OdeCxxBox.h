@@ -10,6 +10,7 @@ class EQUARES_CORESHARED_EXPORT OdeCxxBox : public Box
     Q_OBJECT
     Q_PROPERTY(QString src READ src WRITE setSrc)
     Q_PROPERTY(QString srcExample READ srcExample)
+    Q_PROPERTY(bool useQmake READ useQmake WRITE setUseQmake)
 public:
     explicit OdeCxxBox(QObject *parent = 0);
 
@@ -24,6 +25,9 @@ public:
     OdeCxxBox& setSrc(const QString& src);
 
     QString srcExample() const;
+
+    bool useQmake() const;
+    OdeCxxBox& setUseQmake(bool useQmake);
 
     int paramCount() const;
     int varCount() const;
@@ -49,6 +53,9 @@ public:
         void rhs(double *out, const double *param, const double *state) const {
             m_rhs(m_inst, out, param, state);
         }
+        QString hash() const {
+            return m_hash();
+        }
     private:
         OdeLibProxy(const OdeLibProxy&);
         OdeLibProxy& operator=(const OdeLibProxy&);
@@ -59,6 +66,7 @@ public:
         typedef int (*varCountFunc)(void*);
         typedef void (*prepareFunc)(void*, const double*);
         typedef void (*rhsFunc)(void*, double*, const double*, const double*);
+        typedef const char* (*hashFunc)();
 
         QLibrary m_lib;
         newInstanceFunc m_newInstance;
@@ -67,6 +75,7 @@ public:
         varCountFunc m_varCount;
         prepareFunc m_prepare;
         rhsFunc m_rhs;
+        hashFunc m_hash;
 
         void *m_inst;
     };
@@ -76,12 +85,13 @@ private:
     mutable InputPort m_param;
     mutable InputPort m_state;
     mutable OutputPort m_rhs;
+    bool m_useQmake;
     QString m_src;
 
     OdeLibProxy::Ptr m_libProxy;
 
-    static QString readFile(const QString& fileName);
     static void checkSrc(const QString& src);
+    static bool libUpToDate(const QString& libName, const QString& hashString);
 };
 
 class OdeCxxRuntimeBox : public RuntimeBox

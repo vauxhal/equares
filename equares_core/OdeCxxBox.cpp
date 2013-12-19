@@ -4,11 +4,14 @@
 #include <QFileInfo>
 #include <QRegExp>
 #include <QProcess>
+#include <QCryptographicHash>
+#include <QCoreApplication>
 
 #ifdef _WIN32
 #define PLATFORM WINDOWS
 
-static void buildLib(const QDir& dir) {
+static void buildLibNoQmake(const QDir& dir)
+{
     QString buildFileName = "build_msvs.bat";
     QFileInfo fi(dir.absoluteFilePath(buildFileName));
     if (!fi.exists()) {
@@ -33,7 +36,8 @@ static void buildLib(const QDir& dir) {
 #ifdef __linux__
 #define PLATFORM LINUX
 
-static void buildLib(const QDir& dir) {
+static void buildLibNoQmake(const QDir& dir)
+{
     QString cmdline = "g++ -Wall -shared -Wl,-soname,ode.so -fPIC -O2 -o ode.so ode.cpp";
     QProcess proc;
     proc.setWorkingDirectory(dir.absolutePath());
@@ -52,13 +56,64 @@ static void buildLib(const QDir& dir) {
 #error "Unknown platform"
 #endif // !PLATFORM
 
+static QString readFile(const QString& fileName)
+{
+    QFile file(fileName);
+    file.open(QIODevice::ReadOnly);
+    if (!file.isOpen())
+        throw EquaresException(QString("readFile(): failed to open file %1").arg(fileName));
+    return QString::fromUtf8(file.readAll());
+}
+
+static void buildLibWithQmake(const QDir& dir)
+{
+    QFileInfo fiPro(dir.absoluteFilePath("ode.pro"));
+    if (!fiPro.exists()) {
+        if (!QFile::copy(":/cxx/ode.pro", fiPro.absoluteFilePath()))
+            throw EquaresException(QString("Failed to copy qmake project file to '%1'")
+                .arg(fiPro.absoluteFilePath()));
+    }
+    QProcess proc;
+    QStringList env = QProcess::systemEnvironment();
+    QDir appDir(QCoreApplication::applicationDirPath());
+    QString buildTimePath = readFile(appDir.absoluteFilePath("buildpath.txt"));
+    buildTimePath.remove('\r').remove('\n');
+    QString makeCmd = readFile(appDir.absoluteFilePath("makecmd.txt"));
+    makeCmd.remove('\r').remove('\n');
+    env.replaceInStrings(QRegExp("^PATH=(.*)", Qt::CaseInsensitive), "PATH="+buildTimePath);
+    proc.setWorkingDirectory(dir.absolutePath());
+    proc.setEnvironment(env);
+    proc.start("qmake ode.pro");
+    if (!proc.waitForFinished())
+        throw EquaresException("Failed to generate Makefile (timed out)");
+    if (proc.exitCode() != 0)
+        throw EquaresException(QString("Failed to generate Makefile (qmake returned %1):\n%2").arg(
+            QString::number(proc.exitCode()),
+            QString::fromUtf8(proc.readAllStandardError())));
+    proc.start(makeCmd);
+    if (!proc.waitForFinished())
+        throw EquaresException("Failed to build library (timed out)");
+    if (proc.exitCode() != 0)
+        throw EquaresException(QString("Failed to build library :\n%1").arg(
+            QString::fromUtf8(proc.readAllStandardError())));
+}
+
+static void buildLib(const QDir& dir, bool withQmake)
+{
+    if (withQmake)
+        buildLibWithQmake(dir);
+    else
+        buildLibNoQmake(dir);
+}
+
 REGISTER_BOX(OdeCxxBox, "CxxOde")
 
 OdeCxxBox::OdeCxxBox(QObject *parent) :
     Box(parent),
     m_param("parameters", this, PortFormat(0).setFixed()),
     m_state("state", this, PortFormat(0).setFixed()),
-    m_rhs("oderhs", this, PortFormat(0).setFixed())
+    m_rhs("oderhs", this, PortFormat(0).setFixed()),
+    m_useQmake(true)
 {
 }
 
@@ -73,7 +128,8 @@ OutputPorts OdeCxxBox::outputPorts() const {
 BoxPropertyList OdeCxxBox::boxProperties() const {
     return BoxPropertyList()
         << BoxProperty("src", tr("Source code of the C++ class that describes the ODE system. See srcExample property"))
-        << BoxProperty("srcExample", tr("Example of source code of the C++ class that describes the ODE system for simple pendulum"));
+        << BoxProperty("srcExample", tr("Example of source code of the C++ class that describes the ODE system for simple pendulum"))
+        << BoxProperty("useQmake", tr("Determine whether to use qmake when building the library file"));
 }
 
 void OdeCxxBox::checkPortFormat() const {
@@ -102,35 +158,52 @@ OdeCxxBox& OdeCxxBox::setSrc(const QString& src)
     // Check source file: no #include
     checkSrc(src);
 
+    // Generate md5 checksum
+    QString hashString;
+    {
+        QCryptographicHash hash(QCryptographicHash::Md5);
+        hash.addData(src.toUtf8());
+        const char *xdigits = "0123456789abcdef";
+        foreach(unsigned char c, hash.result()) {
+            hashString += xdigits[(c>>4) & 0xf];
+            hashString += xdigits[c & 0xf];
+        }
+    }
+
     // Prepare work directory
     QRegExp rxName("^[-\\w]+$");
     if (!rxName.exactMatch(name()))
         throw EquaresException("Failed to set source: specify a valid box name first");
     QDir dir = QDir::current();
-    QString subdirPath = "equares/" + name();
+    QString subdirPath = "equares/" + name() + "_" + hashString;
     if (!dir.mkpath(subdirPath))
         throw EquaresException(QString("Failed to create directory %1").arg(dir.absoluteFilePath(subdirPath)));
     if (!dir.cd(subdirPath))
         throw EquaresException(QString("Failed to switch to directory %1").arg(dir.absoluteFilePath(subdirPath)));
 
-    // Generate source file
-    QFileInfo fi(dir.absoluteFilePath("ode.cpp"));
-    {
-        QString srcFileContent =
-            readFile(":/cxx/OdeFileHeader.cpp") + "\n" +
-            src + "\n" +
-            readFile(":/cxx/OdeFileFooter.cpp") + "\n";
-        QFile srcFile(fi.absoluteFilePath());
-        if (!srcFile.open(QIODevice::WriteOnly))
-            throw EquaresException(QString("Failed to open file %1").arg(fi.absoluteFilePath()));
-        srcFile.write(srcFileContent.toUtf8());
+    QString baseName = "ode";
+
+    if (!libUpToDate(dir.absoluteFilePath(baseName), hashString)) {
+        // Generate source file
+        QFileInfo fi(dir.absoluteFilePath(baseName + ".cpp"));
+        {
+            QString srcFileContent =
+                readFile(":/cxx/OdeFileHeader.cpp") + "\n" +
+                src + "\n" +
+                readFile(":/cxx/OdeFileFooter.cpp") + "\n" +
+                    "extern \"C\" ODE_EXPORT const char *hash() { return \"" + hashString + "\"; }\n";
+            QFile srcFile(fi.absoluteFilePath());
+            if (!srcFile.open(QIODevice::WriteOnly))
+                throw EquaresException(QString("Failed to open file %1").arg(fi.absoluteFilePath()));
+            srcFile.write(srcFileContent.toUtf8());
+        }
+
+        // Build library
+        buildLib(dir, m_useQmake);
     }
 
-    // Build library
-    buildLib(dir);
-
     // Load library
-    QString libName = dir.absoluteFilePath(fi.baseName());
+    QString libName = dir.absoluteFilePath(baseName);
     m_libProxy.clear();
     m_libProxy = OdeLibProxy::Ptr(new OdeLibProxy(libName));
 
@@ -147,6 +220,15 @@ OdeCxxBox& OdeCxxBox::setSrc(const QString& src)
 
 QString OdeCxxBox::srcExample() const {
     return readFile(":/cxx/OdeClass.cpp");
+}
+
+bool OdeCxxBox::useQmake() const {
+    return m_useQmake;
+}
+
+OdeCxxBox& OdeCxxBox::setUseQmake(bool useQmake) {
+    m_useQmake = useQmake;
+    return *this;
 }
 
 int OdeCxxBox::paramCount() const {
@@ -182,6 +264,7 @@ OdeCxxBox::OdeLibProxy::OdeLibProxy(const QString& libName) :
     RESOLVE_SYMBOL(varCount)
     RESOLVE_SYMBOL(prepare)
     RESOLVE_SYMBOL(rhs)
+    RESOLVE_SYMBOL(hash)
 #undef RESOLVE_SYMBOL
     m_inst = m_newInstance();
 }
@@ -192,17 +275,20 @@ OdeCxxBox::OdeLibProxy::~OdeLibProxy() {
 
 
 
-QString OdeCxxBox::readFile(const QString& fileName) {
-    QFile file(fileName);
-    file.open(QIODevice::ReadOnly);
-    if (!file.isOpen())
-        throw EquaresException(QString("OdeCxxBox::readFile(): failed to open file %1").arg(fileName));
-    return QString::fromUtf8(file.readAll());
-}
-
 void OdeCxxBox::checkSrc(const QString& src) {
     // TODO
     Q_UNUSED(src);
+}
+
+bool OdeCxxBox::libUpToDate(const QString &libName, const QString& hashString)
+{
+    try {
+        OdeLibProxy lib(libName);
+        return lib.hash() == hashString;
+    }
+    catch (const EquaresException&) {
+        return false;
+    }
 }
 
 

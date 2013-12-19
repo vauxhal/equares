@@ -8,6 +8,7 @@ initState = new Param
 
 ode = new CxxOde
 ode.name = "code"
+// ode.useQmake = false;
 ode.src = "
 struct X {
     int paramCount() const {

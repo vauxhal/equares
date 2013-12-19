@@ -34,8 +34,17 @@ public:
     }
 
     JsInputSplitter& operator<<(const QString& line) {
-        countBraces(line);
-        m_input << line;
+        QString l = line;
+
+        // Remove '\r' (if line has CRLF at end, as it is on Windows)
+        l.remove('\r');
+
+        // Ignore empty lines
+        if (l.isEmpty())
+            return *this;
+
+        countBraces(l);
+        m_input << l;
         if (state() == InStringLiteral)
             m_input << "\\n";
         else
