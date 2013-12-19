@@ -60,7 +60,8 @@ HEADERS += equares_core.h\
     OdeJsBox.h \
     script_arrays.h \
     initBoxFactory.h \
-    OdeCxxBox.h
+    OdeCxxBox.h \
+    EquaresException.h
 
 symbian {
     MMP_RULES += EXPORTUNFROZEN

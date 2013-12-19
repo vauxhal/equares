@@ -1,7 +1,6 @@
 #ifndef EQUARES_CORE_H
 #define EQUARES_CORE_H
 
-#include "equares_core_global.h"
 #include <QObject>
 #include <QScriptable>
 #include <QScriptContext>
@@ -10,19 +9,9 @@
 #include <QStringList>
 #include <QSharedPointer>
 #include <QMultiMap>
-#include <exception>
 
-class EquaresException : public std::exception
-{
-public:
-    ~EquaresException() throw() {}
-    explicit EquaresException(const QString& what) throw() : m_what(what.toUtf8()) {}
-    const char *what() const throw() {
-        return m_what.constData();
-    }
-private:
-    QByteArray m_what;
- };
+#include "equares_core_global.h"
+#include "EquaresException.h"
 
 template< class Owner >
 class OwnedBy

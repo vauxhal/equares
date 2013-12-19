@@ -16,6 +16,14 @@ CONFIG   -= app_bundle
 TEMPLATE = app
 
 
-SOURCES += main.cpp
+SOURCES += main.cpp \
+    JsInputSplitter.cpp \
+    JsRunner.cpp
 
 LIBS += -lequares_core
+
+HEADERS += \
+    JsInputSplitter.h \
+    JsRunner.h \
+    PrintUtil.h \
+    EquaresPrintUtil.h
