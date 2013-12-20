@@ -90,7 +90,7 @@ static void buildLibWithQmake(const QDir& dir)
     // Because it might happen that makeCmd is not found in the path
     // for this process
     makeCmd.prepend("cmd /C ");
-#endif _WIN32
+#endif // _WIN32
     QRegExp rx("^(PATH|INCLUDE|LIB)=");
     for (int i=0; i<env.size();) {
         if (rx.indexIn(env[i]) != -1)
