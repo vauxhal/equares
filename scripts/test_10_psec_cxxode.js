@@ -7,10 +7,9 @@ counterParam = new Param
 initState = new Param
 
 ode = new CxxOde
-ode.name = "code"
 // ode.useQmake = false;
 ode.src = "
-struct X {
+struct DoublePendulum {
     int paramCount() const {
         return 5;   // l1, m1, l2, m2, g
     }

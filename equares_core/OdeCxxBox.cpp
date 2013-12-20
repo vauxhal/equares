@@ -191,6 +191,20 @@ OdeCxxBox& OdeCxxBox::setSrc(const QString& src)
     // Check source file: no #include
     checkSrc(src);
 
+    // Extract class name that will also be part of directory name
+    QString className;
+    {
+        QRegExp rx("^\\s*struct\\s+([a-zA-Z_][a-zA-Z0-9_]*)");
+        foreach (const QString& line, src.split('\n'))
+            if (rx.indexIn(line) != -1) {
+                className = rx.capturedTexts()[1];
+                Q_ASSERT(!className.isEmpty());
+                break;
+            }
+        if (className.isEmpty())
+            throw EquaresException("Failed to set source: unable to retrieve struct name");
+    }
+
     // Generate md5 checksum
     QString hashString;
     {
@@ -204,11 +218,8 @@ OdeCxxBox& OdeCxxBox::setSrc(const QString& src)
     }
 
     // Prepare work directory
-    QRegExp rxName("^[-\\w]+$");
-    if (!rxName.exactMatch(name()))
-        throw EquaresException("Failed to set source: specify a valid box name first");
     QDir dir = QDir::current();
-    QString subdirPath = "equares/" + name() + "_" + hashString;
+    QString subdirPath = "equares/" + className + "_" + hashString;
     if (!dir.mkpath(subdirPath))
         throw EquaresException(QString("Failed to create directory %1").arg(dir.absoluteFilePath(subdirPath)));
     if (!dir.cd(subdirPath))
@@ -223,7 +234,7 @@ OdeCxxBox& OdeCxxBox::setSrc(const QString& src)
             QString srcFileContent =
                 readFile(":/cxx/OdeFileHeader.cpp") + "\n" +
                 src + "\n" +
-                readFile(":/cxx/OdeFileFooter.cpp") + "\n" +
+                readFile(":/cxx/OdeFileFooter.cpp").replace("<X>", className) + "\n" +
                     "extern \"C\" ODE_EXPORT const char *hash() { return \"" + hashString + "\"; }\n";
             QFile srcFile(fi.absoluteFilePath());
             if (!srcFile.open(QIODevice::WriteOnly))

@@ -8,9 +8,8 @@ ode = new CxxOde
 solver = new Rk4
 dump = new Dump
 
-ode.name = "code"
 ode.src = "
-struct X {
+struct Pendulum {
     int paramCount() const {
         return 2;   // l, g
     }

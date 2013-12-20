@@ -1,5 +1,4 @@
-// #define CLASSNAME <X>
-#define CLASSNAME X
+#define CLASSNAME <X>
 
 #ifdef _WIN32
 #define ODE_EXPORT __declspec(dllexport)
