@@ -7,6 +7,8 @@
 #include <QCryptographicHash>
 #include <QCoreApplication>
 
+#include <iostream>
+
 #ifdef _WIN32
 #define PLATFORM WINDOWS
 
@@ -78,9 +80,27 @@ static void buildLibWithQmake(const QDir& dir)
     QDir appDir(QCoreApplication::applicationDirPath());
     QString buildTimePath = readFile(appDir.absoluteFilePath("buildpath.txt"));
     buildTimePath.remove('\r').remove('\n');
+    QString buildTimeInclude = readFile(appDir.absoluteFilePath("buildinclude.txt"));
+    buildTimeInclude.remove('\r').remove('\n');
+    QString buildTimeLib = readFile(appDir.absoluteFilePath("buildlib.txt"));
+    buildTimeLib.remove('\r').remove('\n');
     QString makeCmd = readFile(appDir.absoluteFilePath("makecmd.txt"));
     makeCmd.remove('\r').remove('\n');
-    env.replaceInStrings(QRegExp("^PATH=(.*)", Qt::CaseInsensitive), "PATH="+buildTimePath);
+#ifdef _WIN32
+    // Because it might happen that makeCmd is not found in the path
+    // for this process
+    makeCmd.prepend("cmd /C ");
+#endif _WIN32
+    QRegExp rx("^(PATH|INCLUDE|LIB)=");
+    for (int i=0; i<env.size();) {
+        if (rx.indexIn(env[i]) != -1)
+            env.removeAt(i);
+        else
+            ++i;
+    }
+    env << "PATH="+buildTimePath
+        << "INCLUDE="+buildTimeInclude
+        << "LIB="+buildTimeLib;
     proc.setWorkingDirectory(dir.absolutePath());
     proc.setEnvironment(env);
     proc.start("qmake ode.pro");
@@ -90,12 +110,17 @@ static void buildLibWithQmake(const QDir& dir)
         throw EquaresException(QString("Failed to generate Makefile (qmake returned %1):\n%2").arg(
             QString::number(proc.exitCode()),
             QString::fromUtf8(proc.readAllStandardError())));
+
     proc.start(makeCmd);
     if (!proc.waitForFinished())
         throw EquaresException("Failed to build library (timed out)");
-    if (proc.exitCode() != 0)
+
+    if (proc.exitCode() != 0) {
+        using namespace std;
+        cout << proc.readAllStandardOutput().constData() << endl;
         throw EquaresException(QString("Failed to build library :\n%1").arg(
             QString::fromUtf8(proc.readAllStandardError())));
+    }
 }
 
 static void buildLib(const QDir& dir, bool withQmake)
@@ -153,8 +178,16 @@ QString OdeCxxBox::src() const {
     return m_src;
 }
 
+#define JSX_BEGIN try {
+
+#define JSX_END } catch(const std::exception& e) { \
+    context()->throwError(QString::fromUtf8(e.what())); \
+    }
+
 OdeCxxBox& OdeCxxBox::setSrc(const QString& src)
 {
+    JSX_BEGIN
+
     // Check source file: no #include
     checkSrc(src);
 
@@ -215,6 +248,9 @@ OdeCxxBox& OdeCxxBox::setSrc(const QString& src)
     m_state.format().setSize(varCount()+1);
     m_rhs.format().setSize(varCount());
 
+    return *this;
+
+    JSX_END
     return *this;
 }
 

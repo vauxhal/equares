@@ -93,8 +93,10 @@ contains(QMAKESPEC, ^.*msvc.*$) {
 
 equaresbuildspecs.output = $$DESTDIR/buildpath.txt $$DESTDIR/makecmd.txt
 equaresbuildspecs.commands = \
-    echo $$(PATH) >$$DESTDIR/buildpath.txt $$escape_expand(\\n\\t) \
-    echo $$MAKE_COMMAND >$$DESTDIR/makecmd.txt
+    echo $$(PATH)>$$DESTDIR/buildpath.txt $$escape_expand(\\n\\t) \
+    echo $$(INCLUDE)>$$DESTDIR/buildinclude.txt $$escape_expand(\\n\\t) \
+    echo $$(LIB)>$$DESTDIR/buildlib.txt $$escape_expand(\\n\\t) \
+    echo $$MAKE_COMMAND>$$DESTDIR/makecmd.txt
 
 QMAKE_EXTRA_TARGETS += equaresbuildspecs
 POST_TARGETDEPS += equaresbuildspecs

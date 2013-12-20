@@ -41,7 +41,7 @@ void JsRunner::runFile(QScriptEngine& engine, istream& is)
         QScriptValue result = engine.evaluate(input);
         if (engine.hasUncaughtException()) {
             int lineNo = engine.uncaughtExceptionLineNumber();
-            cerr << "ERROR: line" << lineNo << ":" << result.toString();
+            cerr << "ERROR: line " << lineNo << ": " << result.toString() << endl;
         }
         else
             cout << result.toString() << endl;
@@ -112,7 +112,7 @@ void JsRunner::runServer(QScriptEngine& engine)
                         QScriptValue result = engine.evaluate(input);
                         if (engine.hasUncaughtException()) {
                             int lineNo = engine.uncaughtExceptionLineNumber();
-                            cerr << "ERROR: line" << lineNo << ":" << result.toString();
+                            cerr << "ERROR: line " << lineNo << ": " << result.toString() << endl;
                         }
                         else
                             cout << result.toString() << endl;
