@@ -116,8 +116,7 @@ static void buildLibWithQmake(const QDir& dir)
         throw EquaresException("Failed to build library (timed out)");
 
     if (proc.exitCode() != 0) {
-        using namespace std;
-        cout << proc.readAllStandardOutput().constData() << endl;
+        EQUARES_COUT << proc.readAllStandardOutput() << endl;
         throw EquaresException(QString("Failed to build library :\n%1").arg(
             QString::fromUtf8(proc.readAllStandardError())));
     }

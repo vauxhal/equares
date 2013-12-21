@@ -119,7 +119,7 @@ void Simulation::run() const
 {
     try {
         Runner runner;
-        runner.run(this);
+        runner.start(this);
     } catch(const EquaresException& e) {
         context()->throwError(e.what());
     }
@@ -127,8 +127,9 @@ void Simulation::run() const
 
 
 
-void Runner::run(const Simulation *sim)
+void Runner::start(const Simulation *sim)
 {
+    // Clear any previous runtime configuration
     m_rtboxes.clear();
     m_rtlinks.clear();
 
@@ -159,7 +160,14 @@ void Runner::run(const Simulation *sim)
         out->links() << rtlink;
     }
 
+    // Start simulation
+    ThreadManager::instance()->start(this);
+}
+
+void Runner::run()
+{
     // Initiate process
+    m_queue.clear();
     foreach (const RuntimeBox::Ptr& box, m_rtboxes)
         if (box->inputPorts().empty())
             foreach (const RuntimeOutputPort *port, box->outputPorts())

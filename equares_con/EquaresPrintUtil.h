@@ -5,16 +5,16 @@
 #include "equares_core/equares_core.h"
 
 struct NamePrinter {
-    void operator()(std::ostream& os, const Named *x) const {
+    void operator()(QTextStream& os, const Named *x) const {
         os << x->name();
     }
-    void operator()(std::ostream& os, const Named& x) const {
+    void operator()(QTextStream& os, const Named& x) const {
         os << x.name();
     }
 };
 
 struct PortPrinter {
-    void operator()(std::ostream& os, const Port *port) const {
+    void operator()(QTextStream& os, const Port *port) const {
         os << "{name: '" << port->name() + "'";
         if (port->format().isFixed()) {
             os << ", format: [";
@@ -33,7 +33,7 @@ struct PortPrinter {
 };
 
 struct BoxPropPrinter {
-    void operator()(std::ostream& os, const BoxProperty& boxProp) const {
+    void operator()(QTextStream& os, const BoxProperty& boxProp) const {
         os << "{name: '" << boxProp.name
            << "', help: '" << escapeString(boxProp.helpString) << "'}";
     }

@@ -36,7 +36,8 @@ SOURCES += equares_core.cpp \
     VibratingPendulumBox.cpp \
     OdeJsBox.cpp \
     initBoxFactory.cpp \
-    OdeCxxBox.cpp
+    OdeCxxBox.cpp \
+    equares_exec.cpp
 
 HEADERS += equares_core.h\
         equares_core_global.h \
@@ -61,7 +62,9 @@ HEADERS += equares_core.h\
     script_arrays.h \
     initBoxFactory.h \
     OdeCxxBox.h \
-    EquaresException.h
+    EquaresException.h \
+    equares_common.h \
+    equares_exec.h
 
 symbian {
     MMP_RULES += EXPORTUNFROZEN

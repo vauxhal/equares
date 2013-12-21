@@ -9,23 +9,24 @@ using namespace std;
 void describeSystem(QScriptEngine& engine)
 {
     Q_UNUSED(engine);
+    QTextStream& os = EQUARES_COUT;
     foreach (const QString& name, BoxFactory::boxTypes()) {
         Box::Ptr box(BoxFactory::newBox(name));
-        cout << name << " = {" << endl;
-        cout << "  inputs: [\n    ";
-        printContainer(cout, box->inputPorts(), PortPrinter(), ",\n    ");
-        cout << "\n  ],\n  outputs: [\n    ";
-        printContainer(cout, box->outputPorts(), PortPrinter(), ",\n    ");
-        cout << "\n  ],\n  properties: [\n    ";
-        printContainer(cout, box->boxProperties(), BoxPropPrinter(), ",\n    ");
-        cout << "\n  ]";
+        os << name << " = {" << endl;
+        os << "  inputs: [\n    ";
+        printContainer(os, box->inputPorts(), PortPrinter(), ",\n    ");
+        os << "\n  ],\n  outputs: [\n    ";
+        printContainer(os, box->outputPorts(), PortPrinter(), ",\n    ");
+        os << "\n  ],\n  properties: [\n    ";
+        printContainer(os, box->boxProperties(), BoxPropPrinter(), ",\n    ");
+        os << "\n  ]";
         if (!box->helpString().isEmpty())
-            cout << ",\n  help: '" << escapeString(box->helpString()) << "'";
-        cout << "\n}" << endl;
+            os << ",\n  help: '" << escapeString(box->helpString()) << "'";
+        os << "\n}" << endl;
     }
-    cout << "\nboxTypes = [\n  ";
-    printContainer(cout, BoxFactory::boxTypes(), SimplePrinter<QString>(), ",\n  " );
-    cout << "\n]\n";
+    os << "\nboxTypes = [\n  ";
+    printContainer(os, BoxFactory::boxTypes(), SimplePrinter<QString>(), ",\n  " );
+    os << "\n]\n";
 }
 
 int main(int argc, char **argv)
@@ -64,8 +65,13 @@ int main(int argc, char **argv)
                 inputFileNames << arg;
         }
 
+        // Create script engine
         QScriptEngine engine;
 
+        // Create default thread manager
+        DefaultThreadManager threadManager;
+
+        // Initialize equares core
         initBoxFactory();
         registerEquaresScriptTypes(&engine);
 

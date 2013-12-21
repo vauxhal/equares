@@ -2,16 +2,10 @@
 #define PRINTUTIL_H
 
 #include <QString>
-#include <iostream>
-
-inline std::ostream& operator<<(std::ostream& os, const QString& s)
-{
-    os << s.toUtf8().constData();
-    return os;
-}
+#include <QTextStream>
 
 template<class Container, class Printer>
-inline void printContainer(std::ostream& os, const Container& c, const Printer& p, const QString& delimiter)
+inline void printContainer(QTextStream& os, const Container& c, const Printer& p, const QString& delimiter)
 {
     bool first = true;
     foreach (typename Container::value_type x, c) {
@@ -56,19 +50,19 @@ inline QString escapeString(const QString& str)
 
 template< class X >
 struct SimplePrinter {
-    void operator()(std::ostream& os, const X& x) const {
+    void operator()(QTextStream& os, const X& x) const {
         os << x;
     }
 };
 template<>
 struct SimplePrinter<QString> {
-    void operator()(std::ostream& os, const QString& x) const {
+    void operator()(QTextStream& os, const QString& x) const {
         os << "'" << escapeString(x) << "'";
     }
 };
 
 struct VerbatimStringPrinter {
-    void operator()(std::ostream& os, const QString& x) const {
+    void operator()(QTextStream& os, const QString& x) const {
         os << x;
     }
 };

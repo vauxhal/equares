@@ -118,7 +118,7 @@ inline QScriptValue boxTypes(QScriptContext *context, QScriptEngine *engine) {
     Q_UNUSED(context);
     Q_UNUSED(engine);
     foreach (const QString& name, BoxFactory::boxTypes())
-        std::cout << name.toUtf8().constData() << std::endl;
+        EQUARES_COUT << name << endl;
     return QScriptValue();
 }
 
