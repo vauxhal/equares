@@ -69,6 +69,7 @@ void JsRunner::runServer(QScriptEngine& engine)
 {
     QRegExp cmdStart("^====\\{$");
     QRegExp cmdEnd("^====\\}$");
+    QRegExp cmdSync("^==([0-9]+)==<$");
     QRegExp rxExit("^\\s*exit\\s*$");
 
     // Create server thread manager
@@ -83,7 +84,11 @@ void JsRunner::runServer(QScriptEngine& engine)
             break;
         QString s = QString::fromUtf8(line.c_str());
         s.remove('\r');
-        if (waitForCommand) {
+        if (cmdSync.exactMatch(s)) {
+            int jobId = cmdSync.capturedTexts()[1].toInt();
+            threadManager.endSync(jobId);
+        }
+        else if (waitForCommand) {
             // Waiting for a command
             if (cmdStart.exactMatch(s))
                 waitForCommand = false;

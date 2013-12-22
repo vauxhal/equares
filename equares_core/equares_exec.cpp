@@ -66,3 +66,19 @@ ThreadManager& DefaultThreadManager::start(Runnable *runnable)
 
     return *this;
 }
+
+ThreadManager& DefaultThreadManager::reportProgress(const ProgressInfo& pi)
+{
+    QStringList msg;
+    if (pi.hasProgress()) {
+        int percent = static_cast<int>( pi.progress()*100 + 0.5 );
+        msg << QObject::tr("Progress: %1%%").arg(percent);
+    }
+    if (pi.hasFiles())
+        msg << QObject::tr("Updated files: ") + pi.files().join(", ");
+    if (pi.needSync())
+        msg << QObject::tr("Sync");
+    if (!msg.isEmpty())
+        EQUARES_COUT << msg.join("; ") << endl;
+    return *this;
+}

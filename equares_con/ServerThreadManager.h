@@ -6,6 +6,7 @@
 #include <QThread>
 #include <QThreadStorage>
 #include <QMutex>
+#include <QSemaphore>
 
 class ServerOutputStream : public QFile
 {
@@ -75,6 +76,8 @@ public:
     ThreadManager& setThreadOutput(ThreadOutput::Ptr threadOutput);
     int jobId() const;
     ThreadManager& start(Runnable *runnable);
+    ThreadManager& reportProgress(const ProgressInfo& pi);
+    ThreadManager& endSync(int jobId);
 
     void initThread(ServerThread *thread, int jobId);
     void cleanupThread();
@@ -94,6 +97,10 @@ private:
     QMutex m_mutex;
     QList<ServerThread*> m_threads;
     QList< QSharedPointer<ServerThread> > m_finishedThreads;
+    typedef QSharedPointer<QSemaphore> SemPtr;
+    typedef QMap<int, SemPtr> SemMap;
+    SemMap m_semSync;  // Key = job id, value = semaphore
+    QSemaphore& semSync(int jobId);
     void addThread(ServerThread* thread);
     void removeThread(ServerThread* thread);
 

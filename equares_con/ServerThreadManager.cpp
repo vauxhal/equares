@@ -171,6 +171,34 @@ ThreadManager& ServerThreadManager::start(Runnable *runnable)
     return *this;
 }
 
+ThreadManager& ServerThreadManager::reportProgress(const ProgressInfo& pi)
+{
+    // TODO
+    QStringList msg;
+    if (pi.hasProgress()) {
+        int percent = static_cast<int>( pi.progress()*100 + 0.5 );
+        msg << QObject::tr("Progress: %1%%").arg(percent);
+    }
+    if (pi.hasFiles())
+        msg << QObject::tr("Updated files: ") + pi.files().join(", ");
+    if (pi.needSync())
+        msg << QObject::tr("Sync");
+    if (!msg.isEmpty())
+        EQUARES_COUT << msg.join("; ") << endl;
+    if (pi.needSync())
+        semSync(m_threadData.localData()->jobId).acquire();
+    return *this;
+}
+
+ThreadManager& ServerThreadManager::endSync(int jobId)
+{
+    QMutexLocker lock(&m_mutex);
+    SemMap::iterator it = m_semSync.find(jobId);
+    if (it != m_semSync.end())
+        it.value()->release();
+    return *this;
+}
+
 void ServerThreadManager::initThread(ServerThread *thread, int jobId)
 {
     m_threadData.setLocalData(new ThreadData(thread, jobId));
@@ -191,6 +219,15 @@ int ServerThreadManager::newJobId()
     return ++jobId;
 }
 
+QSemaphore& ServerThreadManager::semSync(int jobId)
+{
+    QMutexLocker lock(&m_mutex);
+    SemMap::iterator it = m_semSync.find(m_threadData.localData()->jobId);
+    if (it == m_semSync.end())
+        it = m_semSync.insert(jobId, SemPtr(new QSemaphore()));
+    return *it.value().data();
+}
+
 void ServerThreadManager::addThread(ServerThread* thread)
 {
     QMutexLocker lock(&m_mutex);
@@ -204,5 +241,8 @@ void ServerThreadManager::removeThread(ServerThread* thread)
     int index = m_threads.indexOf(thread);
     Q_ASSERT(index != -1);
     m_threads.removeAt(index);
+    SemMap::iterator it = m_semSync.find(m_threadData.localData()->jobId);
+    if (it != m_semSync.end())
+        m_semSync.erase(it);
     m_finishedThreads << QSharedPointer<ServerThread>(thread);
 }

@@ -86,6 +86,7 @@ bool BitmapRuntimeBox::dump()
             }
     }
     img.save(m_fileName);
+    ThreadManager::instance()->reportProgress(ProgressInfo().setSync(true) << m_fileName);
 
     return true;
 }
