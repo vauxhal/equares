@@ -57,6 +57,12 @@ ThreadManager& DefaultThreadManager::setThreadOutput(ThreadOutput::Ptr threadOut
 
 ThreadManager& DefaultThreadManager::start(Runnable *runnable)
 {
-    runnable->run();
+    try {
+        runnable->run();
+    } catch (std::exception& e) {
+        EQUARES_CERR << "ERROR: " << e.what() << endl;
+    }
+    delete runnable;
+
     return *this;
 }

@@ -19,7 +19,8 @@ TEMPLATE = app
 SOURCES += \
     main.cpp \
     JsInputSplitter.cpp \
-    JsRunner.cpp
+    JsRunner.cpp \
+    ServerThreadManager.cpp
 
 LIBS += -lequares_core
 
@@ -27,4 +28,5 @@ HEADERS += \
     JsInputSplitter.h \
     JsRunner.h \
     PrintUtil.h \
-    EquaresPrintUtil.h
+    EquaresPrintUtil.h \
+    ServerThreadManager.h

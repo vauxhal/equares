@@ -1,7 +1,7 @@
 #include "JsRunner.h"
 #include "JsInputSplitter.h"
 #include "equares_core/EquaresException.h"
-#include "equares_core/equares_exec.h"
+#include "ServerThreadManager.h"
 #include "PrintUtil.h"
 
 #include <QScriptEngine>
@@ -67,12 +67,15 @@ void JsRunner::runFiles(QScriptEngine& engine, const QStringList& inputFileNames
 
 void JsRunner::runServer(QScriptEngine& engine)
 {
-    QRegExp cmdStart("^==\\[(\\d+)\\]==\\{$");
-    QRegExp cmdEnd("^==\\[(\\d+)\\]==\\}$");
+    QRegExp cmdStart("^====\\{$");
+    QRegExp cmdEnd("^====\\}$");
     QRegExp rxExit("^\\s*exit\\s*$");
 
+    // Create server thread manager
+    ServerThreadManager threadManager;
+
     QStringList cmd;
-    int cmdId = -1;
+    bool waitForCommand = true;
     forever {
         string line;
         getline(cin, line);
@@ -80,26 +83,18 @@ void JsRunner::runServer(QScriptEngine& engine)
             break;
         QString s = QString::fromUtf8(line.c_str());
         s.remove('\r');
-        if (cmdId == -1) {
+        if (waitForCommand) {
             // Waiting for a command
-            if (cmdStart.exactMatch(s)) {
-                cmdId = cmdStart.capturedTexts()[1].toInt();
-                Q_ASSERT(cmdId != -1);
-            }
+            if (cmdStart.exactMatch(s))
+                waitForCommand = false;
             else
                 EQUARES_CERR << "WARNING: Command was expected, ignoring input line '" << s << "'" << endl;
         }
         else {
             // Collecting command input and wait for end-of-command
             if (cmdEnd.exactMatch(s)) {
-                int cmdIdAtEnd = cmdEnd.capturedTexts()[1].toInt();
-                if (cmdIdAtEnd != cmdId) {
-                    EQUARES_CERR << "WARNING: Ignoring termination of command " << cmdIdAtEnd << ", waiting for termination of command " << cmdId << endl;
-                    continue;
-                }
-
                 // Process command and provide reply
-                EQUARES_COUT << "==[" << cmdId << "]=={" << endl;
+                EQUARES_COUT << "{" << endl;
                 if (!cmd.isEmpty()) {
                     JsInputSplitter jsis;
                     foreach (QString str, cmd)
@@ -119,13 +114,13 @@ void JsRunner::runServer(QScriptEngine& engine)
                             EQUARES_COUT << result.toString() << endl;
                     }
                     else
-                        EQUARES_CERR << "WARNING: Ignoring command " << cmdId << " because it contains unbalanced braces and/or quotes" << endl;
+                        EQUARES_CERR << "WARNING: Ignoring command because it contains unbalanced braces and/or quotes" << endl;
                 }
-                EQUARES_COUT << "==[" << cmdId << "]==}" << endl;
+                EQUARES_COUT << "}" << endl;
 
                 // Prepare for next command
+                waitForCommand = true;
                 cmd.clear();
-                cmdId = -1;
             }
             else
                 // Collect command input

@@ -118,8 +118,8 @@ BoxList Simulation::linkBoxes(const LinkList& links)
 void Simulation::run() const
 {
     try {
-        Runner runner;
-        runner.start(this);
+        Runner *runner = new Runner;
+        runner->start(this);
     } catch(const EquaresException& e) {
         context()->throwError(e.what());
     }
