@@ -4,6 +4,7 @@
 #include "equares_core.h"
 #include "equares_script.h"
 #include <cmath>
+#include <QTime>
 
 struct CanvasBoxDimParam
 {
@@ -64,6 +65,7 @@ class EQUARES_CORESHARED_EXPORT CanvasBox : public Box
 {
     Q_OBJECT
     Q_PROPERTY(CanvasBoxParam param READ param WRITE setParam)
+    Q_PROPERTY(int refreshInterval READ refreshInterval WRITE setRefreshInterval)
 public:
     explicit CanvasBox(QObject *parent = 0);
 
@@ -79,9 +81,12 @@ public:
 
     Param param() const;
     CanvasBox& setParam(const Param& param);
+    int refreshInterval() const;
+    CanvasBox& setRefreshInterval(int refreshInterval);
 
 private:
     Param m_param;
+    int m_refreshInterval;      // Refresh interval, in milliseconds
     mutable InputPort m_in;
     mutable InputPort m_flush;
     mutable OutputPort m_out;
@@ -98,7 +103,9 @@ private:
     RuntimeOutputPort m_out;
 
     CanvasBox::Param m_param;
+    int m_refreshInterval;      // Refresh interval, in milliseconds
     QVector<double> m_data;
+    QTime m_time;
 
     bool processInput();
     bool flush();

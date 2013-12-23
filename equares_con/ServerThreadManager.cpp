@@ -112,12 +112,12 @@ void ServerThread::run()
 {
     m_threadMan->initThread(this, m_jobId);
     try {
-        EQUARES_COUT << "Thread started" << endl;
+        EQUARES_COUT << "started" << endl;
         m_runnable->run();
-        EQUARES_COUT << "Thread finished" << endl;
+        EQUARES_COUT << "finished" << endl;
     }
     catch (const std::exception& e) {
-        EQUARES_CERR << "ERROR (thread terminated): " << e.what() << endl;
+        EQUARES_CERR << "ERROR (terminated): " << e.what() << endl;
     }
     delete m_runnable;
     m_threadMan->cleanupThread();
@@ -173,18 +173,17 @@ ThreadManager& ServerThreadManager::start(Runnable *runnable)
 
 ThreadManager& ServerThreadManager::reportProgress(const ProgressInfo& pi)
 {
-    // TODO
     QStringList msg;
     if (pi.hasProgress()) {
         int percent = static_cast<int>( pi.progress()*100 + 0.5 );
-        msg << QObject::tr("Progress: %1%%").arg(percent);
+        msg << QString("progress: %1%%").arg(percent);
     }
-    if (pi.hasFiles())
-        msg << QObject::tr("Updated files: ") + pi.files().join(", ");
+    foreach(const QString& file, pi.files())
+        msg << "file: " + file;
     if (pi.needSync())
-        msg << QObject::tr("Sync");
+        msg << "sync";
     if (!msg.isEmpty())
-        EQUARES_COUT << msg.join("; ") << endl;
+        EQUARES_COUT << msg.join("\n") << endl;
     if (pi.needSync())
         semSync(m_threadData.localData()->jobId).acquire();
     return *this;

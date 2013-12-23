@@ -44,7 +44,7 @@ REGISTER_SCRIPT_INIT_FUNC(canvasParamScriptInit)
 
 CanvasBox::CanvasBox(QObject *parent) :
     Box(parent),
-    m_param(),
+    m_refreshInterval(0),
     m_in("input", this, PortFormat(2).setFixed()),
     m_flush("flush", this),
     m_out("output", this, PortFormat(m_param[0].resolution, m_param[1].resolution).setFixed())
@@ -90,10 +90,20 @@ CanvasBox& CanvasBox::setParam(const Param& param) {
     return *this;
 }
 
+int CanvasBox::refreshInterval() const {
+    return m_refreshInterval;
+}
+
+CanvasBox& CanvasBox::setRefreshInterval(int refreshInterval) {
+    m_refreshInterval = refreshInterval;
+    return *this;
+}
+
 
 
 CanvasRuntimeBox::CanvasRuntimeBox(const CanvasBox *box) :
-    m_param(box->param())
+    m_param(box->param()),
+    m_refreshInterval(box->refreshInterval())
 {
     setOwner(box);
 
@@ -106,6 +116,8 @@ CanvasRuntimeBox::CanvasRuntimeBox(const CanvasBox *box) :
     m_data = QVector<double>(out[0]->format().dataSize(), 0);
     m_out.init(this, out[0], PortData(m_data.size(), m_data.data()));
     setOutputPorts(RuntimeOutputPorts() << &m_out);
+
+    m_time.start();
 }
 
 bool CanvasRuntimeBox::processInput()
@@ -115,6 +127,10 @@ bool CanvasRuntimeBox::processInput()
     if (i >= 0) {
         double *data = m_out.data().data();
         data[i] = 1;
+        if (m_refreshInterval > 0   &&   m_time.elapsed() >= m_refreshInterval) {
+            flush();
+            m_time.restart();
+        }
     }
     return true;
 }
