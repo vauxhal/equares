@@ -56,6 +56,7 @@ class ServerThread : public QThread
 {
 public:
     ServerThread(ServerThreadManager *threadMan, Runnable *runnable, int jobId);
+    void requestTermination();
 
 protected:
     void run();
@@ -64,6 +65,7 @@ private:
     ServerThreadManager *m_threadMan;
     Runnable *m_runnable;
     int m_jobId;
+    QMutex m_mutex;
 };
 
 class ServerThreadManager : public ThreadManager
@@ -78,6 +80,8 @@ public:
     ThreadManager& start(Runnable *runnable);
     ThreadManager& reportProgress(const ProgressInfo& pi);
     ThreadManager& endSync(int jobId);
+    ThreadManager& requestTermination(int jobId);
+    ThreadManager& requestTermination();
 
     void initThread(ServerThread *thread, int jobId);
     void cleanupThread();
@@ -98,11 +102,30 @@ private:
     QList<ServerThread*> m_threads;
     QList< QSharedPointer<ServerThread> > m_finishedThreads;
     typedef QSharedPointer<QSemaphore> SemPtr;
-    typedef QMap<int, SemPtr> SemMap;
-    SemMap m_semSync;  // Key = job id, value = semaphore
-    QSemaphore& semSync(int jobId);
-    void addThread(ServerThread* thread);
-    void removeThread(ServerThread* thread);
+    class ThreadSharedData
+    {
+    public:
+        ThreadSharedData() {}
+        explicit ThreadSharedData(ServerThread *thread) : m_thread(thread) {}
+        QSemaphore *sem() const {
+            if (!m_sem)
+                m_sem = SemPtr(new QSemaphore());
+            return m_sem.data();
+        }
+        ServerThread *thread() const {
+            return m_thread;
+        }
+    private:
+        mutable SemPtr m_sem;
+        ServerThread *m_thread;
+    };
+    enum { MaxSemLocks = 1000000 };
+
+    typedef QMap<int, ThreadSharedData> ThreadMap;
+    ThreadMap m_threadSharedData;  // Key = job id, value = thread shared data
+    QSemaphore *semSync(int jobId);
+    void addThread(int jobId, ServerThread* thread);
+    void removeThread(int jobId, ServerThread* thread);
 
     static int newJobId();
 };

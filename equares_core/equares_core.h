@@ -9,6 +9,7 @@
 #include <QStringList>
 #include <QSharedPointer>
 #include <QMultiMap>
+#include <QAtomicInt>
 
 #include "equares_core_global.h"
 #include "EquaresException.h"
@@ -469,16 +470,17 @@ class EQUARES_CORESHARED_EXPORT Runner : public Runnable
 public:
     void start(const Simulation *sim);
     void run();
+    void requestTermination();
+    bool terminationRequested() const;
 
     void postPortActivation(const RuntimeInputPort *port);
-    void quit();
 
 private:
     QList< RuntimeBox::Ptr > m_rtboxes;
     QList< RuntimeLink > m_rtlinks;
 
     QList<const RuntimeInputPort *> m_queue;
-    bool m_quitRequested;
+    QAtomicInt m_terminationRequested;
 };
 
 inline bool RuntimeInputPort::activate() const {

@@ -70,7 +70,10 @@ void JsRunner::runServer(QScriptEngine& engine)
     QRegExp cmdStart("^====\\{$");
     QRegExp cmdEnd("^====\\}$");
     QRegExp cmdSync("^==([0-9]+)==<$");
+    QRegExp cmdTerm("^==([0-9]+)==x$");
+    QRegExp cmdTermAll("^====x$");
     QRegExp rxExit("^\\s*exit\\s*$");
+    QRegExp rxExitHard("^====X$");
 
     // Create server thread manager
     ServerThreadManager threadManager;
@@ -88,6 +91,14 @@ void JsRunner::runServer(QScriptEngine& engine)
             int jobId = cmdSync.capturedTexts()[1].toInt();
             threadManager.endSync(jobId);
         }
+        else if (cmdTerm.exactMatch(s)) {
+            int jobId = cmdTerm.capturedTexts()[1].toInt();
+            threadManager.requestTermination(jobId);
+        }
+        else if (cmdTermAll.exactMatch(s))
+            threadManager.requestTermination();
+        else if (rxExitHard.exactMatch(s))
+            break;
         else if (waitForCommand) {
             // Waiting for a command
             if (cmdStart.exactMatch(s))
@@ -106,10 +117,8 @@ void JsRunner::runServer(QScriptEngine& engine)
                         jsis << str;
                     if (jsis.hasInput()) {
                         QString input = jsis.input();
-                        if (rxExit.exactMatch(input)) {
-                            EQUARES_COUT << "exiting equares" << endl;
+                        if (rxExit.exactMatch(input))
                             break;
-                        }
                         QScriptValue result = engine.evaluate(input);
                         if (engine.hasUncaughtException()) {
                             int lineNo = engine.uncaughtExceptionLineNumber();
@@ -132,4 +141,5 @@ void JsRunner::runServer(QScriptEngine& engine)
                 cmd << s;
         }
     }
+    EQUARES_COUT << "end" << endl;
 }

@@ -107,6 +107,7 @@ bool Rk4RuntimeBox::start()
         nSteps = std::numeric_limits<int>::max();
     PortData initData = m_initState.data();
     double t = initData.data()[m_n];
+    int nStepsBetweenRunnerTerminationCheck = std::max(1, 500 / m_n);
 
     // Check that rhs can be computed
     m_rhsState.setData(initPort->data());
@@ -125,6 +126,7 @@ bool Rk4RuntimeBox::start()
     m_terminationRequested = false;
 
     int outputCounter = outputControl > 0 ?   outputControl :   nSteps;
+    int runnerTermCheckCounter = nStepsBetweenRunnerTerminationCheck;
     for (int step=0; step<nSteps; ++step) {
         m_rhsState.setData(initData);
         m_rhsState.state().setValid();
@@ -157,8 +159,16 @@ bool Rk4RuntimeBox::start()
         }
         initData = m_nextState.data();
 
+        // Check termination request from the terminator port
         if (m_terminationRequested)
             break;
+
+        // Check termination request for the runner
+        if (--runnerTermCheckCounter == 0) {
+            if (runner()->terminationRequested())
+                break;
+            runnerTermCheckCounter = nStepsBetweenRunnerTerminationCheck;
+        }
     }
     return m_finish.activateLinks();
 }
