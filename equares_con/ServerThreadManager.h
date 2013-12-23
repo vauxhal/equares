@@ -37,8 +37,8 @@ class ServerThreadOutput : public ThreadOutput
 public:
     ServerThreadOutput();
 
-    QTextStream& stdout();
-    QTextStream& stderr();
+    QTextStream& standardOutput();
+    QTextStream& standardError();
 
     QString prefix() const;
     ServerThreadOutput& setPrefix(const QString& prefix);

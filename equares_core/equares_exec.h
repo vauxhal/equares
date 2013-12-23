@@ -22,8 +22,8 @@ public:
     typedef QSharedPointer<ThreadOutput> Ptr;
 
     virtual ~ThreadOutput() {}
-    virtual QTextStream& stdout() = 0;
-    virtual QTextStream& stderr() = 0;
+    virtual QTextStream& standardOutput() = 0;
+    virtual QTextStream& standardError() = 0;
 };
 
 class EQUARES_CORESHARED_EXPORT DefaultThreadOutput : public ThreadOutput
@@ -31,8 +31,8 @@ class EQUARES_CORESHARED_EXPORT DefaultThreadOutput : public ThreadOutput
 public:
     DefaultThreadOutput();
 
-    QTextStream& stdout();
-    QTextStream& stderr();
+    QTextStream& standardOutput();
+    QTextStream& standardError();
 
 private:
     QTextStream m_stdout;
@@ -114,7 +114,7 @@ private:
     ThreadOutput::Ptr m_threadOutput;
 };
 
-#define EQUARES_COUT ThreadManager::instance()->threadOutput()->stdout()
-#define EQUARES_CERR ThreadManager::instance()->threadOutput()->stderr()
+#define EQUARES_COUT ThreadManager::instance()->threadOutput()->standardOutput()
+#define EQUARES_CERR ThreadManager::instance()->threadOutput()->standardError()
 
 #endif // EQUARES_EXEC_H

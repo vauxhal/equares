@@ -73,18 +73,18 @@ void ServerOutputStream::flushBuf()
 
 
 ServerThreadOutput::ServerThreadOutput() :
-    m_stdoutStream(::stdout),
-    m_stderrStream(::stderr),
+    m_stdoutStream(stdout),
+    m_stderrStream(stderr),
     m_stdout(&m_stdoutStream),
     m_stderr(&m_stderrStream)
 {
 }
 
-QTextStream& ServerThreadOutput::stdout() {
+QTextStream& ServerThreadOutput::standardOutput() {
     return m_stdout;
 }
 
-QTextStream& ServerThreadOutput::stderr() {
+QTextStream& ServerThreadOutput::standardError() {
     return m_stderr;
 }
 

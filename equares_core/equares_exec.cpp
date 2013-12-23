@@ -2,16 +2,16 @@
 #include <iostream>
 
 DefaultThreadOutput::DefaultThreadOutput() :
-    m_stdout(::stdout, QIODevice::WriteOnly),
-    m_stderr(::stderr, QIODevice::WriteOnly)
+    m_stdout(stdout, QIODevice::WriteOnly),
+    m_stderr(stderr, QIODevice::WriteOnly)
 {
 }
 
-QTextStream& DefaultThreadOutput::stdout() {
+QTextStream& DefaultThreadOutput::standardOutput() {
     return m_stdout;
 }
 
-QTextStream& DefaultThreadOutput::stderr() {
+QTextStream& DefaultThreadOutput::standardError() {
     return m_stderr;
 }
 
