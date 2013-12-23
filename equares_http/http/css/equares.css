@@ -1,0 +1,26 @@
+.myheader {
+    padding: 0px 0px 0px 0px;
+        font-family: Sans-Serif;
+        font-size: 10px;
+        text-align: center;
+    background-color: #efd;
+        border-style: none none solid none;
+        border-width: 1px;
+        border-color: #ccc;
+}
+.myheader h1 {
+    margin: 0px;
+    padding: 5px 0px 0px 0px;
+}
+.mymain {
+    background-color: #ffd;
+}
+.myfooter {
+    font-family: Sans-Serif;
+        font-size: small;
+        text-align: center;
+    background-color: #fed;
+        border-style: solid none none none;
+        border-width: 1px;
+        border-color: #ccc;
+}

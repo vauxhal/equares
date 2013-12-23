@@ -1,0 +1,33 @@
+span.equaresStat {font-weight: bold;}
+div.equaresStat {
+    display: inline;
+    float: right;
+}
+span.equaresDebug {
+    color: red;
+    font-family: Sans-Serif;
+        font-size: small;
+}
+.equaresio {
+    height: 100%;
+    overflow: scroll;
+    border: 1px solid #c0c0c0;
+    font-family: monospace;
+}
+.equareso1 {
+    height: 50%;
+    overflow: scroll;
+    border: 1px solid #c0c0c0;
+    font-family: monospace;
+}
+.equareso2 {
+    height: 50%;
+    border: 1px solid #c0c0c0;
+    font-family: monospace;
+}
+input.equaresCmd {
+    width: 50%;
+}
+form.equaresCmdForm {
+    display: inline;
+}

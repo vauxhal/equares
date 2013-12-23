@@ -1,0 +1,154 @@
+body {
+    margin: 0pt;
+    background-color: Black;
+}
+.root_container {
+    background-color: #ffe;
+    overflow: hidden;
+}
+.layout {
+	background-color: #fef;
+	overflow: hidden;
+}
+.container {
+    overflow: hidden;
+    position: absolute;
+}
+.normal_container {
+    background-color: #fff;
+}
+.header_container {
+	background-color: #ddf;
+}
+.header_container.vertical {
+	border-style: none solid none none;
+	border-width: 1px;
+	border-color: #ccc;
+}
+.header_container.horizontal {
+	border-style: solid none none none;
+	border-width: 1px;
+	border-color: #ccc;
+}
+.splitter {
+	background-color: #ddd;
+}
+.splitter.vertical {
+	width: 4px;
+	cursor: col-resize;
+	border-style: none solid none solid;
+	border-width: 1px;
+	border-left-color: #ccc;
+	border-right-color: #ccc;
+	background-image: url('splitter-v.png');
+    background-repeat: no-repeat;
+    background-position: center;
+}
+.splitter.horizontal {
+	height: 4px;
+	cursor: row-resize;
+	border-style: solid none solid none;
+	border-width: 1px;
+	border-top-color: #ccc;
+	border-bottom-color: #ccc;
+	background-image: url('splitter-h.png');
+    background-repeat: no-repeat;
+    background-position: center;
+}
+.vertical {
+	height: 100%;
+}
+.horizontal {
+	width: 100%;
+}
+.toolhandle {
+    width: 16px;
+    height: 16px;
+}
+.container > .toolhandle {
+    background-image: url('bullet.png');
+    background-repeat: no-repeat;
+    background-position: center;
+    position: relative;
+    padding: 2px;
+    position: absolute;
+    z-index: 100;
+}
+.buttonphantom {
+    position: relative;
+    width: 16px;
+    height: 16px;
+    padding: 2px;
+    float: right;
+}
+.containerhandle {
+    background-repeat: no-repeat;
+    background-position: center;
+    position: relative;
+    width: 16px;
+    height: 16px;
+    padding: 2px;
+    float: right;
+    cursor: pointer;
+}
+.maximize {
+    background-image: url('hidden.png');
+}
+.minimize {
+    background-image: url('visible.png');
+}
+.toolhandle, .containerhandle {
+    text-align: center;
+    font-family: Sans-Serif;
+    font-size: 12px;
+    color: #000;
+    text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff;
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}
+
+.tools {
+    position: absolute;
+    background-color: #ddd;
+    overflow: hidden;
+	border: 1px solid #bbb;
+	display: none;
+    z-index: 200;
+    display: none;
+}
+.tools.h {
+    height: 20px;
+}
+.tools.h > * {
+    display: inline;
+}
+.tools.v {
+    width: 20px;
+}
+.tools.v > * {
+    display: block;
+}
+.tool {
+    padding: 2px;
+    margin: 0px;
+    cursor: pointer;
+}
+img.tool {
+	width: 16px;
+	height: 16px;
+}
+.tool:hover {
+	box-shadow: inset 0px 0px 3px 1px rgba(255,255,255,1);
+}
+.highlight 
+{
+	box-shadow: inset 0px 0px 20px 0px rgba(0,0,0,1);
+}
+
+.highlight :not(.toolhandle) {
+	opacity: 0.6;
+}
