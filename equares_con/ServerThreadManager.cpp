@@ -119,8 +119,19 @@ void ServerThread::run()
     catch (const std::exception& e) {
         EQUARES_CERR << "ERROR (terminated): " << e.what() << endl;
     }
-    delete m_runnable;
+    {
+        QMutexLocker lock(&m_mutex);
+        delete m_runnable;
+        m_runnable = 0;
+    }
     m_threadMan->cleanupThread();
+}
+
+void ServerThread::requestTermination()
+{
+    QMutexLocker lock(&m_mutex);
+    if (m_runnable)
+        m_runnable->requestTermination();
 }
 
 
@@ -140,6 +151,7 @@ ServerThreadManager::ServerThreadManager() {
 
 ServerThreadManager::~ServerThreadManager()
 {
+    requestTermination();
     while (!m_threads.isEmpty())
         m_threads.first()->wait();
     m_threadData.setLocalData(0);
@@ -184,17 +196,40 @@ ThreadManager& ServerThreadManager::reportProgress(const ProgressInfo& pi)
         msg << "sync";
     if (!msg.isEmpty())
         EQUARES_COUT << msg.join("\n") << endl;
-    if (pi.needSync())
-        semSync(m_threadData.localData()->jobId).acquire();
+    if (pi.needSync()) {
+        QSemaphore *sem = semSync(m_threadData.localData()->jobId);
+        Q_ASSERT(sem);
+        sem->acquire();
+    }
     return *this;
 }
 
 ThreadManager& ServerThreadManager::endSync(int jobId)
 {
+    QSemaphore *sem = semSync(jobId);
+    if (sem)
+        sem->release();
+    return *this;
+}
+
+ThreadManager& ServerThreadManager::requestTermination(int jobId)
+{
     QMutexLocker lock(&m_mutex);
-    SemMap::iterator it = m_semSync.find(jobId);
-    if (it != m_semSync.end())
-        it.value()->release();
+    ThreadMap::iterator it = m_threadSharedData.find(jobId);
+    if (it != m_threadSharedData.end()) {
+        it.value().sem()->release(MaxSemLocks);
+        it.value().thread()->requestTermination();
+    }
+    return *this;
+}
+
+ThreadManager& ServerThreadManager::requestTermination()
+{
+    QMutexLocker lock(&m_mutex);
+    foreach(const ThreadSharedData& d, m_threadSharedData) {
+        d.sem()->release(MaxSemLocks);
+        d.thread()->requestTermination();
+    }
     return *this;
 }
 
@@ -202,13 +237,14 @@ void ServerThreadManager::initThread(ServerThread *thread, int jobId)
 {
     m_threadData.setLocalData(new ThreadData(thread, jobId));
     if (thread)
-        addThread(thread);
+        addThread(jobId, thread);
 }
 
 void ServerThreadManager::cleanupThread()
 {
     Q_ASSERT(m_threadData.hasLocalData());
-    removeThread(m_threadData.localData()->thread);
+    ThreadData *d = m_threadData.localData();
+    removeThread(d->jobId, d->thread);
     m_threadData.setLocalData(0);
 }
 
@@ -218,30 +254,31 @@ int ServerThreadManager::newJobId()
     return ++jobId;
 }
 
-QSemaphore& ServerThreadManager::semSync(int jobId)
+QSemaphore *ServerThreadManager::semSync(int jobId)
 {
     QMutexLocker lock(&m_mutex);
-    SemMap::iterator it = m_semSync.find(m_threadData.localData()->jobId);
-    if (it == m_semSync.end())
-        it = m_semSync.insert(jobId, SemPtr(new QSemaphore()));
-    return *it.value().data();
+    ThreadMap::iterator it = m_threadSharedData.find(jobId);
+    if (it == m_threadSharedData.end())
+        return 0;
+    return it.value().sem();
 }
 
-void ServerThreadManager::addThread(ServerThread* thread)
+void ServerThreadManager::addThread(int jobId, ServerThread* thread)
 {
     QMutexLocker lock(&m_mutex);
     m_finishedThreads.clear();
     m_threads << thread;
+    m_threadSharedData.insert(jobId, ThreadSharedData(thread));
 }
 
-void ServerThreadManager::removeThread(ServerThread* thread)
+void ServerThreadManager::removeThread(int jobId, ServerThread* thread)
 {
     QMutexLocker lock(&m_mutex);
     int index = m_threads.indexOf(thread);
     Q_ASSERT(index != -1);
     m_threads.removeAt(index);
-    SemMap::iterator it = m_semSync.find(m_threadData.localData()->jobId);
-    if (it != m_semSync.end())
-        m_semSync.erase(it);
+    ThreadMap::iterator it = m_threadSharedData.find(jobId);
+    Q_ASSERT(it != m_threadSharedData.end());
+    m_threadSharedData.remove(jobId);
     m_finishedThreads << QSharedPointer<ServerThread>(thread);
 }

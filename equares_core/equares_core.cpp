@@ -175,9 +175,9 @@ void Runner::run()
                     postPortActivation(link->inputPort());
 
     // Process enqueued boxes
-    m_quitRequested = false;
+    m_terminationRequested = 0;
     while (!m_queue.isEmpty()) {
-        if (m_quitRequested)
+        if (terminationRequested())
             break;
         if (!m_queue.first()->activate())
             m_queue << m_queue.first();
@@ -185,12 +185,21 @@ void Runner::run()
     }
 }
 
-void Runner::postPortActivation(const RuntimeInputPort *port) {
-    m_queue << port;
+void Runner::requestTermination() {
+    m_terminationRequested = 1;
 }
 
-void Runner::quit() {
-    m_quitRequested = true;
+bool Runner::terminationRequested() const {
+#if QT_VERSION >= 0x050000
+    int terminationRequested = m_terminationRequested.load();
+#else
+    int terminationRequested = m_terminationRequested;
+#endif
+    return terminationRequested != 0;
+}
+
+void Runner::postPortActivation(const RuntimeInputPort *port) {
+    m_queue << port;
 }
 
 

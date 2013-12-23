@@ -12,6 +12,7 @@ struct EQUARES_CORESHARED_EXPORT Runnable
 {
     virtual ~Runnable() {}
     virtual void run() = 0;
+    virtual void requestTermination() = 0;
 };
 
 
