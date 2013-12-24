@@ -6,9 +6,8 @@ counterParam = new Param
 
 initState = new Param
 
-ode = new DoublePendulum
+ode = new VibratingPendulum
 solver = new Rk4
-psec = new CrossSection
 proj = new Projection
 canvas = new Canvas
 counter = new CountedFilter
@@ -24,8 +23,7 @@ s.setLinks([
     [initState.output, solver.initState],
     [solver.rhsState, ode.state],
     [ode.oderhs, solver.rhs],
-    [solver.nextState, psec.input],
-    [psec.output, proj.input],
+    [solver.nextState, proj.input],
     [proj.output, canvas.input],
     [proj.output, counter.input],
     [counter.output, solver.stop],
@@ -33,40 +31,46 @@ s.setLinks([
     [canvas.output, dump.input]
 ])
 
+var
+    l = 1,
+    g = 9.8,
+    a = 0.45,
+    omega = Math.sqrt(g/l)*1.95,
+    nStepsPerPeriod = 1000,
+    nPeriods = 100000
+
 odeParam.data = [
-    1,      // l1
-    1,      // m1
-    0.6,    // l2
-    1,      // m2
-    9.8     // g
+    l,
+    g,
+    a,
+    omega
 ]
 
 solverParam.data = [
-    0.005,  // h
-    0,      // n (0 means max. int)
-    1       // nout (1 means each step)
+    2*Math.PI/(omega*nStepsPerPeriod),  // h
+    0,                                  // n (0 means max. int)
+    nStepsPerPeriod                     // nout (1 means each step)
 ]
 
 // Degrees to radians
 D2R = Math.PI/180
 
 initState.data = [
-    50*D2R, // q1
-    0,      // q2
+    10*D2R, // q1
     0,      // dq1
-    0,      // dq2
     0       // t
 ]
 
-psec.param = {index: 2, pos: 0, flags: ["positive"]}
-
+var sx = 1,
+    sy = 1
 canvas.param = {
-    x: {vmin: -Math.PI, vmax: Math.PI, resolution: 500},
-    y: {vmin: -Math.PI, vmax: Math.PI, resolution: 500}
+    x: {vmin: -sx*Math.PI, vmax: sx*Math.PI, resolution: 500},
+    y: {vmin: -sy*Math.PI, vmax: sy*Math.PI, resolution: 500}
 }
+canvas.refreshInterval = 1000;
 
 counterParam.data = [
-    10000   // Counter value
+    10000000   // Counter value
 ]
 
 dump.fileName = "dump.png"
