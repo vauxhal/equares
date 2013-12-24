@@ -14,7 +14,7 @@ canvas = new Canvas
 counter = new CountedFilter
 dump = new Bitmap
 
-proj.indices = [0,1]
+proj.indices = [0,2]
 
 s = new Simulation
 s.setLinks([
@@ -42,7 +42,7 @@ odeParam.data = [
 ]
 
 solverParam.data = [
-    0.005,  // h
+    0.002,  // h
     0,      // n (0 means max. int)
     1       // nout (1 means each step)
 ]
@@ -58,13 +58,13 @@ initState.data = [
     0       // t
 ]
 
-psec.param = {index: 2, pos: 0, flags: ["positive"]}
+psec.param = {index: 1, pos: 0, flags: ["positive"]}
 
 canvas.param = {
-    x: {vmin: -Math.PI, vmax: Math.PI, resolution: 500},
-    y: {vmin: -Math.PI, vmax: Math.PI, resolution: 500}
+    x: {vmin: -0.5*Math.PI, vmax: 0.5*Math.PI, resolution: 500},
+    y: {vmin: -2*Math.PI, vmax: 1.8*Math.PI, resolution: 500}
 }
-canvas.refreshInterval = 5000;
+canvas.refreshInterval = 1000;
 
 counterParam.data = [
     10000000   // Counter value

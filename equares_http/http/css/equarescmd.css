@@ -15,13 +15,13 @@ span.equaresDebug {
     font-family: monospace;
 }
 .equareso1 {
-    height: 50%;
+    height: 20%;
     overflow: scroll;
     border: 1px solid #c0c0c0;
     font-family: monospace;
 }
 .equareso2 {
-    height: 50%;
+    height: 80%;
     border: 1px solid #c0c0c0;
     font-family: monospace;
 }
