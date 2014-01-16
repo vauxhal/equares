@@ -253,6 +253,20 @@ equaresui.setWorkbenchSource = function() {
     });
 }
 
+equaresui.setSceneSource = function() {
+    this.clear();
+    this.setTitle( "equares scheme editor" );
+    var thisDom = this.dom;
+    $.ajax("scheme-editor.html")
+        .done(function(html){
+            $(thisDom).append(html);
+            ctmEquaresSchemeEditor.init($(thisDom).children()[0]);
+        })
+        .fail(function(){
+            equaresDebug.html("equaresToggle.cmd: Ajax error");
+        });
+}
+
 $(document).ready(function() {
     // Add source menu tools for equares docks
     ctmDock.toolSets.sourceMenuTools.addTools( [
@@ -267,6 +281,12 @@ $(document).ready(function() {
             src: "plot.png",
             alt: "plot",
             handler: equaresui.setWorkbenchSource
+            } ),
+        ctmDock.newTool( {
+            title: "Scheme",
+            src: "scheme.png",
+            alt: "scheme",
+            handler: equaresui.setSceneSource
             } )
     ] );
 });
