@@ -209,11 +209,12 @@ server.commands["equaresExecSync"] = function(request, response) {
     var replyStarted = false;
     var replyLines = [];
     var processServerReply = function(line) {
-        if (!line.match(/$==1==> /))
+        line = line.trim(); // Remove trailing \r
+        if (!line.match(/==1==> /))
             return;
         line = line.substr(7);
-        if (!replyStarted && line === "===={") {
-            replyStarted = true;
+        if (!replyStarted) {
+            replyStarted = line === "===={";
             return;
         }
         if (line === "====}") {

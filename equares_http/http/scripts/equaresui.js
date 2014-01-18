@@ -254,6 +254,25 @@ equaresui.setWorkbenchSource = function() {
 }
 
 equaresui.setSceneSource = function() {
+
+    function startEquares(callback) {
+        $.ajax("equaresStat.cmd")
+            .done(function(msg){
+                var running = parseInt(msg) != 0;
+                if (running)
+                    callback();
+                else
+                    $.ajax("equaresToggle.cmd")
+                        .done(callback)
+                    .fail(function(){
+                        alert("Ajax error");
+                });
+            })
+            .fail(function(){
+                alert("Ajax error");
+            });
+    }
+
     this.clear();
     var layoutOptions = {
         type: "horizontal",
@@ -262,20 +281,34 @@ equaresui.setSceneSource = function() {
     this.setTitle( "equares scheme editor" );
     var layout = this.setLayout( layoutOptions );
     
-    var boxCell = layout.add( { title: "Boxes" } );
+    var boxCell = layout.add( { title: "Boxes", width: {min: 50, max: 300} } );
     var boxDiv = $(boxCell.dom);
 
-    // Fill box div with box types
-    $.ajax("equaresExecSync.cmd", {data: {cmd: "===={\nboxTypes()\n====}"}, type: "GET"})
-        .done(function(data){
-            var reply = JSON.parse(data);
-            boxDiv.append(reply.text);
-        })
-        .fail(function(){
-            // equaresDebug.html("equaresExec.cmd: Ajax error");
-            alert("equaresExec.cmd: Ajax error");
-        });
+    var setBoxes = function(boxes)
+    {
+        var text = "<h1>Boxes</h1><ul>";
+        for (var i in boxes)
+            text += "<li>" + boxes[i] + "</li>";
+        text += "</ul>";
+        boxDiv.append(text);
+        boxDiv.find("li").wrapInner('<a href="kaka">');
+    }
 
+    // Fill box div with box types
+    startEquares( function() {
+        $.ajax("equaresExecSync.cmd", {data: {cmd: "===={\nboxTypes()\n====}"}, type: "GET"})
+            .done(function(data){
+                var reply = JSON.parse(data);
+                setBoxes(reply.text.split('\n'));
+
+//                boxDiv.append(
+//                    reply.text.replace(/\n/g, '<br/>'));
+            })
+            .fail(function(){
+                // equaresDebug.html("equaresExec.cmd: Ajax error");
+                alert("equaresExec.cmd: Ajax error");
+            });
+    })
     var schemeCell = layout.add( { title: "Scheme" } );
 //    $.getScript("scripts/scheme-editor.js", function() {
         ctmEquaresSchemeEditor.init(schemeCell.dom);
