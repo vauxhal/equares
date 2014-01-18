@@ -16,8 +16,9 @@ equares.programPath = (function() {
     return path + '/equares_con';
     })();
 
-function StreamLineHistory(str) {
-    this.stream = str;
+function StreamLineHistory(str, ls) {
+    this.stream = str;  // Input/output stream
+    this.lstream = ls;  // Line input stream
     this.history = [];
     }
 
@@ -26,7 +27,7 @@ function User(name) {
     this.name = name;
     this.proc = undefined;
     this.lastev = 0;
-    this.stdio = [];
+    this.stdio = [];    // Array for server process streams
 }
 
 equares.users = {};
@@ -48,8 +49,8 @@ User.prototype.addStreamLine = function(code, line) {
 User.prototype.initStream = function(code, str, optConsumer) {
     //console.log("initStream: consumer=", optConsumer);
     var user = this;
-    user.stdio[code] = new StreamLineHistory(str);
     var ls = lins(str);
+    user.stdio[code] = new StreamLineHistory(str, ls);
     ls.setEncoding("utf8");
     ls.setDelimiter("\n");
     ls.on('error', function(err) {
@@ -194,3 +195,37 @@ server.commands["equaresExec"] = function(request, response) {
     response.end();
 };
 
+server.commands["equaresExecSync"] = function(request, response) {
+    var user = equares.user("x");
+    if (!user.isRunning())
+    {
+        // Failed to execute command - server is not running
+        response.write(JSON.stringify({running: false, text: ""}));
+        response.end();
+        return;
+    }
+
+    var ls = user.stdio[1].lstream; // Line-wise stdout of server process
+    var replyStarted = false;
+    var replyLines = [];
+    var processServerReply = function(line) {
+        if (!line.match(/$==1==> /))
+            return;
+        line = line.substr(7);
+        if (!replyStarted && line === "===={") {
+            replyStarted = true;
+            return;
+        }
+        if (line === "====}") {
+            ls.removeListener('line', processServerReply);
+            response.write(JSON.stringify({running: true, text: replyLines.join('\n')}));
+            response.end();
+        }
+        else
+            replyLines.push(line);
+    }
+    ls.on('line', processServerReply);
+
+    var command = url.parse(request.url, true).query.cmd;
+    user.execCommand(command);
+};

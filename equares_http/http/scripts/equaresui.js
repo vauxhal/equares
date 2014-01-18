@@ -266,12 +266,14 @@ equaresui.setSceneSource = function() {
     var boxDiv = $(boxCell.dom);
 
     // Fill box div with box types
-    $.ajax("equaresExec.cmd", {data: {cmd: "===={\nboxTypes()\n====}"}, type: "GET"})
-        .done(function(text){
-            boxDiv.append(text);
+    $.ajax("equaresExecSync.cmd", {data: {cmd: "===={\nboxTypes()\n====}"}, type: "GET"})
+        .done(function(data){
+            var reply = JSON.parse(data);
+            boxDiv.append(reply.text);
         })
         .fail(function(){
-            equaresDebug.html("equaresExec.cmd: Ajax error");
+            // equaresDebug.html("equaresExec.cmd: Ajax error");
+            alert("equaresExec.cmd: Ajax error");
         });
 
     var schemeCell = layout.add( { title: "Scheme" } );
