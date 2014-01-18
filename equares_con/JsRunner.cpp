@@ -110,7 +110,7 @@ void JsRunner::runServer(QScriptEngine& engine)
             // Collecting command input and wait for end-of-command
             if (cmdEnd.exactMatch(s)) {
                 // Process command and provide reply
-                EQUARES_COUT << "{" << endl;
+                EQUARES_COUT << "===={" << endl;
                 if (!cmd.isEmpty()) {
                     JsInputSplitter jsis;
                     foreach (QString str, cmd)
@@ -124,13 +124,14 @@ void JsRunner::runServer(QScriptEngine& engine)
                             int lineNo = engine.uncaughtExceptionLineNumber();
                             EQUARES_CERR << "ERROR: line " << lineNo << ": " << result.toString() << endl;
                         }
-                        else
+                        else if (!result.isUndefined())
+                            // Print result, unless it's undefined
                             EQUARES_COUT << result.toString() << endl;
                     }
                     else
                         EQUARES_CERR << "WARNING: Ignoring command because it contains unbalanced braces and/or quotes" << endl;
                 }
-                EQUARES_COUT << "}" << endl;
+                EQUARES_COUT << "====}" << endl;
 
                 // Prepare for next command
                 waitForCommand = true;

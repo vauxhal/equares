@@ -2,12 +2,12 @@
 var ctmEquaresSchemeEditor = {};
 
 ctmEquaresSchemeEditor.init = function(root) {
-var width = 960,
-    height = 500;
-
+//return; // deBUG
 // TODO better: select from root
-var svg = d3.select(".scheme-editor-content")
-    .append("svg")
+var schemeContainer = d3.select(root);
+var width = $(root).width(),
+    height = $(root).height();
+var svg = schemeContainer.append("svg")
         .attr("class", "svg-main")
         .attr("width", width)
         .attr("height", height)
@@ -85,6 +85,13 @@ var force = d3.layout.force()
     .linkDistance(200)
     .charge(-800)
     .on("tick", tick);
+
+root.ctmDock.addResizeHandler( function() {
+    var r = $(root), w = r.width(), h = r.height();
+    svg.attr("width", w).attr("height", h);
+    mainrect.attr("width", w-3).attr("height", h-3);
+    force.size([w, h]).start();
+})
 
 var fnodes = force.nodes(),
     flinks = force.links(),
@@ -216,8 +223,8 @@ function restart() {
         .attr("xlink:href", "close.png")
         .attr("x", 20)
         .attr("y", -10)
-        .attr("width", 16)
-        .attr("height", 16)
+        .attr("width", 8)
+        .attr("height", 8)
         .on("click", function(d, i){
           if (i != d.index) {
               $("#test3").text("Unexpected node index " + i + " != " + d.index);

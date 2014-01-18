@@ -1,12 +1,13 @@
 scheme-editor-root {
 	width: 100%;
 	height: 100%;
-	position: absolute;
+	background-color: #dfd;
 }
 
 scheme-editor-content {
 	width: 100%;
-	height: 90%;
+	height: 100%;
+	background-color: #fdd;
 }
 
 svg > .mainrect {

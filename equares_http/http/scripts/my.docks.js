@@ -607,7 +607,9 @@ Layout.generator = function( type ) {
 // ======== Containers
 
 // -------- Container - base type for containers
-function Container() {}
+function Container() {
+    this.resizeHandlers = [];
+}
 Container.prototype = new Dock();
 Container.prototype.layout = function() {
     var layoutElement = $(this.dom).children(".layout");
@@ -645,6 +647,14 @@ Container.prototype.resize = function() {
     var layout = this.layout();
     if( layout )
         layout.resize();
+
+    // Call resize handlers, if any
+    if( this.resizeHandlers instanceof Array )
+        for( var idx in this.resizeHandlers )
+            this.resizeHandlers[idx]();
+}
+Container.prototype.addResizeHandler = function( resizeHandler ) {
+    this.resizeHandlers.push( resizeHandler )
 }
 Container.prototype.isRoot = function() {
     return this instanceof RootContainer;

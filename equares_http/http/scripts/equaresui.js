@@ -255,16 +255,43 @@ equaresui.setWorkbenchSource = function() {
 
 equaresui.setSceneSource = function() {
     this.clear();
+    var layoutOptions = {
+        type: "horizontal",
+        fixed: true
+    };
     this.setTitle( "equares scheme editor" );
-    var thisDom = this.dom;
+    var layout = this.setLayout( layoutOptions );
+    
+    var boxCell = layout.add( { title: "Boxes" } );
+    var boxDiv = $(boxCell.dom);
+
+    // Fill box div with box types
+    $.ajax("equaresExec.cmd", {data: {cmd: "===={\nboxTypes()\n====}"}, type: "GET"})
+        .done(function(text){
+            boxDiv.append(text);
+        })
+        .fail(function(){
+            equaresDebug.html("equaresExec.cmd: Ajax error");
+        });
+
+    var schemeCell = layout.add( { title: "Scheme" } );
+//    $.getScript("scripts/scheme-editor.js", function() {
+        ctmEquaresSchemeEditor.init(schemeCell.dom);
+//        });
+    /*
     $.ajax("scheme-editor.html")
         .done(function(html){
-            $(thisDom).append(html);
-            ctmEquaresSchemeEditor.init($(thisDom).children()[0]);
+            $(schemeCell.dom).append(html);
+            ctmEquaresSchemeEditor.init($(schemeCell.dom).children()[0]);
         })
         .fail(function(){
             equaresDebug.html("equaresToggle.cmd: Ajax error");
         });
+*/
+    var settingsCell = layout.add( { title: "Settings" } );
+    var settingsLayout = settingsCell.setLayout({type: "vertical", fixed: true});
+    var itemsCell = settingsLayout.add( { title: "Items" } );
+    var propsCell = settingsLayout.add( { title: "Properties" } );
 }
 
 $(document).ready(function() {
