@@ -1,4 +1,20 @@
-rem set PATH=D:\Qt5\5.1.0\mingw48_32\bin;%PATH%
-rem call "D:\Program Files\nodejs\nodevars.bat"
-call "C:\Program Files\nodejs\nodevars.bat"
-set PATH=c:\oss\Qt\Qt5.2.0\5.2.0\msvc2012_64_opengl\bin;%PATH%
+@echo off
+
+if "%NODEJS_ROOT%"=="" (
+	echo ERROR: NODEJS_ROOT environment variable is not set, don't know where node.js is.
+	goto :end
+)
+
+if "%QT5_BIN%"=="" (
+	echo ERROR: QT5_BIN environment variable is not set, don't know where Qt5's binaries are.
+	goto :end
+)
+
+call "%NODEJS_ROOT%\nodevars.bat"
+set PATH=%QT5_BIN%;%PATH%
+
+rem TODO: Remove
+rem call "C:\Program Files\nodejs\nodevars.bat"
+rem set PATH=c:\oss\Qt\Qt5.2.0\5.2.0\msvc2012_64_opengl\bin;%PATH%
+
+:end

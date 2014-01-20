@@ -2,6 +2,20 @@
 var ctmEquaresSchemeEditor = {};
 
 ctmEquaresSchemeEditor.init = function(root) {
+
+// Stub, TODO
+ctmEquaresSchemeEditor.addBox = function(box, info, options) {
+    var nodeData = {
+            x: 0, y: 0,
+            name: box,
+            ports: cloneArray(boxdata[0].ports),
+            iid: iid++,
+            index: nodes.length
+            };
+    nodes.push(nodeData);
+    restart();
+    }
+
 //return; // deBUG
 // TODO better: select from root
 var schemeContainer = d3.select(root);

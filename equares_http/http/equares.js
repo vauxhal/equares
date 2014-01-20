@@ -1,6 +1,6 @@
 // equares.js
 var server = require("./myhttpserver");
-var spawn = require('child_process').spawn;
+var child_process = require('child_process');
 var lins = require('line-input-stream');
 var stream = require('stream');
 var url = require("url");
@@ -74,7 +74,7 @@ User.prototype.stopped = function() {
 User.prototype.start = function() {
     var user = this;
     console.log( 'Starting equares for user %s', user.name );
-    this.proc = spawn(equares.programPath, ['-s']);
+    this.proc = child_process.spawn(equares.programPath, ['-s']);
     this.lastev = 1;
     this.proc.on('close', function() {
         console.log( 'equares for user %s has been closed', user.name );
@@ -230,3 +230,25 @@ server.commands["equaresExecSync"] = function(request, response) {
     var command = url.parse(request.url, true).query.cmd;
     user.execCommand(command);
 };
+
+var equaresInfoCache = {};
+
+server.commands["equaresRequestInfo"] = function(request, response) {
+    var command = url.parse(request.url, true).query.cmd;
+    if (equaresInfoCache[command]) {
+        response.write(equaresInfoCache[command]);
+        response.end();
+    }
+    else {
+        child_process.exec(equares.programPath + " -d " + command, function (error, stdout, stderr) {
+            var result = {
+                stdout: stdout,
+                stderr: stderr
+            }
+            if (error)
+                result.error = error;
+            response.write(equaresInfoCache[command] = JSON.stringify(result));
+            response.end();
+        });
+    }
+}

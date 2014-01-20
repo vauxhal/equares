@@ -6,27 +6,43 @@
 
 using namespace std;
 
-void describeSystem(QScriptEngine& engine)
+void describeSystem(QScriptEngine& engine, const QStringList& args)
 {
     Q_UNUSED(engine);
     QTextStream& os = EQUARES_COUT;
-    foreach (const QString& name, BoxFactory::boxTypes()) {
-        Box::Ptr box(BoxFactory::newBox(name));
-        os << name << " = {" << endl;
-        os << "  inputs: [\n    ";
-        printContainer(os, box->inputPorts(), PortPrinter(), ",\n    ");
-        os << "\n  ],\n  outputs: [\n    ";
-        printContainer(os, box->outputPorts(), PortPrinter(), ",\n    ");
-        os << "\n  ],\n  properties: [\n    ";
-        printContainer(os, box->boxProperties(), BoxPropPrinter(), ",\n    ");
-        os << "\n  ]";
-        if (!box->helpString().isEmpty())
-            os << ",\n  help: '" << escapeString(box->helpString()) << "'";
-        os << "\n}" << endl;
+    if (args.empty()) {
+        describeSystem(engine, BoxFactory::boxTypes() << "boxTypes");
+        return;
     }
-    os << "\nboxTypes = [\n  ";
-    printContainer(os, BoxFactory::boxTypes(), SimplePrinter<QString>(), ",\n  " );
-    os << "\n]\n";
+    QStringList boxTypes = BoxFactory::boxTypes();
+    bool namedMode = args.size() > 1;
+    foreach (const QString& arg, args) {
+        if (arg == "boxTypes") {
+            if (namedMode)
+                os << "\nvar boxTypes = ";
+            os << "[\n  ";
+            printContainer(os, BoxFactory::boxTypes(), SimplePrinter<QString>(), ",\n  " );
+            os << "\n]\n";
+        }
+        else if (boxTypes.contains(arg)) {
+            Box::Ptr box(BoxFactory::newBox(arg));
+            if (namedMode)
+                os << "\nvar " << arg << " = ";
+            os << "{" << endl;
+            os << "  inputs: [\n    ";
+            printContainer(os, box->inputPorts(), PortPrinter(), ",\n    ");
+            os << "\n  ],\n  outputs: [\n    ";
+            printContainer(os, box->outputPorts(), PortPrinter(), ",\n    ");
+            os << "\n  ],\n  properties: [\n    ";
+            printContainer(os, box->boxProperties(), BoxPropPrinter(), ",\n    ");
+            os << "\n  ]";
+            if (!box->helpString().isEmpty())
+                os << ",\n  help: '" << escapeString(box->helpString()) << "'";
+            os << "\n}" << endl;
+        }
+        else
+            throw EquaresException(QString("Unrecognized argument '%1'").arg(arg));
+    }
 }
 
 int main(int argc, char **argv)
@@ -40,7 +56,7 @@ int main(int argc, char **argv)
     try {
         // Parse command line arguments
         enum Mode { RunMode, DescribeMode, ServerMode } mode = RunMode;
-        QStringList inputFileNames;
+        QStringList nonFlagArgs;
         bool forceInteractive = false;
         QStringList args = app.arguments();
         args.removeFirst();
@@ -62,7 +78,7 @@ int main(int argc, char **argv)
                 }
             }
             else
-                inputFileNames << arg;
+                nonFlagArgs << arg;
         }
 
         // Create script engine
@@ -77,13 +93,13 @@ int main(int argc, char **argv)
 
         switch (mode) {
         case RunMode:
-            JsRunner::runFiles(engine, inputFileNames);
-            if (inputFileNames.isEmpty())
+            JsRunner::runFiles(engine, nonFlagArgs);
+            if (nonFlagArgs.isEmpty())
                 // Standard input is already processed
                 forceInteractive = false;
             break;
         case DescribeMode:
-            describeSystem(engine);
+            describeSystem(engine, nonFlagArgs);
             break;
         case ServerMode:
             JsRunner::runServer(engine);

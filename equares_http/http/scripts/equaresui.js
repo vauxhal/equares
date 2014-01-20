@@ -254,25 +254,6 @@ equaresui.setWorkbenchSource = function() {
 }
 
 equaresui.setSceneSource = function() {
-
-    function startEquares(callback) {
-        $.ajax("equaresStat.cmd")
-            .done(function(msg){
-                var running = parseInt(msg) != 0;
-                if (running)
-                    callback();
-                else
-                    $.ajax("equaresToggle.cmd")
-                        .done(callback)
-                    .fail(function(){
-                        alert("Ajax error");
-                });
-            })
-            .fail(function(){
-                alert("Ajax error");
-            });
-    }
-
     this.clear();
     var layoutOptions = {
         type: "horizontal",
@@ -283,46 +264,127 @@ equaresui.setSceneSource = function() {
     
     var boxCell = layout.add( { title: "Boxes", width: {min: 50, max: 300} } );
     var boxDiv = $(boxCell.dom);
+    var boxHelp = $("body").append('<div id="scheme-boxhelp"></div>').children("#scheme-boxhelp").hide();
+    boxDiv.addClass('scheme-boxlist');
+
+    var equaresInfo = function(request, callback) {
+        $.ajax("equaresRequestInfo.cmd", {data: {cmd: request}, type: "GET"})
+            .done(function(data) {
+                var reply = JSON.parse(data);
+                if (reply.error)
+                    alert("equaresRequestInfo.cmd error: \n" + reply.stderr);
+                else
+                    callback(eval("(function(){return " + reply.stdout + "})()"));
+            })
+            .fail(function() {
+                // equaresDebug.html("equaresExec.cmd: Ajax error");
+                alert("equaresRequestInfo.cmd: Ajax error");
+            });
+    }
+
+    var boxItemHelpText = function(item, caption) {
+        if (item === undefined)
+            return "";
+        var text = "<h2>" + caption + "</h2>";
+        if (item.length == 0)
+            text += "None."
+        else {
+            text += "<ul>";
+            for (var index in item) {
+                var p = item[index];
+                text += "<li>"
+                text += "<b>" + p.name + "</b>"
+                if (p.help)
+                    text += "<br/>" + p.help;
+                if (p.format) {
+                    text += "<br/>Format: ";
+                    var count = 1;
+                    for (var i=0; i<p.format.length; ++i) {
+                        if (i > 0)
+                            text += " x ";
+                        text += p.format[i];
+                        count *= p.format[i];
+                    }
+                    text += count == 1? " element": " elements";
+                }
+                if (p.hints) {
+                    text += "<br/>items: ";
+                    for (var i=0; i<p.hints.length; ++i) {
+                        if (i > 0)
+                            text += ", ";
+                        text += "<i>" + p.hints[i] + "</i>";
+                    }
+                }
+                text += "</li>"
+            }
+            text += "</ul>"
+        }
+        return text;
+    }
+
+    var boxHelpText = function(box, info)
+    {
+        var text = "<h1>" + box + "</h1>";
+        text += (info.help? info.help: "No help available") + "<br>";
+        text += boxItemHelpText(info.inputs, "Input ports");
+        text += boxItemHelpText(info.outputs, "Output ports");
+        text += boxItemHelpText(info.properties, "Fixed parameters");
+        return text;
+    }
 
     var setBoxes = function(boxes)
     {
-        var text = "<h1>Boxes</h1><ul>";
+        var text = '<h1>Boxes</h1><table>';
         for (var i in boxes)
-            text += "<li>" + boxes[i] + "</li>";
-        text += "</ul>";
+            text += '<tr><td class="scheme-boxlist-box">' + boxes[i] + '</td><td><img src="question.png"></td></tr>';
+        text += '</table>';
         boxDiv.append(text);
-        boxDiv.find("li").wrapInner('<a href="kaka">');
+        boxDiv.find('tr:odd').addClass('odd');
+        boxDiv.find('tr:even').addClass('even');
+        var hideBoxHelp
+        boxDiv.find('td').find('img')
+            .hover(function() {
+                var o = $(this);
+                var pos = o.offset();
+                pos.left += o.width();
+                var box = o.parent().prev().text();
+                equaresInfo(box, function(info) {
+                    boxHelp
+                        .html(boxHelpText(box, info));
+                    var wh = $(window).height(),   bh = boxHelp.outerHeight();
+                    if (hideBoxHelp)
+                        clearTimeout(hideBoxHelp);
+                    if (pos.top + bh > wh)
+                        pos.top = Math.max(0,wh-bh);
+                    boxHelp
+                        .show('fast')
+                        .offset(pos);
+                })
+            }, function() {
+                hideBoxHelp = setTimeout(function() { hideBoxHelp = undefined; boxHelp.hide('fast'); }, 500)
+            });
+        boxDiv.find(".scheme-boxlist-box").click(function(){
+            ctmEquaresSchemeEditor.addBox($(this).text());
+        });
+        //boxDiv.find('li').wrapInner('<a href="kaka">');
+        /*
+        boxDiv.find('li').each(function(index) {
+            var e = this;
+            equaresInfo($(e).text(), function(info) {
+                if (info.help)
+                    $(e).append('<br/>' + info.help);
+            })
+        })
+        */
     }
 
     // Fill box div with box types
-    startEquares( function() {
-        $.ajax("equaresExecSync.cmd", {data: {cmd: "===={\nboxTypes()\n====}"}, type: "GET"})
-            .done(function(data){
-                var reply = JSON.parse(data);
-                setBoxes(reply.text.split('\n'));
+    equaresInfo("boxTypes", setBoxes)
 
-//                boxDiv.append(
-//                    reply.text.replace(/\n/g, '<br/>'));
-            })
-            .fail(function(){
-                // equaresDebug.html("equaresExec.cmd: Ajax error");
-                alert("equaresExec.cmd: Ajax error");
-            });
-    })
     var schemeCell = layout.add( { title: "Scheme" } );
 //    $.getScript("scripts/scheme-editor.js", function() {
         ctmEquaresSchemeEditor.init(schemeCell.dom);
 //        });
-    /*
-    $.ajax("scheme-editor.html")
-        .done(function(html){
-            $(schemeCell.dom).append(html);
-            ctmEquaresSchemeEditor.init($(schemeCell.dom).children()[0]);
-        })
-        .fail(function(){
-            equaresDebug.html("equaresToggle.cmd: Ajax error");
-        });
-*/
     var settingsCell = layout.add( { title: "Settings" } );
     var settingsLayout = settingsCell.setLayout({type: "vertical", fixed: true});
     var itemsCell = settingsLayout.add( { title: "Items" } );
