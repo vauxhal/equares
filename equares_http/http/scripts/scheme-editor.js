@@ -5,10 +5,35 @@ ctmEquaresSchemeEditor.init = function(root) {
 
 // Stub, TODO
 ctmEquaresSchemeEditor.addBox = function(box, info, options) {
+    var x = 0,   y = 0;
+    if (options && options.offset) {
+        var rootOffset = $(root).offset();
+        x = options.offset.left - rootOffset.left;
+        y = options.offset.top - rootOffset.top;
+    } else {
+        var r = $(root);
+        x = 0.5*r.width();
+        y = 0.5*r.height();
+    }
+
     var nodeData = {
-            x: 0, y: 0,
+            x: x, y: y,
             name: box,
-            ports: cloneArray(boxdata[0].ports),
+            ports: (function() {
+                var result = [];
+                function addPorts(ports, type, phi0) {
+                    var n = ports.length;
+                    if (n === 0)
+                        return;
+                    var dphi = Math.PI / n,   phi = phi0 + 0.5*dphi;
+                    for (var i=0;i<n; ++i, phi+=dphi)
+                        result.push({name: ports[i].name, type: type, phi: phi});
+                }
+                // Note: the y direction is down!
+                addPorts(info.inputs, "in", Math.PI);
+                addPorts(info.outputs, "out", 0);
+                return result;
+            })(),
             iid: iid++,
             index: nodes.length
             };
@@ -180,6 +205,7 @@ function tick() {
       .data(function(d) {return d.ports;})
       .attr("cx", function(d) { return Math.cos(d.phi)*50; })
       .attr("cy", function(d) { return Math.sin(d.phi)*20; });
+  doMyLayoutStep();
 }
 
 function restart() {
@@ -233,6 +259,20 @@ function restart() {
       .attr("x", -40)
       .attr("y", 5)
 
+    node.select("text")
+  //      .attr("textLength", 80)
+        .text(function(d, i) { return d.name + " " + d.iid; });
+
+    ell
+        .attr('rx', function(d) {
+            //var t = d3.select(this)
+            //return txt.getBBox().width;
+            var t = d3.select(this.parentNode).select("text");
+            var w = t.node().getBBox().width;
+            t.attr('x', -0.5*w);
+            return 0.7*w;
+        })
+
     box.append("image")
         .attr("xlink:href", "close.png")
         .attr("x", 20)
@@ -255,10 +295,6 @@ function restart() {
           restart();
         })
 
-  node.select("text")
-//      .attr("textLength", 80)
-      .text(function(d, i) { return d.name + " " + d.iid; });
-
   var port = node.selectAll(".port")
       .data(function(d) {
         return d.ports;
@@ -276,6 +312,8 @@ function restart() {
       .attr("cy", 10)
       .on("mousedown", mousedownAtPort)
       .on("mouseup", mouseupAtPort)
+      .on("mouseover", equaresui.enterPort)
+      .on("mouseout", equaresui.leavePort)
   port
       .attr("cx", function(d, i) {
         // return i*40/this.parentNode.__data__.ports.length;
@@ -443,7 +481,8 @@ function doMyLayoutStep() {
     }
 
     // Apply forces at ports
-    var f = 0.01 * myLayoutAlpha;
+    // var f = 0.01 * myLayoutAlpha;
+    var f = 0.01 * force.alpha();
     for (i=0; i<n; ++i) {
         var nd = nodes[i];
         for (j=0, np=nd.ports.length; j<np; ++j) {
@@ -451,9 +490,9 @@ function doMyLayoutStep() {
             p.phi += f*p.Q;
         }
     }
-    myLayoutAlpha *= myLayoutAlphaFactor;
+    // myLayoutAlpha *= myLayoutAlphaFactor;
 
-    tick();
+    //tick();
 }
 
 var myLayoutRunning = false;

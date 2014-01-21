@@ -266,6 +266,7 @@ equaresui.setSceneSource = function() {
     var boxDiv = $(boxCell.dom);
     var boxHelp = $("body").append('<div id="scheme-boxhelp"></div>').children("#scheme-boxhelp").hide();
     boxDiv.addClass('scheme-boxlist');
+    var draggingBox = false;
 
     var equaresInfo = function(request, callback) {
         $.ajax("equaresRequestInfo.cmd", {data: {cmd: request}, type: "GET"})
@@ -344,6 +345,8 @@ equaresui.setSceneSource = function() {
         var hideBoxHelp
         boxDiv.find('td').find('img')
             .hover(function() {
+                if (draggingBox)
+                    return;
                 var o = $(this);
                 var pos = o.offset();
                 pos.left += o.width();
@@ -363,9 +366,23 @@ equaresui.setSceneSource = function() {
             }, function() {
                 hideBoxHelp = setTimeout(function() { hideBoxHelp = undefined; boxHelp.hide('fast'); }, 500)
             });
-        boxDiv.find(".scheme-boxlist-box").click(function(){
-            ctmEquaresSchemeEditor.addBox($(this).text());
-        });
+        boxDiv.find(".scheme-boxlist-box")
+            .click(function(){
+                var box = $(this).text();
+                equaresInfo(box, function(info) {
+                    ctmEquaresSchemeEditor.addBox(box, info);
+                })
+            })
+            .draggable({
+                helper: function() {
+                    return $("body")
+                        .append('<div id="scheme-boxdrag">' + $(this).text() + '</div>')
+                        .children("#scheme-boxdrag");
+                },
+                start: function() { draggingBox = true; },
+                stop: function() { draggingBox = false; },
+                scope: "newBox"
+            });
         //boxDiv.find('li').wrapInner('<a href="kaka">');
         /*
         boxDiv.find('li').each(function(index) {
@@ -385,10 +402,44 @@ equaresui.setSceneSource = function() {
 //    $.getScript("scripts/scheme-editor.js", function() {
         ctmEquaresSchemeEditor.init(schemeCell.dom);
 //        });
+
+    var schemeDiv = $(schemeCell.dom);
+    schemeDiv.droppable({
+        scope: "newBox",
+        drop: function(event, ui) {
+            var box = ui.helper.text();
+            equaresInfo(box, function(info) {
+                ctmEquaresSchemeEditor.addBox(box, info, ui);
+                })
+        }
+    });
+
     var settingsCell = layout.add( { title: "Settings" } );
     var settingsLayout = settingsCell.setLayout({type: "vertical", fixed: true});
     var itemsCell = settingsLayout.add( { title: "Items" } );
     var propsCell = settingsLayout.add( { title: "Properties" } );
+
+    var itemsDiv = $(itemsCell.dom);
+    var propsDiv = $(itemsCell.dom);
+
+    var portHelp = $("body").append('<div id="scheme-porthelp"></div>').children("#scheme-porthelp").hide();
+    var hidePortHelp;
+
+    equaresui.enterPort = function() {
+        var o = $(this);
+        var pos = o.offset();
+        pos.left += this.getBBox().width + 5; // 2*o.attr('r') + 5;
+        var d = this.__data__;
+        portHelp.html(d.name + ' (' + d.type + ')');
+        if (hidePortHelp)
+            clearTimeout(hidePortHelp);
+        portHelp
+            .show('fast')
+            .offset(pos);
+    }
+    equaresui.leavePort = function() {
+        hidePortHelp = setTimeout(function() { hidePortHelp = undefined; portHelp.hide('fast'); }, 300)
+    }
 }
 
 $(document).ready(function() {
