@@ -173,7 +173,7 @@ $(document).contextmenu({
 
 function dataKey(d) { return "k" + d.iid; }
 
-function portX(node, port) { return node.x + 50*Math.cos(port.phi); }
+function portX(node, port) { return node.x + node.rx*Math.cos(port.phi); }
 function portY(node, port) { return node.y + 20*Math.sin(port.phi); }
 function linkDir(d) {
     var x1 = portX(d.source, d.sourcePort),
@@ -203,7 +203,9 @@ function tick() {
 
   node.selectAll(".port")
       .data(function(d) {return d.ports;})
-      .attr("cx", function(d) { return Math.cos(d.phi)*50; })
+      .attr("cx", function(d) {
+            return Math.cos(d.phi)*this.parentNode.__data__.rx;
+        })
       .attr("cy", function(d) { return Math.sin(d.phi)*20; });
   doMyLayoutStep();
 }
@@ -270,7 +272,7 @@ function restart() {
             var t = d3.select(this.parentNode).select("text");
             var w = t.node().getBBox().width;
             t.attr('x', -0.5*w);
-            return 0.7*w;
+            return d.rx = 0.7*w;
         })
 
     box.append("image")
