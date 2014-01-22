@@ -370,7 +370,7 @@ equaresui.setSceneSource = function() {
             .click(function(){
                 var box = $(this).text();
                 equaresInfo(box, function(info) {
-                    ctmEquaresSchemeEditor.addBox(box, info);
+                    schemeEditor.newBox(box, info);
                 })
             })
             .draggable({
@@ -399,9 +399,7 @@ equaresui.setSceneSource = function() {
     equaresInfo("boxTypes", setBoxes)
 
     var schemeCell = layout.add( { title: "Scheme" } );
-//    $.getScript("scripts/scheme-editor.js", function() {
-        ctmEquaresSchemeEditor.init(schemeCell.dom);
-//        });
+    var schemeEditor = ctmEquaresSchemeEditor.newEditor(schemeCell.dom)
 
     var schemeDiv = $(schemeCell.dom);
     schemeDiv.droppable({
@@ -409,7 +407,7 @@ equaresui.setSceneSource = function() {
         drop: function(event, ui) {
             var box = ui.helper.text();
             equaresInfo(box, function(info) {
-                ctmEquaresSchemeEditor.addBox(box, info, ui);
+                schemeEditor.newBox(box, info, ui);
                 })
         }
     });
@@ -430,7 +428,7 @@ equaresui.setSceneSource = function() {
         var pos = o.offset();
         pos.left += this.getBBox().width + 5; // 2*o.attr('r') + 5;
         var d = this.__data__;
-        portHelp.html(d.name + ' (' + d.type + ')');
+        portHelp.html(d.info.name + ' (' + d.type + ')');
         if (hidePortHelp)
             clearTimeout(hidePortHelp);
         portHelp
