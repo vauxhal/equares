@@ -104,10 +104,21 @@ inline void addPortProperties(QScriptValue& result, const QList<PortType>& ports
     }
 }
 
-inline QScriptValue newBox(QScriptContext *context, QScriptEngine *engine) {
-    Box::Ctor ctor = qvariant_cast<Box::Ctor> (context->callee().data().toVariant());
+inline Box *newBox(const QString& name)
+{
+    Box::Ctor ctor = BoxFactory::boxCtor(name);
     Q_ASSERT(ctor);
     Box *box = ctor();
+    box->setType(name);
+    QSettings settings(":/box/settings.ini", QSettings::IniFormat);
+    settings.beginGroup(name);
+    box->loadSettings(settings);
+    return box;
+}
+
+inline QScriptValue newBox(QScriptContext *context, QScriptEngine *engine) {
+    QString name = context->callee().data().toVariant().toString();
+    Box *box = newBox(name);
     QScriptValue result = engine->newQObject(box);
     addPortProperties(result, box->inputPorts());
     addPortProperties(result, box->outputPorts());
@@ -165,7 +176,7 @@ inline void registerEquaresScriptTypes(QScriptEngine *engine)
     qScriptRegisterMetaType(engine, linksToScriptValue, linksFromScriptValue);
     foreach (const QString& name, BoxFactory::boxTypes()) {
         QScriptValue fun = engine->newFunction(newBox);
-        fun.setData(engine->newVariant(QVariant::fromValue(BoxFactory::boxCtor(name))));
+        fun.setData(name);
         engine->globalObject().setProperty(name, fun);
     }
     engine->globalObject().setProperty("boxTypes", engine->newFunction(boxTypes));

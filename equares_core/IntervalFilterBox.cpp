@@ -44,11 +44,6 @@ OutputPorts IntervalFilterBox::outputPorts() const {
     return OutputPorts() << &m_out;
 }
 
-BoxPropertyList IntervalFilterBox::boxProperties() const {
-    return BoxPropertyList()
-        << BoxProperty("param", tr("Entry index, value offset, and value interval that control filter output"));
-}
-
 void IntervalFilterBox::checkPortFormat() const {
     if (m_in.format() != m_out.format())
         throw EquaresException("IntervalFilterBox: Incompatible port formats");

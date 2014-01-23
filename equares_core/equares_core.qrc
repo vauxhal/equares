@@ -6,4 +6,7 @@
         <file alias="build_msvs.bat">res/build_msvs.bat</file>
         <file alias="ode.pro">res/ode.pro</file>
     </qresource>
+    <qresource prefix="/box">
+        <file alias="settings.ini">res/BoxSettings.ini</file>
+    </qresource>
 </RCC>

@@ -130,8 +130,8 @@ div.test_running {
   pointer-events: none;
 }
 
-.link {
-  stroke: #999;
+.scheme-link {
+  stroke: #879;
   stroke-width: 5;
   cursor: crosshair;
 }

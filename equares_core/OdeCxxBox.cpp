@@ -149,13 +149,6 @@ OutputPorts OdeCxxBox::outputPorts() const {
     return OutputPorts() << &m_rhs;
 }
 
-BoxPropertyList OdeCxxBox::boxProperties() const {
-    return BoxPropertyList()
-        << BoxProperty("src", tr("Source code of the C++ class that describes the ODE system. See srcExample property"))
-        << BoxProperty("srcExample", tr("Example of source code of the C++ class that describes the ODE system for simple pendulum"))
-        << BoxProperty("useQmake", tr("Determine whether to use qmake when building the library file"));
-}
-
 void OdeCxxBox::checkPortFormat() const {
     if (m_param.format() != PortFormat(paramCount()))
         throw EquaresException("OdeCxxBox: port 'parameters' has an invalid size");

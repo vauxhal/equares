@@ -10,6 +10,7 @@
 #include <QSharedPointer>
 #include <QMultiMap>
 #include <QAtomicInt>
+#include <QSettings>
 
 #include "equares_core_global.h"
 #include "EquaresException.h"
@@ -128,44 +129,64 @@ PropClass(WithSimulation, Simulation*, Simulation*, simulation, setSimulation)
 
 PropClass(WithHelpString, QString, const QString&, helpString, setHelpString)
 
-class PortEntryHints
+class EQUARES_CORESHARED_EXPORT PortHints
 {
 public:
-    bool hasHints() const {
-        return !m_hints.isEmpty();
+    PortHints() : m_position(-1) {}
+    bool hasEntryHints() const {
+        return !m_entryHints.isEmpty();
     }
-    QStringList hints() const {
-        return m_hints;
+    QStringList entryHints() const {
+        return m_entryHints;
     }
-    PortEntryHints& setHints(const QStringList& hints) {
-        m_hints = hints;
+    PortHints& setEntryHints(const QStringList& entryHints) {
+        m_entryHints = entryHints;
         return *this;
     }
-
+    bool hasPosition() const {
+        return m_position >= 0;
+    }
+    double position() const {
+        return m_position;
+    }
+    PortHints& setPosition(double position) {
+        m_position = position;
+        return *this;
+    }
+    PortHints& loadSettings(QSettings& settings);
 private:
-    QStringList m_hints;
+    QStringList m_entryHints;
+    double m_position;
 };
 
-PropRefClass(WithPortEntryHints, PortEntryHints, entryHints)
+PropRefClass(WithPortHints, PortHints, hints)
 
 struct BoxProperty
 {
+    BoxProperty() {}
     explicit BoxProperty(const QString& name, const QString& helpString) :
         name(name), helpString(helpString) {}
     QString name;
     QString helpString;
+    BoxProperty& loadSettings(QSettings& settings);
 };
 typedef QList<BoxProperty> BoxPropertyList;
 
-class Box :
+PropClass(WithBoxProps, BoxPropertyList, const BoxPropertyList&, boxProperties, setBoxProperties)
+
+class EQUARES_CORESHARED_EXPORT Box :
     public QObject,
     protected QScriptable,
     public Named,
+    public Typed,
     public WithSimulation,
-    public WithHelpString
+    public WithHelpString,
+    public WithBoxProps
 {
     Q_OBJECT
     Q_PROPERTY(QString name READ name WRITE setName)
+    Q_PROPERTY(QString name READ type)
+
 public:
     typedef QSharedPointer<Box> Ptr;
 
@@ -176,21 +197,22 @@ public:
 
     virtual InputPorts inputPorts() const = 0;
     virtual OutputPorts outputPorts() const = 0;
-    virtual BoxPropertyList boxProperties() const {
-        return BoxPropertyList();
-    }
     virtual void checkPortFormat() const = 0;
     virtual bool propagatePortFormat() = 0;
 
     virtual RuntimeBox *newRuntimeBox() const = 0;
+
+    Box& loadSettings(QSettings& settings);
+
+private:
 };
 
-class Port :
+class EQUARES_CORESHARED_EXPORT Port :
     public OwnedBy<Box>,
     public WithPortFormat,
     public Named,
     public WithHelpString,
-    public WithPortEntryHints
+    public WithPortHints
 {
 public:
     Port() {}
@@ -198,6 +220,7 @@ public:
     Port(const QString& name, Box *owner, const PortFormat& format = PortFormat()) :
         OwnedBy<Box>(owner), WithPortFormat(format), Named(name)
     {}
+    Port& loadSettings(QSettings& settings);
 };
 
 class InputPort :

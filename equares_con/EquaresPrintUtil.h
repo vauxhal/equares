@@ -23,11 +23,13 @@ struct PortPrinter {
         }
         if (!port->helpString().isEmpty())
             os << ", help: '" << escapeString(port->helpString()) << "'";
-        if (port->entryHints().hasHints()) {
+        if (port->hints().hasEntryHints()) {
             os << ", hints: [";
-            printContainer(os, port->entryHints().hints(), SimplePrinter<QString>(), ", ");
+            printContainer(os, port->hints().entryHints(), SimplePrinter<QString>(), ", ");
             os << "]";
         }
+        if (port->hints().hasPosition())
+            os << ", pos: " << port->hints().position();
         os << "}";
     }
 };

@@ -25,7 +25,7 @@ void describeSystem(QScriptEngine& engine, const QStringList& args)
             os << "\n]\n";
         }
         else if (boxTypes.contains(arg)) {
-            Box::Ptr box(BoxFactory::newBox(arg));
+            Box::Ptr box(newBox(arg));
             if (namedMode)
                 os << "\nvar " << arg << " = ";
             os << "{" << endl;

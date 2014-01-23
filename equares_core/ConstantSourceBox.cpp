@@ -17,11 +17,6 @@ OutputPorts ConstantSourceBox::outputPorts() const {
     return OutputPorts() << &m_outputPort;
 }
 
-BoxPropertyList ConstantSourceBox::boxProperties() const {
-    return BoxPropertyList()
-        << BoxProperty("data", tr("Array containing the data for this source"));
-}
-
 RuntimeBox *ConstantSourceBox::newRuntimeBox() const {
     return new ConstantSourceRuntimeBox(this);
 }

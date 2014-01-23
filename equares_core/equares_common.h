@@ -36,6 +36,21 @@ private:
     QString m_name;
 };
 
+class Typed
+{
+public:
+    Typed() {}
+    explicit Typed(const QString& type) : m_type(type) {}
+    QString type() const {
+        return m_type;
+    }
+    void setType(const QString& type) {
+        m_type = type;
+    }
+private:
+    QString m_type;
+};
+
 template< class Lnk >
 class LinkedToOne
 {

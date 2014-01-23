@@ -37,7 +37,8 @@ SOURCES += equares_core.cpp \
     OdeJsBox.cpp \
     initBoxFactory.cpp \
     OdeCxxBox.cpp \
-    equares_exec.cpp
+    equares_exec.cpp \
+    BoxSettings.cpp
 
 HEADERS += equares_core.h\
         equares_core_global.h \

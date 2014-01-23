@@ -19,11 +19,6 @@ OutputPorts OdeJsBox::outputPorts() const {
     return OutputPorts() << &m_rhs;
 }
 
-BoxPropertyList OdeJsBox::boxProperties() const {
-    return BoxPropertyList()
-        << BoxProperty("ode", tr("Object that describes the ODE system. Must have method rhs(rhs, param, state) and can optionally have method prepare(param)"));
-}
-
 void OdeJsBox::checkPortFormat() const {
     if (m_param.format() != PortFormat(paramCount()))
         throw EquaresException("OdeJsBox: port 'parameters' has an invalid size");

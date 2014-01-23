@@ -14,7 +14,6 @@ public:
 
     InputPorts inputPorts() const;
     OutputPorts outputPorts() const;
-    BoxPropertyList boxProperties() const;
     RuntimeBox *newRuntimeBox() const;
     void checkPortFormat() const;
     bool propagatePortFormat();
