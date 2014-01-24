@@ -1,7 +1,10 @@
 var ctmEquaresSchemeEditor = {};
 
 (function(E) {
-    var nameBox;    // Generates default box name
+    var nameBox             // Generates default box name
+    var unuseBoxName
+    var boxNameExists
+    var renameBox
     (function(){
         var boxNames = {}   // Set of used box names
         var counters = {}   // Key = box type, value = index of last generated instance name
@@ -17,6 +20,16 @@ var ctmEquaresSchemeEditor = {};
                     return name
                 }
             }
+        }
+        unuseBoxName = function(name) {
+            delete boxNames[name]
+        }
+        boxNameExists = function(name) {
+            return boxNames[name] === true
+        }
+        renameBox = function(box, newName) {
+            delete boxNames[box.name]
+            boxNames[box.name = newName] = true
         }
     })()
 
@@ -56,7 +69,19 @@ var ctmEquaresSchemeEditor = {};
         this.iid = opt.iid || 0
         this.editor = opt.editor || null
         this.index = typeof(opt.index) == "number"? opt.index: -1
+        this.selected = false
     }
+
+    var clickTimer = {};
+    (function() {
+    var mouseDownTime
+        clickTimer.start = function() {
+            mouseDownTime = (new Date()).valueOf()
+        }
+        clickTimer.clicked = function() {
+            return (new Date()).valueOf() - mouseDownTime < 350
+        }
+    })()
 
     var DragHelper
     (function() {
@@ -66,8 +91,8 @@ var ctmEquaresSchemeEditor = {};
 
             // line displayed when dragging new nodes
             this.dragLine = editor.maingroup.append("line")
-                .attr("class", "drag_line_hidden")
-                .attr("id", "drag_line")
+                .attr("class", "scheme-drag-line-hidden")
+                .attr("id", "scheme-drag-line")
             var thisDragHelper = this
             editor.svg
                 .on("mousemove", function() { thisDragHelper.onMouseMove(editor.maingroup.node()) })
@@ -105,7 +130,7 @@ var ctmEquaresSchemeEditor = {};
             pt.y -= t.y
             var mp = d3.mouse(this.editor.maingroup.node())
             this.dragLine
-                .attr("class", "drag_line")
+                .attr("class", "scheme-drag-line")
                 .attr("x1", pt.x)
                 .attr("y1", pt.y)
                 .attr("x2", mp[0])
@@ -121,11 +146,12 @@ var ctmEquaresSchemeEditor = {};
         DragHelper.prototype.beginPan = function() {
             prevCursorPos = d3.mouse(this.editor.svg.node())
             currentElement = null
+            clickTimer.start()
             d3.event.preventDefault()
         }
         DragHelper.prototype.stopDragging = function() {
             if (draggingLine) {
-                this.dragLine.attr("class", "drag_line_hidden")
+                this.dragLine.attr("class", "scheme-drag-line-hidden")
                 draggingLine = false
             }
             currentElement = null
@@ -151,12 +177,18 @@ var ctmEquaresSchemeEditor = {};
                 return
 
             // TODO: add editor method for adding link
-            this.editor.links.push({ source: p1, target: p2, iid: this.editor.iid++ })
+            this.editor.links.push({ source: p1, target: p2, iid: this.editor.iid++, index: this.editor.links.length })
 
             this.editor.visualize()
         }
         DragHelper.prototype.onMouseUpMainRect = function(el) {
-             this.stopDragging()
+            if (!currentElement && clickTimer.clicked()) {
+                // Clear box selection
+                for(var i in this.editor.boxes)
+                    this.editor.boxes[i].selected = false
+                this.editor.update()
+            }
+            this.stopDragging()
         }
 
         DragHelper.prototype.onMouseMove = function(el) {
@@ -231,7 +263,7 @@ var ctmEquaresSchemeEditor = {};
         // line displayed when dragging new nodes
         // Important: do it before adding drag line in DragHelper ctor
         this.maingroup.append("line")
-             .attr("class", "drag_line_hidden")
+             .attr("class", "scheme-drag-line-hidden")
              .attr("id", "scheme-box-link-separator")
 
         // Create drag helper
@@ -306,18 +338,32 @@ var ctmEquaresSchemeEditor = {};
 
             // Add text, rectangle, and image acting as the close buttion
             var hmargin = 8, vmargin = 8, sep = 4, wclose = 8
-            var bbox = g.append("text")
+            var txt = g.append("text")
                 .text(d.name)
-                .attr("x", hmargin)
-                .attr("y", vmargin)
-                .node().getBBox()
+            var bbox = txt.node().getBBox()
+            txt
+                .attr("x", hmargin - bbox.x)
+                .attr("y", vmargin - bbox.y)
+            var mouseDownTime
             g.insert("rect", "text")
                 .attr("class", "scheme-box-shape")
                 .attr("width", bbox.width + sep + wclose + 2*hmargin)
                 .attr("height", bbox.height + 2*vmargin)
                 .attr("rx", 5)
                 .attr("ry", 5)
-                .on("mousedown", function(d, i) { thisEditor.dragHelper.beginDragBox(this.parentNode, d, i) })
+                .on("mousedown", function(d, i) {
+                    clickTimer.start()
+                    thisEditor.dragHelper.beginDragBox(this.parentNode, d, i) })
+                .on("mouseup", function(d, i) {
+                    if (clickTimer.clicked()) {
+                        var newsel = !d.selected
+                        for (var i in thisEditor.boxes)
+                            thisEditor.boxes[i].selected = false
+                        d.selected = newsel
+                        thisEditor.update()
+                        equaresui.selectBox(newsel? d: null)
+                    }
+                })
             g.append("image")
                 .attr("xlink:href", "close.png")
                 .attr("x", hmargin + bbox.width + sep)
@@ -325,6 +371,9 @@ var ctmEquaresSchemeEditor = {};
                 .attr("width", wclose)
                 .attr("height", wclose)
                 .on("click", function(d) {
+                    unuseBoxName(d.name)
+                    if (d.selected)
+                        equaresui.selectBox(null)
                     var boxes = d.editor.boxes, links = d.editor.links
                     boxes.splice(d.index, 1)
                     for (var j=d.index; j<boxes.length; ++j)
@@ -334,6 +383,8 @@ var ctmEquaresSchemeEditor = {};
                         if (l.source.parent === d   ||   l.target.parent === d)
                             links.splice(j, 1);
                     }
+                    for (j=0; j<links.length; ++j)
+                        links[j].index = j;
                     d.editor.visualize();
                 })
 
@@ -396,10 +447,13 @@ var ctmEquaresSchemeEditor = {};
         var linkUpd = this.maingroup.selectAll(".scheme-link")
             .data(this.links, this.dataKey)
 
-        linkUpd.enter().insert("line", "#drag_line")
+        linkUpd.enter().insert("line", "#scheme-drag-line")
             .attr("class", "scheme-link")
-            .on("click", function(d,i) {
-                thisEditor.links.splice(i, 1)
+            .on("click", function(d) {
+                var links = thisEditor.links
+                links.splice(d.index, 1)
+                for (var j=d.index; j<links.length; ++j)
+                    links[j].index = j;
                 thisEditor.visualize()
             })
             .each(positionLink)
@@ -413,7 +467,12 @@ var ctmEquaresSchemeEditor = {};
     Editor.prototype.update = function() {
         var boxUpd = this.maingroup.selectAll(".scheme-box")
             .data(this.boxes, this.dataKey)
-        boxUpd.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"})
+        boxUpd.each(function(d) {
+            d$(this)
+                .attr("transform", "translate(" + d.x + "," + d.y + ")")
+                .select("rect")
+                    .classed("selected", d.selected)
+        })
 
         var linkUpd = this.maingroup.selectAll(".scheme-link")
             .data(this.links, this.dataKey)

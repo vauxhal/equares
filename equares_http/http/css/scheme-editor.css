@@ -1,12 +1,15 @@
+.scheme-boxlist {
+    overflow: auto;
+}
 .scheme-boxlist table {
     width: 100%;
     border-collapse: collapse;
 }
 .scheme-boxlist tr.odd {
-    background-color: #eee;
+    background-color: #fff;
 }
 .scheme-boxlist tr.even {
-    background-color: #fff;
+    background-color: #eee;
 }
 .scheme-boxlist td {
     padding-left: 8px;
@@ -54,8 +57,20 @@ svg > .mainrect {
     stroke: #ccc;
 }
 
+.scheme-box-shape.selected {
+    fill: #fff5f5;
+    stroke: #c88;
+    stroke-width: 3;
+}
+
+/*
+Note: The following does not work in Mozilla FF for svg>g>g>text (but works for svg>g>text)
+
+alignment-baseline: text-before-edge;
+
+Using workaround with bbox instead.
+*/
 .scheme-box text {
-    alignment-baseline: text-before-edge;
     pointer-events: none;
     -webkit-touch-callout: none;
     -webkit-user-select: none;
@@ -66,76 +81,70 @@ svg > .mainrect {
 }
 
 .scheme-port {
-  cursor: pointer;
+    cursor: pointer;
 }
 
 .scheme-inport {
-  fill: #faa;
-  stroke: #800;
+    fill: #faa;
+    stroke: #800;
 }
 
 .scheme-outport {
-  fill: #aaf;
-  stroke: #008;
+    fill: #aaf;
+    stroke: #008;
 }
 
 .scheme-inport:hover {
-  fill: #fdd;
-  stroke: #f00;
+    fill: #fdd;
+    stroke: #f00;
 }
 .scheme-outport:hover {
-  fill: #ddf;
-  stroke: #00f;
+    fill: #ddf;
+    stroke: #00f;
 }
 
-.link {
-  stroke: #999;
+.scheme-link {
+    stroke: #879;
+    stroke-width: 5;
+    cursor: url(close-16.png) 8 8,crosshair
 }
 
-.svg-main {
-  background-color: #ffd;
-  border: 1px solid #ccc;
-}
-
-div.test {
-  background-color: #cfc;
-  display: inline;
-  padding: 5px;
-  margin: 3px;
-}
-
-div.test_running {
-  background-color: #fcc;
-  display: inline;
-  padding: 5px;
-  margin: 3px;
-}
-
-.ui-menu {
-/*
-	font-family: "Trebuchet MS", "Helvetica", "Arial",  "Verdana", "sans-serif";
-	*/
-	font-size: .8em;
-}
-
-.drag_line {
+.scheme-drag-line {
   stroke: #999;
   stroke-width: 5;
   pointer-events: none;
 }
 
-.drag_line_hidden {
+.scheme-drag-line-hidden {
   stroke: #999;
   stroke-width: 0;
   pointer-events: none;
 }
 
-.scheme-link {
-  stroke: #879;
-  stroke-width: 5;
-  cursor: crosshair;
+#scheme-box-props {
+    overflow: auto;
+    height: 100%;
+    background-color: #f6faf1;
+}
+#scheme-box-props table {
+    width: 100%;
+    border-collapse: collapse;
+}
+#scheme-box-props tr.odd {
+    background-color: #fff;
+}
+#scheme-box-props tr.even {
+    background-color: #eee;
+}
+#scheme-box-props td {
+    padding-left: 8px;
+    padding-right: 6px;
+}
+#scheme-box-props td:first-child {
+    width: 25%;
 }
 
-.link_selected {
-  stroke: #ff7f0e;
+.svg-main {
+  background-color: #ffd;
+  border: 1px solid #ccc;
 }

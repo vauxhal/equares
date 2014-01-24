@@ -438,6 +438,34 @@ equaresui.setSceneSource = function() {
     equaresui.leavePort = function() {
         hidePortHelp = setTimeout(function() { hidePortHelp = undefined; portHelp.hide('fast'); }, 300)
     }
+
+    var boxPropsDiv = itemsDiv.append('<div id="scheme-box-props"></div>').children("#scheme-box-props")
+    boxPropsDiv.html("<h1>Properties</h1>")
+    equaresui.selectBox = function(boxData) {
+        if (boxData) {
+            var text = "<h1>" + boxData.name + "</h1>"
+            function wrap(text, tag, attr) {
+                return "<"+tag+(typeof(attr)=="string"? " " + attr: "") + ">" + text + "</" + tag + ">"
+            }
+            function table(text, attr) { return wrap(text, "table", attr) }
+            function tr(text, attr) { return wrap(text, "tr", attr) }
+            function td(text, attr) { return wrap(text, "td", attr) }
+            function div(text, attr) { return wrap(text, "div", attr) }
+            function propRow(name, value, help) {
+                return tr(td(name) + td(div(value, "contenteditable=true")), 'title="' + help + '"')
+            }
+            var rows = propRow("name", boxData.name, "Object name")
+            var props = boxData.info.properties
+            if (props instanceof Object)   for (var i in props)
+            rows += propRow(props[i].name, "TODO", props[i].help)
+            text += table(rows)
+            boxPropsDiv.html(text)
+            boxPropsDiv.find('tr:odd').addClass('odd');
+            boxPropsDiv.find('tr:even').addClass('even');
+        }
+        else
+            boxPropsDiv.html("<h1>No selection</h1>")
+    }
 }
 
 $(document).ready(function() {
