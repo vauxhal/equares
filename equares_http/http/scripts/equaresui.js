@@ -383,16 +383,6 @@ equaresui.setSceneSource = function() {
                 stop: function() { draggingBox = false; },
                 scope: "newBox"
             });
-        //boxDiv.find('li').wrapInner('<a href="kaka">');
-        /*
-        boxDiv.find('li').each(function(index) {
-            var e = this;
-            equaresInfo($(e).text(), function(info) {
-                if (info.help)
-                    $(e).append('<br/>' + info.help);
-            })
-        })
-        */
     }
 
     // Fill box div with box types
@@ -455,9 +445,10 @@ equaresui.setSceneSource = function() {
                 return tr(td(name) + td(div(value, "contenteditable=true")), 'title="' + help + '"')
             }
             var rows = propRow("name", boxData.name, "Object name")
+            rows += propRow("type", boxData.type, "Object type")
             var props = boxData.info.properties
             if (props instanceof Object)   for (var i in props)
-            rows += propRow(props[i].name, "TODO", props[i].help)
+                rows += propRow(props[i].name, "TODO", props[i].help)
             text += table(rows)
             boxPropsDiv.html(text)
             boxPropsDiv.find('tr:odd').addClass('odd');

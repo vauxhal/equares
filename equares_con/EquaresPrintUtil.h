@@ -24,7 +24,7 @@ struct PortPrinter {
         if (!port->helpString().isEmpty())
             os << ", help: '" << escapeString(port->helpString()) << "'";
         if (port->hints().hasEntryHints()) {
-            os << ", hints: [";
+            os << ",\n     hints: [";
             printContainer(os, port->hints().entryHints(), SimplePrinter<QString>(), ", ");
             os << "]";
         }
@@ -37,7 +37,20 @@ struct PortPrinter {
 struct BoxPropPrinter {
     void operator()(QTextStream& os, const BoxProperty& boxProp) const {
         os << "{name: '" << boxProp.name
-           << "', help: '" << escapeString(boxProp.helpString) << "'}";
+           << "', help: '" << escapeString(boxProp.helpString) << "'"
+           << ",\n     userType: '" << escapeString(boxProp.userType) << "'";
+        if (!boxProp.toUserType.isEmpty())
+            os << ",\n     toUserType: '" << escapeString(boxProp.toUserType) << "'";
+        if (!boxProp.toBoxType.isEmpty())
+            os << ",\n     toBoxType: '" << escapeString(boxProp.toBoxType) << "'";
+        if (!boxProp.deps.isEmpty()) {
+            os << ",\n     deps: [";
+            printContainer(os, boxProp.deps, SimplePrinter<QString>(), ", ");
+            os << "]";
+        if (!boxProp.resolveUserType.isEmpty())
+            os << ",\n     resolveUserType: '" << escapeString(boxProp.resolveUserType) << "'";
+        }
+        os << "}";
     }
 };
 

@@ -129,20 +129,32 @@ PropClass(WithSimulation, Simulation*, Simulation*, simulation, setSimulation)
 
 PropClass(WithHelpString, QString, const QString&, helpString, setHelpString)
 
-class EQUARES_CORESHARED_EXPORT PortHints
+
+
+class EQUARES_CORESHARED_EXPORT EntryHints
 {
 public:
-    PortHints() : m_position(-1) {}
     bool hasEntryHints() const {
         return !m_entryHints.isEmpty();
     }
     QStringList entryHints() const {
         return m_entryHints;
     }
-    PortHints& setEntryHints(const QStringList& entryHints) {
+    EntryHints& setEntryHints(const QStringList& entryHints) {
         m_entryHints = entryHints;
         return *this;
     }
+    EntryHints& loadSettings(QSettings& settings);
+private:
+    QStringList m_entryHints;
+};
+
+PropRefClass(WithEntryHints, EntryHints, hints)
+
+class EQUARES_CORESHARED_EXPORT PortHints : public EntryHints
+{
+public:
+    PortHints() : m_position(-1) {}
     bool hasPosition() const {
         return m_position >= 0;
     }
@@ -155,19 +167,23 @@ public:
     }
     PortHints& loadSettings(QSettings& settings);
 private:
-    QStringList m_entryHints;
     double m_position;
 };
 
 PropRefClass(WithPortHints, PortHints, hints)
 
-struct BoxProperty
+struct EQUARES_CORESHARED_EXPORT BoxProperty
 {
     BoxProperty() {}
     explicit BoxProperty(const QString& name, const QString& helpString) :
         name(name), helpString(helpString) {}
     QString name;
     QString helpString;
+    QString userType;
+    QString toUserType;
+    QString toBoxType;
+    QStringList deps;
+    QString resolveUserType;
     BoxProperty& loadSettings(QSettings& settings);
 };
 typedef QList<BoxProperty> BoxPropertyList;

@@ -187,6 +187,7 @@ var ctmEquaresSchemeEditor = {};
                 for(var i in this.editor.boxes)
                     this.editor.boxes[i].selected = false
                 this.editor.update()
+                equaresui.selectBox(null)
             }
             this.stopDragging()
         }

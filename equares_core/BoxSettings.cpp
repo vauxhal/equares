@@ -32,16 +32,18 @@ static void readListSettings(Object& object, Setter setter, QSettings &settings,
 
 
 
+EntryHints& EntryHints::loadSettings(QSettings& settings)
+{
+    m_entryHints = settings.value("entries").toStringList();
+//    m_entryHints.clear();
+//    foreach(const QString& hint, settings.value("entries").toString().split(",", QString::SkipEmptyParts))
+//        m_entryHints << hint.trimmed();
+    return *this;
+}
+
 PortHints& PortHints::loadSettings(QSettings& settings)
 {
-    m_entryHints.clear();
-
-    // deBUG
-    QString eee = settings.value("entries").toString();
-    Q_UNUSED(eee);
-
-    foreach(const QString& hint, settings.value("entries").toString().split(",", QString::SkipEmptyParts))
-        m_entryHints << hint.trimmed();
+    EntryHints::loadSettings(settings);
     m_position = settings.value("position", -1.0).toDouble();
     return *this;
 }
@@ -57,6 +59,12 @@ BoxProperty& BoxProperty::loadSettings(QSettings& settings)
 {
     name = settings.value("name").toString();
     helpString = settings.value("help").toString();
+    userType = settings.value("usertype").toString();
+    userType.replace('\'', '"');
+    toUserType = settings.value("tousertype").toString();
+    toBoxType = settings.value("toboxtype").toString();
+    deps = settings.value("deps").toStringList();
+    resolveUserType = settings.value("resolveusertype").toString();
     return *this;
 }
 
