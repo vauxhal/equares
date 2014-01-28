@@ -36,41 +36,30 @@ var ctmEquaresSchemeEditor = {};
     // Some helper functions
 
     // Creates new SVG element
-    function newSvg(tag) { return document.createElementNS(d3.ns.prefix.svg, tag) }
+    // function newSvg(tag) { return document.createElementNS(d3.ns.prefix.svg, tag) }
 
     // Synonim for d3.select
     function d$() { return d3.select.apply(this, arguments) }
 
-    // Constructor for type used as the D3 data for a box port
-    function BoxPortData(portType, portInfo, options) {
-        this.type = portType
-        this.info = portInfo
-        var opt = options || {}
-        this.parent = opt.box || null
-        this.pos = portInfo.pos
-    }
+    // Constructors for types used as the D3 data for box ports
+    var Port = equaresBox.Port,
+        InputPort = equaresBox.InputPort,
+        OutputPort = equaresBox.OutputPort
 
     // Constructor for type used as the D3 data for a box
-    function BoxData(boxType, boxInfo, options) {
-        this.type = boxType
-        this.info = boxInfo
+    function Box(boxType, boxInfo, options) {
         var opt = options || {}
-        this.name = opt.name || nameBox(boxType)
+        var name = opt.name || nameBox(boxType)
+        equaresBox.Box.call(this, name, boxType, boxInfo)
         var pos = opt.pos || {}
         this.x = pos.x || 0
         this.y = pos.y || 0
-        this.ports = []
-        function addPorts(box, ports, type) {
-            for (var i=0, n=ports.length; i<n; ++i)
-                box.ports.push(new BoxPortData(type, ports[i], {box: box}))
-        }
-        addPorts(this, boxInfo.inputs, "in")
-        addPorts(this, boxInfo.outputs, "out")
         this.iid = opt.iid || 0
         this.editor = opt.editor || null
         this.index = typeof(opt.index) == "number"? opt.index: -1
         this.selected = false
     }
+    Box.prototype = new equaresBox.Box()
 
     var clickTimer = {};
     (function() {
@@ -121,9 +110,11 @@ var ctmEquaresSchemeEditor = {};
             return pt
         }
 
-        DragHelper.prototype.beginDragPort = function(element, data, index) {
-            currentElement = element
+        DragHelper.prototype.beginDragPort = function(element, port, index) {
             d3.event.preventDefault()
+            if (!port.canConnect())
+                return
+            currentElement = element
             var pt = this.elpos(element, "cx", "cy")
             var t = this.editor.maingroup.myTransform
             pt.x -= t.x
@@ -138,7 +129,7 @@ var ctmEquaresSchemeEditor = {};
             draggingLine = true
             prevCursorPos = null
         }
-        DragHelper.prototype.beginDragBox = function(element, data, index) {
+        DragHelper.prototype.beginDragBox = function(element, box, index) {
             currentElement = element
             prevCursorPos = d3.mouse(this.editor.maingroup.node())
             d3.event.preventDefault()
@@ -157,29 +148,14 @@ var ctmEquaresSchemeEditor = {};
             currentElement = null
             prevCursorPos = null
         }
-        DragHelper.prototype.endDragPort = function(element, data, index) {
-            if (!draggingLine   ||   !(currentElement.__data__ instanceof BoxPortData))
+        DragHelper.prototype.endDragPort = function(element, port, index) {
+            if (!draggingLine   ||   !(currentElement.__data__ instanceof Port))
                 return
-            var p1 = currentElement.__data__,   p2 = data
-            function canAddLink(editor, p1, p2) {
-                if (p1 === p2)
-                    return false
-                for (var il in editor.links) {
-                    var l = editor.links[il]
-                    if (l.source === p1 && l.target === p2)
-                        return false
-                    if (l.source === p2 && l.target === p1)
-                        return false
-                }
-                return true
-            }
-            if (!canAddLink(this.editor, p1, p2))
+            // Add new link if it is possible
+            var p1 = currentElement.__data__,   p2 = port
+            if (!p1.canConnect(p2))
                 return
-
-            // TODO: add editor method for adding link
-            this.editor.links.push({ source: p1, target: p2, iid: this.editor.iid++, index: this.editor.links.length })
-
-            this.editor.visualize()
+            this.editor.newLink(p1, p2)
         }
         DragHelper.prototype.onMouseUpMainRect = function(el) {
             if (!currentElement && clickTimer.clicked()) {
@@ -287,14 +263,52 @@ var ctmEquaresSchemeEditor = {};
         opt.iid = ++this.iid
         opt.editor = this
         opt.index = this.boxes.length
-        this.boxes.push(new BoxData(boxType, boxInfo, opt))
+        this.boxes.push(new Box(boxType, boxInfo, opt))
         this.visualize()
+    }
+
+    function updateArrayIndices(a, start) {
+        for (var i=(typeof start == "number")? start: 0; i<a.length; ++i)
+            a[i].index = i
+    }
+
+    Editor.prototype.deleteBox = function(boxIndex, dontVisualize) {
+        var boxes = this.boxes, links = this.links, box = boxes[boxIndex]
+        unuseBoxName(box.name)
+        if (box.selected)
+            equaresui.selectBox(null)
+        boxes.splice(boxIndex, 1)
+        updateArrayIndices(boxes, boxIndex)
+        for (i=links.length-1; i>=0; --i) {
+            var l = links[i]
+            if (l.source.box === box   ||   l.target.box === box)
+                this.deleteLink(i, true)
+        }
+        if (!dontVisualize)
+            this.visualize()
+    }
+    Editor.prototype.newLink = function(port1, port2, dontVisualize) {
+        port1.connect(port2)
+        port2.connect(port1)
+        this.links.push({ source: port1, target: port2, iid: this.iid++, index: this.links.length })
+        if (!dontVisualize)
+            this.visualize()
+    }
+    Editor.prototype.deleteLink = function(linkIndex, dontVisualize) {
+        var links = this.links, link = links[linkIndex]
+        link.source.disconnect(link.target)
+        link.target.disconnect(link.source)
+        links.splice(linkIndex, 1)
+        updateArrayIndices(links, linkIndex)
+        this.visualize()
+        if (!dontVisualize)
+            this.visualize()
     }
     Editor.prototype.dataKey = function(d) {
         return "k" + d.iid;
     }
     function portPos(d) {
-        return { x: d.parent.x + d.x,   y: d.parent.y + d.y }
+        return { x: d.box.x + d.x,   y: d.box.y + d.y }
     }
     function positionLink(d) {
         // Obtain port positions
@@ -326,7 +340,7 @@ var ctmEquaresSchemeEditor = {};
         var boxUpd = this.maingroup.selectAll(".scheme-box")
             .data(this.boxes, this.dataKey)
 
-        // Create group for incoming box
+        // Create group for incoming boxes
         var boxGroup = boxUpd.enter().insert("g", "#scheme-box-link-separator")
             .attr("class", "scheme-box")
 
@@ -371,23 +385,7 @@ var ctmEquaresSchemeEditor = {};
                 .attr("y", vmargin)
                 .attr("width", wclose)
                 .attr("height", wclose)
-                .on("click", function(d) {
-                    unuseBoxName(d.name)
-                    if (d.selected)
-                        equaresui.selectBox(null)
-                    var boxes = d.editor.boxes, links = d.editor.links
-                    boxes.splice(d.index, 1)
-                    for (var j=d.index; j<boxes.length; ++j)
-                        boxes[j].index = j;
-                    for (j=links.length-1; j>=0; --j) {
-                        var l = links[j]
-                        if (l.source.parent === d   ||   l.target.parent === d)
-                            links.splice(j, 1);
-                    }
-                    for (j=0; j<links.length; ++j)
-                        links[j].index = j;
-                    d.editor.visualize();
-                })
+                .on("click", function(d) { d.editor.deleteBox(d.index) })
 
             // Add ports
             var portSel = g.selectAll(".scheme-port")
@@ -404,12 +402,8 @@ var ctmEquaresSchemeEditor = {};
             }
             portUpd.enter().append("circle")
                 .attr("class", "scheme-port")
-                .classed("scheme-inport", function(d) {
-                   return d.type === "in"
-                 })
-                .classed("scheme-outport", function(d) {
-                  return d.type === "out"
-                 })
+                .classed("scheme-inport", function(d) { return d instanceof InputPort })
+                .classed("scheme-outport", function(d) { return d instanceof OutputPort })
                 .attr("r", 5)
                 .on("mousedown", function(d, i) { thisEditor.dragHelper.beginDragPort(this, d, i) })
                 .on("mouseup", function(d, i) { thisEditor.dragHelper.endDragPort(this, d, i) })
@@ -445,18 +439,13 @@ var ctmEquaresSchemeEditor = {};
 
 
 
+        // Create group for incoming links
         var linkUpd = this.maingroup.selectAll(".scheme-link")
             .data(this.links, this.dataKey)
 
         linkUpd.enter().insert("line", "#scheme-drag-line")
             .attr("class", "scheme-link")
-            .on("click", function(d) {
-                var links = thisEditor.links
-                links.splice(d.index, 1)
-                for (var j=d.index; j<links.length; ++j)
-                    links[j].index = j;
-                thisEditor.visualize()
-            })
+            .on("click", function(d) { thisEditor.deleteLink(d.index) })
             .each(positionLink)
         linkUpd.exit()
             .transition()

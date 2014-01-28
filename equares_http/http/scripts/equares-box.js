@@ -1,11 +1,10 @@
-var equaresBox = {}
+var equaresBox = {};
 
 (function(){
 
-    var Port = equaresBox.Port = function (type, info, box) {
+    var Port = equaresBox.Port = function (info, box) {
         if (arguments.length == 0)
             return
-        this.type = type
         this.info = info
         this.box = box
         this.format=[]
@@ -14,6 +13,7 @@ var equaresBox = {}
         this.pos = info.pos
     }
     var InputPort = equaresBox.InputPort = function() {
+        this.type = "in"
         Port.apply(this, arguments)
         this.connection = null
     }
@@ -22,6 +22,7 @@ var equaresBox = {}
         if (this.connection != null)
             return false
         return arguments.length == 0 ?   true :
+            this.box === thatPort.box ?   false :
             thatPort instanceof OutputPort;
     }
     InputPort.prototype.connect = function(thatPort) {
@@ -34,6 +35,7 @@ var equaresBox = {}
     }
 
     var OutputPort = equaresBox.OutputPort = function() {
+        this.type = "out"
         Port.apply(this, arguments)
         this.connections = []
     }
@@ -46,7 +48,8 @@ var equaresBox = {}
     }
     OutputPort.prototype.canConnect = function(thatPort) {
         return arguments.length == 0 ?   true :
-            (thatPort instanceof InputPort)   &&   this.findConnection(port) == -1
+            this.box === thatPort.box ?   false :
+            (thatPort instanceof InputPort)   &&   this.findConnection(thatPort) == -1
     }
     OutputPort.prototype.connect = function(thatPort) {
         this.connections.push(thatPort)
@@ -64,13 +67,13 @@ var equaresBox = {}
         this.type = type
         this.info = info
         this.ports = []
-        function addPorts(box, ports, type) {
+        function addPorts(box, ports, PortCtor) {
             for (var i=0, n=ports.length; i<n; ++i)
-                box.ports.push(new Port(type, ports[i], {box: box}))
+                box.ports.push(new PortCtor(ports[i], box))
         }
-        addPorts(this, info.inputs, "in")
-        addPorts(this, info.outputs, "out")
-        $.extend(this.props={}, info.properties)
+        addPorts(this, info.inputs, InputPort)
+        addPorts(this, info.outputs, OutputPort)
+        $.extend(true, this.props={}, info.properties)
         // TODO: default value
     }
     Box.connect = function(thisPort, thatPort) {
