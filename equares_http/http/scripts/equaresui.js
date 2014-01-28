@@ -452,9 +452,9 @@ equaresui.setSceneSource = function() {
 
     var boxPropsDiv = itemsDiv.append('<div id="scheme-box-props"></div>').children("#scheme-box-props")
     boxPropsDiv.html("<h1>Properties</h1>")
-    equaresui.selectBox = function(boxData) {
-        if (boxData) {
-            var text = "<h1>" + boxData.name + "</h1>"
+    equaresui.selectBox = function(box) {
+        if (box) {
+            var text = "<h1>" + box.name + "</h1>"
             function wrap(text, tag, attr) {
                 return "<"+tag+(typeof(attr)=="string"? " " + attr: "") + ">" + text + "</" + tag + ">"
             }
@@ -465,9 +465,9 @@ equaresui.setSceneSource = function() {
             function propRow(name, value, help) {
                 return tr(td(name) + td(div(value, "contenteditable=true")), 'title="' + help + '"')
             }
-            var rows = propRow("name", boxData.name, "Object name")
-            rows += propRow("type", boxData.type, "Object type")
-            var props = boxData.info.properties
+            var rows = propRow("name", box.name, "Object name")
+            rows += propRow("type", box.type, "Object type")
+            var props = box.info.properties
             if (props instanceof Object)   for (var i in props)
                 rows += propRow(props[i].name, "TODO", props[i].help)
             text += table(rows)

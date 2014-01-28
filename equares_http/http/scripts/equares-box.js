@@ -60,6 +60,13 @@ var equaresBox = {};
         this.box.stateChanged()
     }
 
+    function importFunc(dst, src, name) {
+        var f = src[name]
+        if (typeof(f) != "string"   ||   f.length == 0)
+            return
+        dst[name] = eval("(function(){return " + f + "})()")
+    }
+
     var Box = equaresBox.Box = function(name, type, info) {
         if (arguments.length == 0)
             return
@@ -73,7 +80,18 @@ var equaresBox = {};
         }
         addPorts(this, info.inputs, InputPort)
         addPorts(this, info.outputs, OutputPort)
-        $.extend(true, this.props={}, info.properties)
+        this.props = {}
+        for(var i in info.properties) {
+            var pi = info.properties[i]
+            var p = this.props[i] = {}
+            p.name = pi.name
+            if (pi.userType.length > 0)
+                p.userType = JSON.parse(pi.userType)
+            importFunc(p, pi, "toBoxType")
+            importFunc(p, pi, "toUserType")
+            importFunc(p, pi, "resolveUserType")
+        }
+
         // TODO: default value
     }
     Box.connect = function(thisPort, thatPort) {
