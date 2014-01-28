@@ -34,7 +34,7 @@ void describeSystem(QScriptEngine& engine, const QStringList& args)
             os << "\n  ],\n  outputs: [\n    ";
             printContainer(os, box->outputPorts(), PortPrinter(), ",\n    ");
             os << "\n  ],\n  properties: [\n    ";
-            printContainer(os, box->boxProperties(), BoxPropPrinter(), ",\n    ");
+            printContainer(os, box->boxProperties(), BoxPropPrinter(box.data()), ",\n    ");
             os << "\n  ]";
             if (!box->helpString().isEmpty())
                 os << ",\n  help: '" << escapeString(box->helpString()) << "'";
