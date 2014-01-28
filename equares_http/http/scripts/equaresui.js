@@ -333,39 +333,65 @@ equaresui.setSceneSource = function() {
         return text;
     }
 
+    var HoverPopup = equaresui.HoverPopup = function(popup, enter, timeout) {
+        timeout = timeout || 500
+        var nin = 0
+        var ncheck = 0
+        function check() {
+            if (ncheck == 0) {
+                setTimeout(hide, timeout)
+                ++ncheck
+            }
+        }
+        function hide() {
+            --ncheck
+            if (nin == 0)
+                 popup.hide('fast')
+             else
+                 check()
+        }
+        this.enter = function() {
+            ++nin;
+            enter.call(this, popup)
+        }
+        this.leave = function() {
+            --nin;
+            check();
+        }
+        this.target = function(element) {
+            $(element).hover(this.enter, this.leave)
+        }
+    }
+
     var setBoxes = function(boxes)
     {
         var text = '<h1>Boxes</h1><table>';
         for (var i in boxes)
-            text += '<tr><td class="scheme-boxlist-box">' + boxes[i] + '</td><td><img src="question.png"></td></tr>';
+            text += '<tr></td><td><img src="question.png"></td><td class="scheme-boxlist-box">' + boxes[i] + '</tr>';
         text += '</table>';
         boxDiv.append(text);
         boxDiv.find('tr:odd').addClass('odd');
         boxDiv.find('tr:even').addClass('even');
-        var hideBoxHelp
-        boxDiv.find('td').find('img')
-            .hover(function() {
-                if (draggingBox)
-                    return;
-                var o = $(this);
-                var pos = o.offset();
-                pos.left += o.width();
-                var box = o.parent().prev().text();
-                equaresInfo(box, function(info) {
-                    boxHelp
-                        .html(boxHelpText(box, info));
-                    var wh = $(window).height(),   bh = boxHelp.outerHeight();
-                    if (hideBoxHelp)
-                        clearTimeout(hideBoxHelp);
-                    if (pos.top + bh > wh)
-                        pos.top = Math.max(0,wh-bh);
-                    boxHelp
-                        .show('fast')
-                        .offset(pos);
-                })
-            }, function() {
-                hideBoxHelp = setTimeout(function() { hideBoxHelp = undefined; boxHelp.hide('fast'); }, 500)
-            });
+        var hpBoxHelp = new HoverPopup(boxHelp, function() {
+            if (draggingBox)
+                return;
+            var o = $(this);
+            var pos = o.offset();
+            pos.left += o.width();
+            var box = o.parent().next().text();
+            equaresInfo(box, function(info) {
+                boxHelp
+                    .html(boxHelpText(box, info));
+                var wh = $(window).height(),   bh = boxHelp.outerHeight();
+                if (pos.top + bh > wh)
+                    pos.top = Math.max(0,wh-bh);
+                boxHelp
+                    .show('fast')
+                    .offset(pos);
+            })
+        })
+        boxDiv.find('td').find('img').each(function() { hpBoxHelp.target(this) })
+
         boxDiv.find(".scheme-boxlist-box")
             .click(function(){
                 var box = $(this).text();
@@ -411,23 +437,18 @@ equaresui.setSceneSource = function() {
     var propsDiv = $(itemsCell.dom);
 
     var portHelp = $("body").append('<div id="scheme-porthelp"></div>').children("#scheme-porthelp").hide();
-    var hidePortHelp;
 
-    equaresui.enterPort = function() {
+    var hpPortHelp = equaresui.hpPortHelp = new HoverPopup(portHelp, function() {
         var o = $(this);
         var pos = o.offset();
         pos.left += this.getBBox().width + 5; // 2*o.attr('r') + 5;
         var d = this.__data__;
         portHelp.html(d.info.name + ' (' + d.type + ')');
-        if (hidePortHelp)
-            clearTimeout(hidePortHelp);
         portHelp
             .show('fast')
             .offset(pos);
-    }
-    equaresui.leavePort = function() {
-        hidePortHelp = setTimeout(function() { hidePortHelp = undefined; portHelp.hide('fast'); }, 300)
-    }
+    },
+    300)
 
     var boxPropsDiv = itemsDiv.append('<div id="scheme-box-props"></div>').children("#scheme-box-props")
     boxPropsDiv.html("<h1>Properties</h1>")

@@ -407,8 +407,8 @@ var ctmEquaresSchemeEditor = {};
                 .attr("r", 5)
                 .on("mousedown", function(d, i) { thisEditor.dragHelper.beginDragPort(this, d, i) })
                 .on("mouseup", function(d, i) { thisEditor.dragHelper.endDragPort(this, d, i) })
-                .on("mouseover", equaresui.enterPort)
-                .on("mouseout", equaresui.leavePort)
+                .on("mouseover", equaresui.hpPortHelp.enter)
+                .on("mouseout", equaresui.hpPortHelp.leave)
                 .attr("cx", function(d, i) {
                     var t = clampPortPos(d.pos)
                     if (t<1)
