@@ -455,9 +455,8 @@ equaresui.setSceneSource = function() {
     equaresui.selectBox = function(box) {
         if (box) {
             function wrap(tag) { return "<" + tag + "></" + tag + ">" }
-            function makeEditor(host, prop, setter) {
+            function makeEditor(host, prop) {
                 var t = prop.userType
-                var v = prop.value
                 if (t === undefined)
                     host.html("N/A")
                 else if (t instanceof Array)
@@ -469,7 +468,20 @@ equaresui.setSceneSource = function() {
                         row.addClass(odd ? "odd": "even")
                         row.append($(wrap("td")).html(name))
                         var tdVal = $(wrap("td")).appendTo(row)
-                        makeEditor(tdVal, {name: name, userType: t[name], value: v[name]}, function(){})    // TODO: setter
+                        ;(function(){    // Important: function provides closure for name_
+                            var name_ = name
+                            makeEditor(tdVal,
+                                {
+                                    name: name,
+                                    userType: t[name],
+                                    getter: function() { return prop.getter()[name_] },
+                                    setter: function(val) {
+                                        var v = prop.getter()
+                                        v[name_] = val
+                                        prop.setter(v)
+                                    }
+                                })
+                        })()
                         odd = !odd
                     }
                 }
@@ -477,35 +489,39 @@ equaresui.setSceneSource = function() {
                     switch (t) {
                     case 's': case 'i': case 'd':
                         $('<input type="text">')
-                            .attr("value", v.toString())
-                            .change(function() { setter(this.value) })
+                            .attr("value", prop.getter().toString())
+                            .change(function() {
+                                prop.setter(this.value)
+                                this.value = prop.getter()
+                            })
                             .appendTo(host)
                         break
                     case 'i:*':
                         $('<input type="text">')
-                            .attr("value", v.toString())
+                            .attr("value", prop.getter().toString())
                             .change(function() {
-                                var value = this.value.match(/-?[0-9]+/g)
-                                if (value === null)
-                                    value = []
-                                else for (var i=0; i<value.length; ++i)
-                                    value[i] = +value[i]
-                                var valueSet = setter(value)
-                                if (valueSet instanceof Array)
-                                    this.value = valueSet.toString
+                                var val = this.value.match(/-?[0-9]+/g) || []
+                                for (var i=0; i<val.length; ++i)
+                                    val[i] = +val[i]
+                                prop.setter(val)
+                                this.value = prop.getter().toString()
                             })
                             .appendTo(host)
                         break
                     case 'b':
                         $('<input type="checkbox">')
-                            .attr("checked", v)
-                            .change(function() { setter(this.checked) })
+                            .attr("checked", prop.getter())
+                            .change(function() {
+                                prop.setter(this.checked)
+                                this.checked = prop.getter()
+                            })
                             .appendTo(host)
                         break
                     case 'BoxType':
                         var editor = $(wrap("select")).appendTo(host)
                         equaresInfo("boxTypes", function(boxes) {
                             var index = -1
+                            var v = prop.getter()
                             for(var i=0; i<boxes.length; ++i) {
                                 var b = boxes[i]
                                 editor.append($(wrap("option")).attr("value", b).html(b))
@@ -518,72 +534,77 @@ equaresui.setSceneSource = function() {
                     default:
                         if (t[0] == 'f') {
                             // Edit a combination of flags
-                            var vx = {}, tx = {}
+                            var tx = {}
                             function hasFlag(flag) {
+                                var v = prop.getter()
                                 for(var i=0; i<v.length; ++i)
                                     if (v[i] == flag)
                                         return true
                                 return false
                             }
                             var flags = t.substr(1).match(/\w+/g)
-                            for (var i=0; i<flags.length; ++i) {
-                                var flag = flags[i]
-                                tx[flag] = 'b'
-                                vx[flag] = hasFlag(flag)
+                            var flagProp = { name: prop.name, userType: {} }
+                            for (var i=0; i<flags.length; ++i)
+                                flagProp.userType[flags[i]] = 'b'
+                            flagProp.getter = function() {
+                                var result = {}
+                                for (var i=0; i<flags.length; ++i) {
+                                    var flag = flags[i]
+                                    result[flag] = hasFlag(flag)
+                                    }
+                                return result
+                                }
+                            flagProp.setter = function(val) {
+                                var result = []
+                                for (var i=0; i<flags.length; ++i) {
+                                    var flag = flags[i]
+                                    if (val[flag])
+                                        result.push(flag)
+                                }
+                                prop.setter(result)
                             }
-                            makeEditor(host, {name: prop.name, value: vx, userType: tx}, function(){})  // TODO: setter
+                        makeEditor(host, flagProp)
                         }
                         else
                             host.html("TODO: " + t)
+                        break
                     }
                 }
             }
 
             boxPropsDiv.html("")
-            $(wrap("h1")).html(box.name).appendTo(boxPropsDiv)
+            var hdr = $(wrap("h1")).html(box.name).appendTo(boxPropsDiv)
             var table = $(wrap("table")).appendTo(boxPropsDiv)
             var props = $.merge([
-                {name: "name", value: box.name, userType: 's'},
-                {name: "type", value: box.type, userType: 'BoxType'}],
+                {
+                    name: "name",
+                    value: box.name, userType: 's',
+                    getter: function() { return box.name },
+                    setter: function(newName) {
+                        box.rename(newName)
+                        hdr.html(box.name)
+                    }
+                },
+                {
+                    name: "type",
+                    getter: function() { return box.type },
+                    setter: function(newType) {
+                        // TODO
+                    }
+                }],
                 box.props)
             for (var i=0; i<props.length; ++i) {
-                var p = props[i]
-                var row = $(wrap("tr")).appendTo(table)
-                row.addClass(i & 1? "odd": "even")
-                row.append($(wrap("td")).html(p.name))
-                var tdVal = $(wrap("td")).appendTo(row)
-                makeEditor(tdVal, p, function(value) {
-                    p.value = value
-                })
+                (function(){    // Important: function provides closure for p
+                    var p = props[i]
+                    var row = $(wrap("tr")).appendTo(table)
+                    row.addClass(i & 1? "odd": "even")
+                    row.append($(wrap("td")).html(p.name))
+                      var tdVal = $(wrap("td")).appendTo(row),
+                          setter = p.setter instanceof Function ?   p.setter :   function(value) { p.value = value },
+                          getter = p.getter instanceof Function ?   p.getter :   function() { return p.value }
+                      makeEditor(tdVal, {name: p.name, userType: p.userType, getter: getter, setter: setter})
+                })()
             }
-
-            boxPropsDiv.append()
-
-            $(wrap("tr")).append(
-                        $(wrap("td")).html("")
-                        )
-            /*
-            var text = "<h1>" + box.name + "</h1>"
-            function wrap(text, tag, attr) {
-                return "<"+tag+(typeof(attr)=="string"? " " + attr: "") + ">" + text + "</" + tag + ">"
-            }
-            function table(text, attr) { return wrap(text, "table", attr) }
-            function tr(text, attr) { return wrap(text, "tr", attr) }
-            function td(text, attr) { return wrap(text, "td", attr) }
-            function div(text, attr) { return wrap(text, "div", attr) }
-            function propRow(name, value, help) {
-                return tr(td(name) + td(div(value, "contenteditable=true")), 'title="' + help + '"')
-            }
-            var rows = propRow("name", box.name, "Object name")
-            rows += propRow("type", box.type, "Object type")
-            var props = box.info.properties
-            if (props instanceof Object)   for (var i in props)
-                rows += propRow(props[i].name, "TODO", props[i].help)
-            text += table(rows)
-            boxPropsDiv.html(text)
-            boxPropsDiv.find('tr:odd').addClass('odd');
-            boxPropsDiv.find('tr:even').addClass('even');
-            */
         }
         else
             boxPropsDiv.html("<h1>No selection</h1>")

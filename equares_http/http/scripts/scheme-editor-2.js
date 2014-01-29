@@ -30,6 +30,7 @@ var ctmEquaresSchemeEditor = {};
         renameBox = function(box, newName) {
             delete boxNames[box.name]
             boxNames[box.name = newName] = true
+            box.editor.visualize()
         }
     })()
 
@@ -60,6 +61,9 @@ var ctmEquaresSchemeEditor = {};
         this.selected = false
     }
     Box.prototype = new equaresBox.Box()
+    Box.prototype.rename = function(newName) {
+        renameBox(this, newName)
+    }
 
     var clickTimer = {};
     (function() {
@@ -287,6 +291,7 @@ var ctmEquaresSchemeEditor = {};
         if (!dontVisualize)
             this.visualize()
     }
+
     Editor.prototype.newLink = function(port1, port2, dontVisualize) {
         port1.connect(port2)
         port2.connect(port1)
