@@ -93,15 +93,13 @@ var equaresBox = {};
             var d = pi.defaultValue
             if (d !== undefined) {
                 if (d instanceof Array)
-                    p.value = $.merge(true, [], d)
+                    p.value = $.merge([], d)
                 else if (d instanceof Object)
                     p.value = $.extend(true, {}, d)
                 else
                     p.value = d
             }
         }
-
-        // TODO: default value
     }
     Box.connect = function(thisPort, thatPort) {
         thisPort.box.connect(thatPort)

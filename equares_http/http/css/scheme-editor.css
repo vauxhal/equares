@@ -144,6 +144,32 @@ Using workaround with bbox instead.
     width: 25%;
 }
 
+#-scheme-box-props select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    text-overflow: "";
+    border: none;
+    background-color: #cfc;
+    background-image: url(drop_arrow.png);
+    background-position: center right;
+    background-repeat: no-repeat;
+}
+
+#scheme-box-props select {
+    border: 0;
+    -webkit-appearance: none;   /*Removes default chrome and safari style*/
+    -moz-appearance: none;      /* Removes Default Firefox style*/
+    appearance: none;
+    background: url('drop_arrow.png') no-repeat right;
+    text-indent: 0.01px;        /* Removes default arrow from firefox*/
+    text-overflow: "";          /*Removes default arrow from firefox*/
+}
+
+#scheme-box-props input[type=text] {
+    border: none;
+    background-color: transparent;
+}
+
 .svg-main {
   background-color: #ffd;
   border: 1px solid #ccc;

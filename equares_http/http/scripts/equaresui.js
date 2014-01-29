@@ -454,6 +454,115 @@ equaresui.setSceneSource = function() {
     boxPropsDiv.html("<h1>Properties</h1>")
     equaresui.selectBox = function(box) {
         if (box) {
+            function wrap(tag) { return "<" + tag + "></" + tag + ">" }
+            function makeEditor(host, prop, setter) {
+                var t = prop.userType
+                var v = prop.value
+                if (t === undefined)
+                    host.html("N/A")
+                else if (t instanceof Array)
+                    host.html("TODO: Array")
+                else if (t instanceof Object) {
+                    var table = $(wrap("table")).appendTo(host), odd = false
+                    for (var name in t) {
+                        var row = $(wrap("tr")).appendTo(table)
+                        row.addClass(odd ? "odd": "even")
+                        row.append($(wrap("td")).html(name))
+                        var tdVal = $(wrap("td")).appendTo(row)
+                        makeEditor(tdVal, {name: name, userType: t[name], value: v[name]}, function(){})    // TODO: setter
+                        odd = !odd
+                    }
+                }
+                else if (typeof(t) == "string") {
+                    switch (t) {
+                    case 's': case 'i': case 'd':
+                        $('<input type="text">')
+                            .attr("value", v.toString())
+                            .change(function() { setter(this.value) })
+                            .appendTo(host)
+                        break
+                    case 'i:*':
+                        $('<input type="text">')
+                            .attr("value", v.toString())
+                            .change(function() {
+                                var value = this.value.match(/-?[0-9]+/g)
+                                if (value === null)
+                                    value = []
+                                else for (var i=0; i<value.length; ++i)
+                                    value[i] = +value[i]
+                                var valueSet = setter(value)
+                                if (valueSet instanceof Array)
+                                    this.value = valueSet.toString
+                            })
+                            .appendTo(host)
+                        break
+                    case 'b':
+                        $('<input type="checkbox">')
+                            .attr("checked", v)
+                            .change(function() { setter(this.checked) })
+                            .appendTo(host)
+                        break
+                    case 'BoxType':
+                        var editor = $(wrap("select")).appendTo(host)
+                        equaresInfo("boxTypes", function(boxes) {
+                            var index = -1
+                            for(var i=0; i<boxes.length; ++i) {
+                                var b = boxes[i]
+                                editor.append($(wrap("option")).attr("value", b).html(b))
+                                if (b == v)
+                                    index = i
+                            }
+                            editor[0].selectedIndex = index
+                        })
+                        break
+                    default:
+                        if (t[0] == 'f') {
+                            // Edit a combination of flags
+                            var vx = {}, tx = {}
+                            function hasFlag(flag) {
+                                for(var i=0; i<v.length; ++i)
+                                    if (v[i] == flag)
+                                        return true
+                                return false
+                            }
+                            var flags = t.substr(1).match(/\w+/g)
+                            for (var i=0; i<flags.length; ++i) {
+                                var flag = flags[i]
+                                tx[flag] = 'b'
+                                vx[flag] = hasFlag(flag)
+                            }
+                            makeEditor(host, {name: prop.name, value: vx, userType: tx}, function(){})  // TODO: setter
+                        }
+                        else
+                            host.html("TODO: " + t)
+                    }
+                }
+            }
+
+            boxPropsDiv.html("")
+            $(wrap("h1")).html(box.name).appendTo(boxPropsDiv)
+            var table = $(wrap("table")).appendTo(boxPropsDiv)
+            var props = $.merge([
+                {name: "name", value: box.name, userType: 's'},
+                {name: "type", value: box.type, userType: 'BoxType'}],
+                box.props)
+            for (var i=0; i<props.length; ++i) {
+                var p = props[i]
+                var row = $(wrap("tr")).appendTo(table)
+                row.addClass(i & 1? "odd": "even")
+                row.append($(wrap("td")).html(p.name))
+                var tdVal = $(wrap("td")).appendTo(row)
+                makeEditor(tdVal, p, function(value) {
+                    p.value = value
+                })
+            }
+
+            boxPropsDiv.append()
+
+            $(wrap("tr")).append(
+                        $(wrap("td")).html("")
+                        )
+            /*
             var text = "<h1>" + box.name + "</h1>"
             function wrap(text, tag, attr) {
                 return "<"+tag+(typeof(attr)=="string"? " " + attr: "") + ">" + text + "</" + tag + ">"
@@ -474,6 +583,7 @@ equaresui.setSceneSource = function() {
             boxPropsDiv.html(text)
             boxPropsDiv.find('tr:odd').addClass('odd');
             boxPropsDiv.find('tr:even').addClass('even');
+            */
         }
         else
             boxPropsDiv.html("<h1>No selection</h1>")
