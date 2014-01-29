@@ -64,19 +64,24 @@ inline QString formatScriptValue(const QScriptValue& v)
         return result;
     }
     else if (v.isString())
-        return escapeString(v.toString());
+        return "'" + escapeString(v.toString()) + "'";
     else
         return v.toString();
 }
 
 struct BoxPropPrinter {
-    BoxPropPrinter(const Box *box) : box(box) {}
+    BoxPropPrinter(const QScriptValue& sbox) :
+        sbox(sbox),
+        box(qobject_cast<Box*>(sbox.toQObject()))
+    {
+        Q_ASSERT(box);
+    }
     void operator()(QTextStream& os, const BoxProperty& boxProp) const {
         os << "{name: '" << boxProp.name
            << "', help: '" << escapeString(boxProp.helpString) << "'"
            << ",\n     userType: '" << escapeString(boxProp.userType) << "'";
         if (!boxProp.userType.isEmpty()) {
-            QScriptValue v = box->engine()->newVariant(box->property(boxProp.name.toLatin1()));
+            QScriptValue v = sbox.property(boxProp.name);
             os << ",\n     defaultValue: " << formatScriptValue(v);
         }
         if (!boxProp.toUserType.isEmpty())
@@ -93,6 +98,7 @@ struct BoxPropPrinter {
         os << "}";
     }
 private:
+    QScriptValue sbox;
     const Box *box;
 };
 

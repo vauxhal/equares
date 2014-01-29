@@ -26,6 +26,7 @@ void describeSystem(QScriptEngine& engine, const QStringList& args)
         }
         else if (boxTypes.contains(arg)) {
             Box::Ptr box(newBox(arg));
+            QScriptValue sbox = engine.newQObject(box.data());
             if (namedMode)
                 os << "\nvar " << arg << " = ";
             os << "{" << endl;
@@ -34,7 +35,7 @@ void describeSystem(QScriptEngine& engine, const QStringList& args)
             os << "\n  ],\n  outputs: [\n    ";
             printContainer(os, box->outputPorts(), PortPrinter(), ",\n    ");
             os << "\n  ],\n  properties: [\n    ";
-            printContainer(os, box->boxProperties(), BoxPropPrinter(box.data()), ",\n    ");
+            printContainer(os, box->boxProperties(), BoxPropPrinter(sbox), ",\n    ");
             os << "\n  ]";
             if (!box->helpString().isEmpty())
                 os << ",\n  help: '" << escapeString(box->helpString()) << "'";

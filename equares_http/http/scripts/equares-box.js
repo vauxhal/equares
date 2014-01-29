@@ -90,6 +90,15 @@ var equaresBox = {};
             importFunc(p, pi, "toBoxType")
             importFunc(p, pi, "toUserType")
             importFunc(p, pi, "resolveUserType")
+            var d = pi.defaultValue
+            if (d !== undefined) {
+                if (d instanceof Array)
+                    p.value = $.merge(true, [], d)
+                else if (d instanceof Object)
+                    p.value = $.extend(true, {}, d)
+                else
+                    p.value = d
+            }
         }
 
         // TODO: default value

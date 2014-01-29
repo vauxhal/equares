@@ -192,7 +192,7 @@ PropClass(WithBoxProps, BoxPropertyList, const BoxPropertyList&, boxProperties, 
 
 class EQUARES_CORESHARED_EXPORT Box :
     public QObject,
-    public QScriptable,
+    protected QScriptable,
     public Named,
     public Typed,
     public WithSimulation,
