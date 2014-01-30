@@ -33,6 +33,9 @@ var equaresBox = {};
         this.connection = null
         this.box.stateChanged()
     }
+    InputPort.prototype.connectedPorts = function() {
+        return this.connection? [this.connection]: []
+    }
 
     var OutputPort = equaresBox.OutputPort = function() {
         this.type = "out"
@@ -59,6 +62,9 @@ var equaresBox = {};
         this.connections.splice(this.findConnection(thatPort), 1)
         this.box.stateChanged()
     }
+    OutputPort.prototype.connectedPorts = function() {
+        return this.connections
+    }
 
     function importFunc(dst, src, name) {
         var f = src[name]
@@ -80,7 +86,7 @@ var equaresBox = {};
         }
         addPorts(this, info.inputs, InputPort)
         addPorts(this, info.outputs, OutputPort)
-        this.props = {}
+        this.props = []
         for(var i in info.properties) {
             var pi = info.properties[i]
             var p = this.props[i] = {}
@@ -101,10 +107,6 @@ var equaresBox = {};
             }
         }
     }
-    Box.connect = function(thisPort, thatPort) {
-        thisPort.box.connect(thatPort)
-        thatPort.box.connect(thisPort)
-    }
     Box.prototype.prop = function(name, value) {
         if (arguments.length == 2) {
             this.props[name].value = value
@@ -115,4 +117,49 @@ var equaresBox = {};
             return this.props[name].value
     }
     Box.prototype.stateChanged = function() {}
+    Box.prototype.links = function() {
+        var result = []
+        var ports = this.ports
+        for (var i=0; i<ports.length; ++i) {
+            var port = ports[i]
+            var c = port.connectedPorts()
+            for (var j=0; j<c.length; ++j)
+                result.push({source: port, target: c[j]})
+        }
+        return result
+    }
+    // Arguments:
+    // a) port having name and type that we are looking for
+    // b) name [, type]
+    Box.prototype.findPort = function() {
+        if (arguments[0] instanceof Port) {
+            var p = arguments[0]
+            return this.findPort(p.info.name, p.type)
+        }
+        else {
+            var name = arguments[0], type = arguments[1]
+            var ports = this.ports
+            for (var i=0; i<ports.length; ++i) {
+                var port = ports[i]
+                if (port.info.name !== name)
+                    continue
+                if (type && port.type !== type)
+                    continue
+                return port
+            }
+            return null
+        }
+    }
+
+    equaresBox.canConnect = function(port1, port2) {
+        return port1.canConnect(port2) && port2.canConnect(port1)
+    }
+    equaresBox.connect = function(port1, port2) {
+        port1.connect(port2)
+        port2.connect(port1)
+    }
+    equaresBox.disconnect = function(port1, port2) {
+        port1.disconnect(port2)
+        port2.disconnect(port1)
+    }
 })()

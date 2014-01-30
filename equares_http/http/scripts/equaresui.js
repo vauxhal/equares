@@ -430,11 +430,9 @@ equaresui.setSceneSource = function() {
 
     var settingsCell = layout.add( { title: "Settings" } );
     var settingsLayout = settingsCell.setLayout({type: "vertical", fixed: true});
-    var itemsCell = settingsLayout.add( { title: "Items" } );
     var propsCell = settingsLayout.add( { title: "Properties" } );
-
-    var itemsDiv = $(itemsCell.dom);
-    var propsDiv = $(itemsCell.dom);
+    var extrasCell = settingsLayout.add( { title: "Extras" } );
+    var extrasDiv = $('<div id="scheme-box-extras"></div>').appendTo($(extrasCell.dom))
 
     var portHelp = $("body").append('<div id="scheme-porthelp"></div>').children("#scheme-porthelp").hide();
 
@@ -450,10 +448,28 @@ equaresui.setSceneSource = function() {
     },
     300)
 
-    var boxPropsDiv = itemsDiv.append('<div id="scheme-box-props"></div>').children("#scheme-box-props")
-    boxPropsDiv.html("<h1>Properties</h1>")
+    var propsDiv = $('<div id="scheme-box-props"></div>').appendTo($(propsCell.dom))
+    propsDiv.html("<h1>Properties</h1>")
+    function validateBoxProp(value, userType, setter) {
+        var s = value.toString().trim()
+        var ok = true
+        switch(userType) {
+        case 'i':
+            ok = /^[+-]?[0-9]+$/.test(s)
+            value = +s
+            break
+        case 'd':
+            // Regexp is copied from here: http://regexlib.com/REDetails.aspx?regexp_id=185
+            ok = /^[+-]?([0-9]*\.?[0-9]+|[0-9]+\.?[0-9]*)([eE][+-]?[0-9]+)?$/.test(s)
+            value = +s
+            break
+        }
+        setter(value, ok)
+    }
+
     equaresui.selectBox = function(box) {
         if (box) {
+            extrasDiv.html("")
             function wrap(tag) { return "<" + tag + "></" + tag + ">" }
             function makeEditor(host, prop) {
                 var t = prop.userType
@@ -491,8 +507,12 @@ equaresui.setSceneSource = function() {
                         $('<input type="text">')
                             .attr("value", prop.getter().toString())
                             .change(function() {
-                                prop.setter(this.value)
-                                this.value = prop.getter()
+                                var e = this
+                                validateBoxProp(this.value, t, function(value, ok) {
+                                    if (ok)
+                                        prop.setter(value)
+                                    e.value = prop.getter()
+                                })
                             })
                             .appendTo(host)
                         break
@@ -517,18 +537,51 @@ equaresui.setSceneSource = function() {
                             })
                             .appendTo(host)
                         break
+                    case 't':
+                        $('<input type="button">')
+                            .attr("value", "...")
+                            .click(function() {
+                                extrasDiv.html("")
+                                var textarea
+                                $(wrap("div")).attr("id", "scheme-box-extras-hdr")
+                                    .append($(wrap("h1")).html(prop.name))
+                                    .append(
+                                         $('<input type="button" class="scheme-box-extras-ok" value="Ok">')
+                                            .click(function() { prop.setter(textarea[0].value) })
+                                    )
+                                    .appendTo(extrasDiv)
+                                $(wrap("div")).attr("id", "scheme-box-extras-text")
+                                    .append(textarea = $(wrap("textarea")))
+                                    .appendTo(extrasDiv)
+                                textarea[0].value = prop.getter()
+                            })
+                            .appendTo(host)
+                        break
                     case 'BoxType':
                         var editor = $(wrap("select")).appendTo(host)
                         equaresInfo("boxTypes", function(boxes) {
-                            var index = -1
-                            var v = prop.getter()
-                            for(var i=0; i<boxes.length; ++i) {
-                                var b = boxes[i]
-                                editor.append($(wrap("option")).attr("value", b).html(b))
-                                if (b == v)
-                                    index = i
+                            function findSelIndex() {
+                                var index = -1
+                                var v = prop.getter()
+                                for(var i=0; i<boxes.length; ++i) {
+                                    var b = boxes[i]
+                                    editor.append($(wrap("option")).attr("value", b).html(b))
+                                    if (b == v)
+                                        index = i
+                                }
+                                return index
                             }
-                            editor[0].selectedIndex = index
+                            var edom = editor[0]
+                            edom.selectedIndex = findSelIndex()
+                            editor.change(function() {
+                                var type = this[edom.selectedIndex].value
+                                equaresInfo(type, function(info){
+                                    prop.setter(type, info)
+                                    var i = findSelIndex()
+                                    if (edom.selectedIndex != i)
+                                        edom.selectedIndex = i
+                                })
+                            })
                         })
                         break
                     default:
@@ -572,9 +625,9 @@ equaresui.setSceneSource = function() {
                 }
             }
 
-            boxPropsDiv.html("")
-            var hdr = $(wrap("h1")).html(box.name).appendTo(boxPropsDiv)
-            var table = $(wrap("table")).appendTo(boxPropsDiv)
+            propsDiv.html("")
+            var hdr = $(wrap("h1")).html(box.name).appendTo(propsDiv)
+            var table = $(wrap("table")).appendTo(propsDiv)
             var props = $.merge([
                 {
                     name: "name",
@@ -586,11 +639,9 @@ equaresui.setSceneSource = function() {
                     }
                 },
                 {
-                    name: "type",
+                    name: "type", userType: 'BoxType',
                     getter: function() { return box.type },
-                    setter: function(newType) {
-                        // TODO
-                    }
+                    setter: function(newType, boxInfo) { box.changeType(newType, boxInfo) }
                 }],
                 box.props)
             for (var i=0; i<props.length; ++i) {
@@ -599,15 +650,17 @@ equaresui.setSceneSource = function() {
                     var row = $(wrap("tr")).appendTo(table)
                     row.addClass(i & 1? "odd": "even")
                     row.append($(wrap("td")).html(p.name))
-                      var tdVal = $(wrap("td")).appendTo(row),
-                          setter = p.setter instanceof Function ?   p.setter :   function(value) { p.value = value },
-                          getter = p.getter instanceof Function ?   p.getter :   function() { return p.value }
+                        var tdVal = $(wrap("td")).appendTo(row),
+                            setter = p.setter instanceof Function ?   p.setter :   function(value) { p.value = value },
+                            getter = p.getter instanceof Function ?   p.getter :   function() { return p.value }
                       makeEditor(tdVal, {name: p.name, userType: p.userType, getter: getter, setter: setter})
                 })()
             }
         }
-        else
-            boxPropsDiv.html("<h1>No selection</h1>")
+        else {
+            propsDiv.html("<h1>No selection</h1>")
+            extrasDiv.html("")
+        }
     }
 }
 

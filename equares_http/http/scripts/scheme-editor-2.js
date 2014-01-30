@@ -1,6 +1,10 @@
 var ctmEquaresSchemeEditor = {};
 
 (function(E) {
+    function removeBoxVisualizer(box) {
+        box.editor.maingroup.selectAll(".scheme-box").datum(function(d) { return d.iid == box.iid? {iid: -1}: d })
+    }
+
     var nameBox             // Generates default box name
     var unuseBoxName
     var boxNameExists
@@ -28,9 +32,14 @@ var ctmEquaresSchemeEditor = {};
             return boxNames[name] === true
         }
         renameBox = function(box, newName) {
+            if (box.name == newName)
+                return
+            if (boxNames[newName])
+                return false
+            removeBoxVisualizer(box)
             delete boxNames[box.name]
             boxNames[box.name = newName] = true
-            box.editor.visualize()
+            box.editor.visualize().update()
         }
     })()
 
@@ -58,11 +67,55 @@ var ctmEquaresSchemeEditor = {};
         this.iid = opt.iid || 0
         this.editor = opt.editor || null
         this.index = typeof(opt.index) == "number"? opt.index: -1
-        this.selected = false
+        this.selected = opt.selected || false
     }
     Box.prototype = new equaresBox.Box()
-    Box.prototype.rename = function(newName) {
-        renameBox(this, newName)
+    Box.prototype.rename = function(newName) { return renameBox(this, newName) }
+    Box.prototype.changeType = function(boxType, boxInfo) {
+        // Replace box with a new one
+        removeBoxVisualizer(this)
+        var e = this.editor
+        var newBox = new Box(boxType, boxInfo, {
+            name: this.name,
+            pos: {x: this.x, y: this.y},
+            iid: this.iid,
+            editor: e,
+            index: this.index,
+            selected: this.selected
+        })
+        e.boxes[this.index] = newBox
+
+        // Try to apply old links to new box
+        var oldLinks = this.links()
+        for (var i=0; i<oldLinks.length; ++i) {
+            var link = oldLinks[i]
+            e.deleteLink(e.findLink(link.source, link.target), true)
+            var port = newBox.findPort(link.source)
+            if (port && equaresBox.canConnect(port, link.target))
+                e.newLink(port, link.target, true)
+        }
+
+        // Copy compatible properties
+        function findProp(props, name) {
+            for (var i=0; i<props.length; ++i)
+                if (props[i].name == name)
+                    return props[i]
+            return null
+        }
+        for (i=0; i<newBox.props.length; ++i) {
+            var prop = newBox.props[i]
+            var t = prop.userType
+            if (t.length == 0)
+                continue    // Property value is not available
+            var oldProp = findProp(this.props, prop.name)
+            if (oldProp && oldProp.userType == t)
+                prop.value = oldProp.value
+        }
+
+        e.visualize().update()
+        if (this.selected)
+            equaresui.selectBox(newBox)
+        return newBox
     }
 
     var clickTimer = {};
@@ -157,7 +210,7 @@ var ctmEquaresSchemeEditor = {};
                 return
             // Add new link if it is possible
             var p1 = currentElement.__data__,   p2 = port
-            if (!p1.canConnect(p2))
+            if (!equaresBox.canConnect(p1, p2))
                 return
             this.editor.newLink(p1, p2)
         }
@@ -293,16 +346,23 @@ var ctmEquaresSchemeEditor = {};
     }
 
     Editor.prototype.newLink = function(port1, port2, dontVisualize) {
-        port1.connect(port2)
-        port2.connect(port1)
+        equaresBox.connect(port1, port2)
         this.links.push({ source: port1, target: port2, iid: this.iid++, index: this.links.length })
         if (!dontVisualize)
             this.visualize()
     }
+    Editor.prototype.findLink = function(port1, port2) {
+        var links = this.links
+        for (var i=0; i<links.length; ++i) {
+            var link = links[i], p1 = link.source, p2 = link.target
+            if (p1 === port1 && p2 === port2   ||   p1 === port2 && p2 === port1)
+                return i
+        }
+        return -1
+    }
     Editor.prototype.deleteLink = function(linkIndex, dontVisualize) {
         var links = this.links, link = links[linkIndex]
-        link.source.disconnect(link.target)
-        link.target.disconnect(link.source)
+        equaresBox.disconnect(link.source, link.target)
         links.splice(linkIndex, 1)
         updateArrayIndices(links, linkIndex)
         this.visualize()
@@ -457,6 +517,7 @@ var ctmEquaresSchemeEditor = {};
             .duration(350)
             .style("opacity", 1e-6)
             .remove();
+        return this
     }
 
     Editor.prototype.update = function() {
@@ -472,6 +533,7 @@ var ctmEquaresSchemeEditor = {};
         var linkUpd = this.maingroup.selectAll(".scheme-link")
             .data(this.links, this.dataKey)
         linkUpd.each(positionLink)
+        return this
     }
 
     E.newEditor = function(root) {
