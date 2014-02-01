@@ -56,6 +56,11 @@ var ctmEquaresSchemeEditor = {};
         InputPort = equaresBox.InputPort,
         OutputPort = equaresBox.OutputPort
 
+    function onChangeBoxState(kind, id) {
+        if (this.selected && kind == "propset")
+            equaresui.selectBox(this)
+    }
+
     // Constructor for type used as the D3 data for a box
     function Box(boxType, boxInfo, options) {
         var opt = options || {}
@@ -68,6 +73,7 @@ var ctmEquaresSchemeEditor = {};
         this.editor = opt.editor || null
         this.index = typeof(opt.index) == "number"? opt.index: -1
         this.selected = opt.selected || false
+        this.callbacks.push(onChangeBoxState)
     }
     Box.prototype = new equaresBox.Box()
     Box.prototype.rename = function(newName) { return renameBox(this, newName) }
