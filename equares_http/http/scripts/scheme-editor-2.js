@@ -96,20 +96,12 @@ var ctmEquaresSchemeEditor = {};
         }
 
         // Copy compatible properties
-        function findProp(props, name) {
-            for (var i=0; i<props.length; ++i)
-                if (props[i].name == name)
-                    return props[i]
-            return null
-        }
-        for (i=0; i<newBox.props.length; ++i) {
-            var prop = newBox.props[i]
-            var t = prop.userType
+        for (var pname in newBox.props) {
+            var t = newBox.propType(pname)
             if (t.length == 0)
                 continue    // Property value is not available
-            var oldProp = findProp(this.props, prop.name)
-            if (oldProp && oldProp.userType == t)
-                prop.value = oldProp.value
+            if (this.propType(pname) === t)
+                newBox.prop(pname, this.prop(pname))
         }
 
         e.visualize().update()

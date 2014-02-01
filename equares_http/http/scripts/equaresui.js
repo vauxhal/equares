@@ -628,32 +628,36 @@ equaresui.setSceneSource = function() {
             propsDiv.html("")
             var hdr = $(wrap("h1")).html(box.name).appendTo(propsDiv)
             var table = $(wrap("table")).appendTo(propsDiv)
-            var props = $.merge([
-                {
-                    name: "name",
-                    value: box.name, userType: 's',
+            var props = {
+                name: {
+                    userType: 's',
                     getter: function() { return box.name },
                     setter: function(newName) {
                         box.rename(newName)
                         hdr.html(box.name)
                     }
                 },
-                {
-                    name: "type", userType: 'BoxType',
+                type: {
+                    userType: 'BoxType',
                     getter: function() { return box.type },
                     setter: function(newType, boxInfo) { box.changeType(newType, boxInfo) }
-                }],
-                box.props)
-            for (var i=0; i<props.length; ++i) {
-                (function(){    // Important: function provides closure for p
-                    var p = props[i]
-                    var row = $(wrap("tr")).appendTo(table)
-                    row.addClass(i & 1? "odd": "even")
-                    row.append($(wrap("td")).html(p.name))
-                        var tdVal = $(wrap("td")).appendTo(row),
-                            setter = p.setter instanceof Function ?   p.setter :   function(value) { p.value = value },
-                            getter = p.getter instanceof Function ?   p.getter :   function() { return p.value }
-                      makeEditor(tdVal, {name: p.name, userType: p.userType, getter: getter, setter: setter})
+                }
+            }
+            for (var pname in box.props)
+                props[pname] = { userType: box.propType(pname) }
+            var odd = true
+            for (pname in props) {
+                odd = !odd
+                var p = props[pname]
+                var row = $(wrap("tr")).appendTo(table)
+                row.addClass(odd? "odd": "even")
+                row.append($(wrap("td")).html(pname))
+                var tdVal = $(wrap("td")).appendTo(row)
+                ;(function(){    // Important: function provides closure for pname_
+                    var pname_ = pname,
+                        setter = p.setter instanceof Function ?   p.setter :   function(value) { box.prop(pname_, value) },
+                        getter = p.getter instanceof Function ?   p.getter :   function() { return box.prop(pname_) }
+                    makeEditor(tdVal, {name: pname_, userType: p.userType, getter: getter, setter: setter})
                 })()
             }
         }
