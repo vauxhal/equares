@@ -115,6 +115,16 @@ var ctmEquaresSchemeEditor = {};
             equaresui.selectBox(newBox)
         return newBox
     }
+    Box.prototype.select = function(newsel) {
+        if (arguments.length == 0)
+            newsel = !this.selected
+        var e = this.editor
+        for (var i in e.boxes)
+            e.boxes[i].selected = false
+        this.selected = newsel
+        e.update()
+        equaresui.selectBox(newsel? this: null)
+    }
 
     var clickTimer = {};
     (function() {
@@ -318,8 +328,10 @@ var ctmEquaresSchemeEditor = {};
         opt.iid = ++this.iid
         opt.editor = this
         opt.index = this.boxes.length
-        this.boxes.push(new Box(boxType, boxInfo, opt))
+        var result = new Box(boxType, boxInfo, opt)
+        this.boxes.push(result)
         this.visualize()
+        return result
     }
 
     function updateArrayIndices(a, start) {
@@ -434,12 +446,7 @@ var ctmEquaresSchemeEditor = {};
                     thisEditor.dragHelper.beginDragBox(this.parentNode, d, i) })
                 .on("mouseup", function(d, i) {
                     if (clickTimer.clicked()) {
-                        var newsel = !d.selected
-                        for (var i in thisEditor.boxes)
-                            thisEditor.boxes[i].selected = false
-                        d.selected = newsel
-                        thisEditor.update()
-                        equaresui.selectBox(newsel? d: null)
+                        d.select()
                     }
                 })
             g.append("image")

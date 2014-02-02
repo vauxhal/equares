@@ -159,7 +159,7 @@ var equaresBox = {};
         this.ports = []
         function addPorts(box, ports, PortCtor) {
             for (var i=0, n=ports.length; i<n; ++i)
-                box.ports.push(new PortCtor(ports[i], box, i))
+                box.ports.push(new PortCtor(ports[i], box, box.ports.length))
         }
         addPorts(this, info.inputs, InputPort)
         addPorts(this, info.outputs, OutputPort)
@@ -331,28 +331,49 @@ function defaultValue(type) {
     return result
 }
 
-function projectionOutFormat() {
-    this.ports[1].format = [this.prop("indices").length]
-    // TODO: indices
-}
-
 function setFormat(port, format) {
     var f0 = port.getFormat()
     port.format = format.format
     port.hints = format.hints
-    if (!f0.equals(format)) {
+
+    // deBUG
+    // console.log(port.box.name + ":" + port.info.name + ", format=" + (format.format === undefined? "undefined": format.format.toString()))
+
+    if (!f0.equals(port.getFormat())) {
         var c = port.connectedPorts()
         for (var i=0; i<c.length; ++i) {
             var p = c[i]
             // if (p.timestamp === timestamp)
             //     continue
-            p.box.stateChanged("port", port)
+            p.box.stateChanged("port", p)
         }
     }
 }
 
+function projectionOutFormat() {
+    var indices = this.prop("indices")
+    var fin = this.ports[0].getFormat()
+    var hints
+    if (fin.valid() && fin.hints) {
+        hints = []
+        for (var i=0; i<indices.length; ++i)
+            hints[i] = fin.hints[indices[i]]
+    }
+    setFormat(this.ports[1], {format: [indices.length], hints: hints})
+}
+
 function propagateFormat(port1, iin, iout) {
-    var port2 = this.ports[port1 instanceof InputPort? iout: iin]
+    var port2
+    if (port1 instanceof InputPort) {
+        if (port1.index != iin)
+            return
+        port2 = this.ports[iout]
+    }
+    else {
+        if (port1.index != iout)
+            return
+        port2 = this.ports[iin]
+    }
     var f1 = port1.getFormat(true),
         f2 = port2.getFormat(true)
     if (f1.valid() == f2.valid()) {
@@ -366,6 +387,19 @@ function propagateFormat(port1, iin, iout) {
     else {
         setFormat(port1, f2)
         setFormat(port2, {})
+    }
+}
+
+function propagateFormatDirected(port1, ifrom, ito)
+{
+    if (port1.index != ifrom)
+        return
+    if (!(ito instanceof Array))
+        ito = [ito]
+    for (var i=0; i<ito.length; ++i) {
+        var port2 = this.ports[ito[i]]
+        var f1 = port1.getFormat(true)
+        setFormat(port2, f1.valid()? f1: {})
     }
 }
 
@@ -394,7 +428,16 @@ $.extend(equaresBox.rules, {
         prop: function(name) {
             if (name === "indices")
                 projectionOutFormat.call(this)
+        },
+        port: function(port) {
+            if (port.info.name === "input")
+                projectionOutFormat.call(this)
+            }
+    },
+    Rk4: {
+        port: function(port) {
+            propagateFormatDirected.call(this, port, 5, [0,1])
         }
-    }
+    },
 })
 })()

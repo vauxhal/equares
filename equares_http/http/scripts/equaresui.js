@@ -309,7 +309,7 @@ equaresui.setSceneSource = function() {
                     text += count == 1? " element": " elements";
                 }
                 if (p.hints) {
-                    text += "<br/>items: ";
+                    text += "<br/>Elements: ";
                     for (var i=0; i<p.hints.length; ++i) {
                         if (i > 0)
                             text += ", ";
@@ -423,8 +423,8 @@ equaresui.setSceneSource = function() {
         drop: function(event, ui) {
             var box = ui.helper.text();
             equaresInfo(box, function(info) {
-                schemeEditor.newBox(box, info, ui);
-                })
+                schemeEditor.newBox(box, info, ui).select()
+            })
         }
     });
 
