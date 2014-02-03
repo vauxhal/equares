@@ -409,6 +409,15 @@ var ctmEquaresSchemeEditor = {};
             .attr("x2", p2.x)
             .attr("y2", p2.y)
     }
+    function setBoxStatus(node, d) {
+        var g = d$(node)
+        var stat = g.select(".status")
+        stat
+            .attr("xlink:href", "status-"+d.status.level+".png")
+            .on("mouseover", equaresui.hpStatusHelp.enter)
+            .on("mouseout", equaresui.hpStatusHelp.leave)
+    }
+
     Editor.prototype.visualize = function() {
         var thisEditor = this
 
@@ -427,17 +436,34 @@ var ctmEquaresSchemeEditor = {};
             g.attr("transform", "translate(" + d.x + "," + d.y + ")")
 
             // Add text, rectangle, and image acting as the close buttion
-            var hmargin = 8, vmargin = 8, sep = 4, wclose = 8
+            var hmargin = 10, vmargin = 8, wstat = 12, sep = 4, wclose = 8
+            var xitem = hmargin
             var txt = g.append("text")
                 .text(d.name)
             var bbox = txt.node().getBBox()
+            var wtotal = bbox.width + wstat + 2*sep + wclose + 2*hmargin
+
+            // Add status image
+            g.append("image")
+                // .attr("xlink:href", "status-ok.png")
+                .attr("class", "status")
+                .attr("x", xitem)
+                .attr("y", vmargin)
+                .attr("width", wstat)
+                .attr("height", wstat)
+            xitem += wstat + sep
+
+            // Add box caption
             txt
-                .attr("x", hmargin - bbox.x)
+                .attr("x", xitem - bbox.x)
                 .attr("y", vmargin - bbox.y)
+            xitem += bbox.width + sep
             var mouseDownTime
+
+            // Add box rectangle
             g.insert("rect", "text")
                 .attr("class", "scheme-box-shape")
-                .attr("width", bbox.width + sep + wclose + 2*hmargin)
+                .attr("width", wtotal)
                 .attr("height", bbox.height + 2*vmargin)
                 .attr("rx", 5)
                 .attr("ry", 5)
@@ -449,19 +475,24 @@ var ctmEquaresSchemeEditor = {};
                         d.select()
                     }
                 })
+
+            // Add close button image
             g.append("image")
                 .attr("xlink:href", "close.png")
-                .attr("x", hmargin + bbox.width + sep)
+                .attr("class", "close")
+                .attr("x", xitem)
                 .attr("y", vmargin)
                 .attr("width", wclose)
                 .attr("height", wclose)
+                .style("cursor", "pointer")
                 .on("click", function(d) { d.editor.deleteBox(d.index) })
+            xitem += wclose
 
             // Add ports
             var portSel = g.selectAll(".scheme-port")
             var portUpd = portSel.data(d.ports)
             var center = {
-                x: 0.5*(bbox.width + sep + wclose) + hmargin,
+                x: 0.5*wtotal,
                 y: 0.5*bbox.height + vmargin
             }
             var t0 = center.y / center.x
@@ -499,6 +530,7 @@ var ctmEquaresSchemeEditor = {};
                         return d.y = 2*center.y*t;
                     return d.y = 2*center.y;
                 });
+            setBoxStatus(this, d)
         })
 
         boxUpd.exit()
@@ -533,6 +565,7 @@ var ctmEquaresSchemeEditor = {};
                 .attr("transform", "translate(" + d.x + "," + d.y + ")")
                 .select("rect")
                     .classed("selected", d.selected)
+            setBoxStatus(this, d)
         })
 
         var linkUpd = this.maingroup.selectAll(".scheme-link")

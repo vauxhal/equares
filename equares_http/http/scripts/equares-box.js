@@ -184,6 +184,7 @@ var equaresBox = {};
             }
         }
         this.callbacks = []
+        this.status = { level: "ok", text: "Ok" }
         this.stateChanged("init")
     }
     Box.prototype.prop = function(name, value) {
@@ -439,6 +440,19 @@ function propagateFormatDirected(port1, ifrom, ito)
     }
 }
 
+function setCxxOdeDefaultStatus() {
+    this.status = { level: "warning", text: "No source code is specified, see 'src' property" }
+}
+
+function restoreCxxOdeDefaultPortFormat() {
+    // Restore default port info & formats
+    for (var i=0; i<this.ports.length; ++i) {
+        var port = this.ports[i]
+        port.info = port.info0
+        setFormat(port, port.info)
+    }
+}
+
 $.extend(equaresBox.rules, {
     Param: {
         port: function(port) {
@@ -482,11 +496,20 @@ $.extend(equaresBox.rules, {
                 var port = this.ports[i]
                 port.info0 = port.info
             }
+            setCxxOdeDefaultStatus.call(this)
         },
 
         prop: function(name) {
             var box = this
             if (name === "src")
+                if (box.prop(name).length == 0) {
+                    setCxxOdeDefaultStatus.call(box)
+                    restoreCxxOdeDefaultPortFormat.call(box)
+                    box.editor.update()
+                    return
+                }
+                box.status = { level: "waiting", text: "Compiling..." }
+                box.editor.update()
                 equaresBox.infoEx({
                     cmd: "box",
                     options: "ports",
@@ -503,14 +526,12 @@ $.extend(equaresBox.rules, {
                     }
                     upd(info.inputs)
                     upd(info.outputs)
+                    box.status = { level: "ok", text: "Ok" }
+                    box.editor.update()
                 }, function(reply) {
-                    alert(reply.stderr || reply.message)
-                    // Restore default port info & formats
-                    for (var i=0; i<box.ports.length; ++i) {
-                        var port = box.ports[i]
-                        port.info = port.info0
-                        setFormat(port, port.info)
-                    }
+                    restoreCxxOdeDefaultPortFormat.call(box)
+                    box.status = { level: "error", text: reply.stderr || reply.message }
+                    box.editor.update()
                 })
         }
     }

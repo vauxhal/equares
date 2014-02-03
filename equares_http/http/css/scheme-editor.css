@@ -29,7 +29,8 @@
     border-radius: 5px;
     box-shadow: 10px 10px 10px #888;
 }
-#scheme-porthelp {
+#scheme-porthelp,
+#scheme-statushelp {
     position: absolute;
     background-color: #eee;
     padding: 3px;
@@ -37,6 +38,10 @@
     border-radius: 2px;
     box-shadow: 5px 5px 5px #888;
 }
+#scheme-statushelp.error {
+    font-family: monospace;
+}
+
 #scheme-boxdrag {
     position: absolute;
     background-color: #ccc;

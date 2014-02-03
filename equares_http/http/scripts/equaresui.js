@@ -421,8 +421,7 @@ equaresui.setSceneSource = function() {
     var extrasCell = settingsLayout.add( { title: "Extras" } );
     var extrasDiv = $('<div id="scheme-box-extras"></div>').appendTo($(extrasCell.dom))
 
-    var portHelp = $("body").append('<div id="scheme-porthelp"></div>').children("#scheme-porthelp").hide();
-
+    var portHelp = $('<div id="scheme-porthelp"></div>').appendTo($("body")).hide();
     var hpPortHelp = equaresui.hpPortHelp = new HoverPopup(portHelp, function() {
         var o = $(this);
         var pos = o.offset();
@@ -430,6 +429,29 @@ equaresui.setSceneSource = function() {
         var d = this.__data__;
         portHelp.html(d.info.name + ' (' + d.type + ')');
         portHelp
+            .show('fast')
+            .offset(pos);
+    },
+    300)
+
+    var statusHelp = $('<div id="scheme-statushelp"></div>').appendTo($("body")).hide();
+    var hpStatusHelp = equaresui.hpStatusHelp = new HoverPopup(statusHelp, function() {
+        var o = $(this);
+        var pos = o.offset();
+        pos.left += this.getBBox().width + 5;
+        var d = this.parentElement.__data__;
+        var msg = d.status.text
+            .replace(/ /g, "&nbsp;")
+            .replace(/\</g, "&lt;")
+            .replace(/\>/g, "&gt;")
+            .replace(/\n/g, "<br>")
+            .replace(/\r/g, "")
+        statusHelp.html(msg);
+        if (d.status.level == "error")
+            statusHelp.addClass("error")
+        else
+            statusHelp.removeClass("error")
+        statusHelp
             .show('fast')
             .offset(pos);
     },
