@@ -1,9 +1,28 @@
 #include "equares_exec.h"
 #include <iostream>
 
+DefaultOutputStream::DefaultOutputStream(FILE *os) : m_empty(true)
+{
+    open(os, QIODevice::WriteOnly, QFile::DontCloseHandle);
+}
+
+qint64 DefaultOutputStream::writeData(const char *data, qint64 len)
+{
+    if (len > 0)
+        m_empty = false;
+    return QFile::writeData(data, len);
+}
+
+bool DefaultOutputStream::isEmpty() const {
+    return m_empty;
+}
+
+
 DefaultThreadOutput::DefaultThreadOutput() :
-    m_stdout(stdout, QIODevice::WriteOnly),
-    m_stderr(stderr, QIODevice::WriteOnly)
+    m_stdoutStream(stdout),
+    m_stderrStream(stderr),
+    m_stdout(&m_stdoutStream),
+    m_stderr(&m_stderrStream)
 {
 }
 
@@ -13,6 +32,10 @@ QTextStream& DefaultThreadOutput::standardOutput() {
 
 QTextStream& DefaultThreadOutput::standardError() {
     return m_stderr;
+}
+
+bool DefaultThreadOutput::hasErrors() const {
+    return !m_stderrStream.isEmpty();
 }
 
 

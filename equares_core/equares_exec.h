@@ -5,6 +5,7 @@
 #include <QSharedPointer>
 #include <QTextStream>
 #include <QStringList>
+#include <QFile>
 #include "equares_core_global.h"
 #include "equares_common.h"
 
@@ -25,6 +26,19 @@ public:
     virtual ~ThreadOutput() {}
     virtual QTextStream& standardOutput() = 0;
     virtual QTextStream& standardError() = 0;
+    virtual bool hasErrors() const = 0;
+};
+
+class EQUARES_CORESHARED_EXPORT DefaultOutputStream : public QFile
+{
+public:
+    explicit DefaultOutputStream(FILE *os);
+
+    qint64 writeData(const char *data, qint64 len);
+    virtual bool isEmpty() const;
+
+private:
+    bool m_empty;
 };
 
 class EQUARES_CORESHARED_EXPORT DefaultThreadOutput : public ThreadOutput
@@ -34,8 +48,11 @@ public:
 
     QTextStream& standardOutput();
     QTextStream& standardError();
+    bool hasErrors() const;
 
 private:
+    DefaultOutputStream m_stdoutStream;
+    DefaultOutputStream m_stderrStream;
     QTextStream m_stdout;
     QTextStream m_stderr;
 };

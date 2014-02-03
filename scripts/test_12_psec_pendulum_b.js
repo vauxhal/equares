@@ -16,13 +16,19 @@ dump = new Bitmap
 
 proj.indices = [0,2]
 
-ode.src = "
+ode.src = '
 struct DoublePendulum {
     int paramCount() const {
         return 5;   // l1, m1, l2, m2, g
     }
+    const char *paramNames() const {
+        return "l1, m1, l2, m2, g";
+    }
     int varCount() const {
         return 4;   // q1, q2, dq1, dq2
+    }
+    const char *varNames() const {
+        return "q1, q2, dq1, dq2";
     }
 
     // Auxiliary parameters
@@ -76,7 +82,7 @@ struct DoublePendulum {
 	out[3] = ddpsi;
     }
 };
-"
+'
 
 s = new Simulation
 s.setLinks([

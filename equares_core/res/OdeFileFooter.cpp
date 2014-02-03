@@ -18,9 +18,17 @@ ODE_EXPORT int paramCount(void *p) {
     CLASSNAME* x = reinterpret_cast<CLASSNAME*>(p);
     return x->paramCount();
 }
+ODE_EXPORT const char *paramNames(void *p) {
+    CLASSNAME* x = reinterpret_cast<CLASSNAME*>(p);
+    return x->paramNames();
+}
 ODE_EXPORT int varCount(void *p) {
     CLASSNAME* x = reinterpret_cast<CLASSNAME*>(p);
     return x->varCount();
+}
+ODE_EXPORT const char *varNames(void *p) {
+    CLASSNAME* x = reinterpret_cast<CLASSNAME*>(p);
+    return x->varNames();
 }
 ODE_EXPORT void prepare(void *p, const double *param) {
     CLASSNAME* x = reinterpret_cast<CLASSNAME*>(p);

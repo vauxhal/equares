@@ -2,13 +2,12 @@
 #define SERVERTHREADMANAGER_H
 
 #include "equares_core/equares_exec.h"
-#include <QFile>
 #include <QThread>
 #include <QThreadStorage>
 #include <QMutex>
 #include <QSemaphore>
 
-class ServerOutputStream : public QFile
+class ServerOutputStream : public DefaultOutputStream
 {
 public:
     explicit ServerOutputStream(FILE *os);
@@ -19,6 +18,7 @@ public:
 
     qint64 writeData(const char *data, qint64 len);
     void close();
+    bool isEmpty() const;
 
 private:
     QString m_prefix;
@@ -39,6 +39,7 @@ public:
 
     QTextStream& standardOutput();
     QTextStream& standardError();
+    bool hasErrors() const;
 
     QString prefix() const;
     ServerThreadOutput& setPrefix(const QString& prefix);

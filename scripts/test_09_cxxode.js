@@ -8,13 +8,19 @@ ode = new CxxOde
 solver = new Rk4
 dump = new Dump
 
-ode.src = "
+ode.src = '
 struct Pendulum {
     int paramCount() const {
         return 2;   // l, g
     }
+    const char *paramNames() const {
+        return "l, g";
+    }
     int varCount() const {
         return 2;   // q, dq
+    }
+    const char *varNames() const {
+        return "q, dq";
     }
 
     // Auxiliary parameters
@@ -28,7 +34,7 @@ struct Pendulum {
         out[1] = -g_l * sin(state[0]);
     }
 };
-"
+'
 
 s = new Simulation
 s.setLinks([

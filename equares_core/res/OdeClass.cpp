@@ -1,9 +1,15 @@
 struct pendulum {
     int paramCount() const {
-        return 2;   // l, g
+        return 2;       // l, g
+    }
+    const char *paramNames() const {
+        return "l,g";   // Can also return empty string or null ptr
     }
     int varCount() const {
-        return 2;   // q, dq
+        return 2;       // q, dq
+    }
+    const char *varNames() const {
+        return "q,dq";  // Can also return empty string or null ptr
     }
 
     // Auxiliary parameters

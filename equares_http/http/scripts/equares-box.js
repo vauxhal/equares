@@ -270,6 +270,23 @@ var equaresBox = {};
             port2.disconnect(port1)
         })
     }
+
+    equaresBox.info = function(request, callback) {
+        if (typeof request == "string")
+            request = {cmd: request}
+        $.ajax("equaresRequestInfo.cmd", {data: request, type: "GET"})
+            .done(function(data) {
+                var reply = JSON.parse(data);
+                if (reply.error)
+                    alert("equaresRequestInfo.cmd error: \n" + reply.stderr);
+                else
+                    callback(eval("(function(){return " + reply.stdout + "})()"));
+            })
+            .fail(function() {
+                // equaresDebug.html("equaresExec.cmd: Ajax error");
+                alert("equaresRequestInfo.cmd: Ajax error");
+            });
+    }
 })()
 
 ;(function(){
@@ -439,5 +456,26 @@ $.extend(equaresBox.rules, {
             propagateFormatDirected.call(this, port, 5, [0,1])
         }
     },
+    CxxOde: {
+        prop: function(name) {
+            if (name === "src")
+                equaresBox.info({
+                    cmd: "box -i",
+                    input: "box = new CxxOde\nbox.src = '\n" + this.prop(name) + "'\n"
+                }, function(info) {
+                    // Update port format
+                    this.info = info
+                    var i=0, j
+                    for (j=0; j<info.inputs.length; ++j, ++i) {
+                        this.ports[i].format = info.inputs[j].format
+                        this.ports[i].hints = info.inputs[j].hints
+                    }
+                    for (j=0; j<info.outputs.length; ++j, ++i) {
+                        this.ports[i].format = info.outputs[j].format
+                        this.ports[i].hints = info.outputs[j].hints
+                    }
+                })
+            }
+        }
 })
 })()

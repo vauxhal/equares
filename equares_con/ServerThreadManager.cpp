@@ -1,9 +1,9 @@
 #include "ServerThreadManager.h"
 #include <QMutexLocker>
 
-ServerOutputStream::ServerOutputStream(FILE *os) : m_bufLen(0)
+ServerOutputStream::ServerOutputStream(FILE *os) :
+    DefaultOutputStream(os), m_bufLen(0)
 {
-    open(os, QIODevice::WriteOnly, QFile::DontCloseHandle);
 }
 
 ServerOutputStream::~ServerOutputStream() {
@@ -42,7 +42,11 @@ qint64 ServerOutputStream::writeData(const char *data, qint64 len)
 void ServerOutputStream::close()
 {
     flushBuf();
-    QFile::close();
+    DefaultOutputStream::close();
+}
+
+bool ServerOutputStream::isEmpty() const {
+    return m_bufLen == m_prefixBytes.size() && DefaultOutputStream::isEmpty();
 }
 
 void ServerOutputStream::appendToBuf(const char *data, qint64 len)
@@ -65,8 +69,8 @@ void ServerOutputStream::flushBuf()
 {
     if (m_bufLen == m_prefixBytes.size())
         return;
-    QFile::writeData(m_buf.data(), m_bufLen);
-    // QFile::flush();
+    DefaultOutputStream::writeData(m_buf.data(), m_bufLen);
+    // DefaultOutputStream::flush();
     clearBuf();
 }
 
@@ -86,6 +90,10 @@ QTextStream& ServerThreadOutput::standardOutput() {
 
 QTextStream& ServerThreadOutput::standardError() {
     return m_stderr;
+}
+
+bool ServerThreadOutput::hasErrors() const {
+    return !m_stderrStream.isEmpty();
 }
 
 QString ServerThreadOutput::prefix() const {

@@ -13,7 +13,7 @@
 
 using namespace std;
 
-void JsRunner::runFile(QScriptEngine& engine, istream& is)
+bool JsRunner::runFile(QScriptEngine& engine, istream& is, bool printResults)
 {
     JsInputSplitter jsis;
     QRegExp rxExit("^\\s*exit\\s*$");
@@ -45,24 +45,29 @@ void JsRunner::runFile(QScriptEngine& engine, istream& is)
             int lineNo = engine.uncaughtExceptionLineNumber();
             EQUARES_CERR << "ERROR: line " << lineNo << ": " << result.toString() << endl;
         }
-        else
+        else if (printResults)
             EQUARES_COUT << result.toString() << endl;
     }
+    return !ThreadManager::instance()->threadOutput()->hasErrors();
 }
 
-void JsRunner::runFiles(QScriptEngine& engine, const QStringList& inputFileNames)
+bool JsRunner::runFiles(QScriptEngine& engine, const QStringList& inputFileNames, bool printResults)
 {
     if (inputFileNames.isEmpty())
-        runFile(engine, cin);
-    else
+        return runFile(engine, cin, printResults);
+    else {
         foreach (const QString& fileName, inputFileNames) {
             // TODO better: handle unicode file names
             ifstream is(fileName.toLatin1().constData());
-            if (is.fail())
-                EQUARES_CERR << "WARNING: Failed to open input file '" << fileName.toLatin1().constData() << "', skipping\n";
-            else
-                runFile(engine, is);
+            if (is.fail()) {
+                EQUARES_CERR << "ERROR: Failed to open input file '" << fileName.toLatin1().constData() << "', stopping\n";
+                return false;
+            }
+            else if (!runFile(engine, is, printResults))
+                return false;
         }
+        return true;
+    }
 }
 
 void JsRunner::runServer(QScriptEngine& engine)

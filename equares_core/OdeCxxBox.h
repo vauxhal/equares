@@ -29,7 +29,9 @@ public:
     OdeCxxBox& setUseQmake(bool useQmake);
 
     int paramCount() const;
+    QStringList paramNames() const;
     int varCount() const;
+    QStringList varNames() const;
 
     using Box::engine;
 
@@ -43,8 +45,14 @@ public:
         int paramCount() const {
             return m_paramCount(m_inst);
         }
+        QStringList paramNames() const {
+            return toNameList(m_paramNames(m_inst));
+        }
         int varCount() const {
             return m_varCount(m_inst);
+        }
+        QStringList varNames() const {
+            return toNameList(m_varNames(m_inst));
         }
         void prepare(const double *param) const {
             m_prepare(m_inst, param);
@@ -62,7 +70,9 @@ public:
         typedef void* (*newInstanceFunc)();
         typedef void (*deleteInstanceFunc)(void*);
         typedef int (*paramCountFunc)(void*);
+        typedef const char* (*paramNamesFunc)(void*);
         typedef int (*varCountFunc)(void*);
+        typedef const char* (*varNamesFunc)(void*);
         typedef void (*prepareFunc)(void*, const double*);
         typedef void (*rhsFunc)(void*, double*, const double*, const double*);
         typedef const char* (*hashFunc)();
@@ -71,12 +81,16 @@ public:
         newInstanceFunc m_newInstance;
         deleteInstanceFunc m_deleteInstance;
         paramCountFunc m_paramCount;
+        paramNamesFunc m_paramNames;
         varCountFunc m_varCount;
+        varNamesFunc m_varNames;
         prepareFunc m_prepare;
         rhsFunc m_rhs;
         hashFunc m_hash;
 
         void *m_inst;
+
+        static QStringList toNameList(const char *s);
     };
     const OdeLibProxy *odeLibProxy() const;
 

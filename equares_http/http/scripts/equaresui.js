@@ -268,20 +268,7 @@ equaresui.setSceneSource = function() {
     boxDiv.addClass('scheme-boxlist');
     var draggingBox = false;
 
-    var equaresInfo = function(request, callback) {
-        $.ajax("equaresRequestInfo.cmd", {data: {cmd: request}, type: "GET"})
-            .done(function(data) {
-                var reply = JSON.parse(data);
-                if (reply.error)
-                    alert("equaresRequestInfo.cmd error: \n" + reply.stderr);
-                else
-                    callback(eval("(function(){return " + reply.stdout + "})()"));
-            })
-            .fail(function() {
-                // equaresDebug.html("equaresExec.cmd: Ajax error");
-                alert("equaresRequestInfo.cmd: Ajax error");
-            });
-    }
+    var equaresInfo = equaresBox.info
 
     var boxItemHelpText = function(item, caption) {
         if (item === undefined)

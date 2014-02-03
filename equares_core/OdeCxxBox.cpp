@@ -248,7 +248,14 @@ OdeCxxBox& OdeCxxBox::setSrc(const QString& src)
 
     // Update port formats
     m_param.format().setSize(paramCount());
+    m_param.hints().setEntryHints(paramNames());
     m_state.format().setSize(varCount()+1);
+    {
+        QStringList stateHints = varNames();
+        if (stateHints.size() == varCount())
+            stateHints << "t";
+        m_state.hints().setEntryHints(stateHints);
+    }
     m_rhs.format().setSize(varCount());
 
     return *this;
@@ -276,10 +283,24 @@ int OdeCxxBox::paramCount() const {
     return m_libProxy->paramCount();
 }
 
+QStringList OdeCxxBox::paramNames() const
+{
+    if (m_libProxy.isNull())
+        throw EquaresException("OdeCxxBox::paramNames: No source is specified");
+    return m_libProxy->paramNames();
+}
+
 int OdeCxxBox::varCount() const {
     if (m_libProxy.isNull())
         throw EquaresException("OdeCxxBox::varCount: No source is specified");
     return m_libProxy->varCount();
+}
+
+QStringList OdeCxxBox::varNames() const
+{
+    if (m_libProxy.isNull())
+        throw EquaresException("OdeCxxBox::varNames: No source is specified");
+    return m_libProxy->varNames();
 }
 
 const OdeCxxBox::OdeLibProxy *OdeCxxBox::odeLibProxy() const {
@@ -300,7 +321,9 @@ OdeCxxBox::OdeLibProxy::OdeLibProxy(const QString& libName) :
     RESOLVE_SYMBOL(newInstance)
     RESOLVE_SYMBOL(deleteInstance)
     RESOLVE_SYMBOL(paramCount)
+    RESOLVE_SYMBOL(paramNames)
     RESOLVE_SYMBOL(varCount)
+    RESOLVE_SYMBOL(varNames)
     RESOLVE_SYMBOL(prepare)
     RESOLVE_SYMBOL(rhs)
     RESOLVE_SYMBOL(hash)
@@ -310,6 +333,20 @@ OdeCxxBox::OdeLibProxy::OdeLibProxy(const QString& libName) :
 
 OdeCxxBox::OdeLibProxy::~OdeLibProxy() {
     m_deleteInstance(m_inst);
+}
+
+QStringList OdeCxxBox::OdeLibProxy::toNameList(const char *s)
+{
+    QStringList result;
+    if (!s)
+        return result;
+    QString qs = QString::fromUtf8(s);
+    if (qs.isEmpty())
+        return result;
+    result = qs.split(",", QString::KeepEmptyParts);
+    for (int i=0; i<result.size(); ++i)
+        result[i] = result[i].trimmed();
+    return result;
 }
 
 
