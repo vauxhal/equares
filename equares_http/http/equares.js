@@ -252,3 +252,43 @@ server.commands["equaresRequestInfo"] = function(request, response) {
         });
     }
 }
+
+server.commands["equaresRequestInfoEx"] = function(request, response) {
+    var query = url.parse(request.url, true).query
+    var describeOptions = query.options || "";
+    var command = query.cmd;
+    var proc = child_process.spawn(equares.programPath, ['-i', '-d'+describeOptions, command]);
+    var stdout = "", stderr = "", replied = false
+    function reply(text) {
+        if (!replied) {
+            replied = true
+            response.write(text)
+            response.end()
+        }
+    }
+
+    proc.stdout.on("data", function(chunk) {
+        stdout += chunk.toString()
+    })
+    proc.stderr.on("data", function(chunk) {
+        stderr += chunk.toString()
+    })
+    proc.stdin.on('error', function(){
+        reply(JSON.stringify({error: -1, message: "Failed to start equares"}))
+    })
+    proc.stdin.end(query.stdin)
+    proc.on('close', function(code) {
+        if (code === 0   &&   stderr.length === 0)
+            reply(JSON.stringify(stdout))
+        else
+            reply(JSON.stringify({error: code, stdout: stdout, stderr: stderr}))
+    });
+    proc.on('error', function() {
+        if (stderr.length > 0   ||   stdout.length > 0)
+            // Process has started and returned a nonzero error code.
+            // This means that 'close' will follow - we will reply there.
+            // Note: Could not deduce reason for error from args, they are empty :(
+            return;
+        reply(JSON.stringify({error: -1, message: "Failed to start equares"}))
+    });
+}

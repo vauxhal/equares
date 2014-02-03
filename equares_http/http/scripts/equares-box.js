@@ -272,9 +272,7 @@ var equaresBox = {};
     }
 
     equaresBox.info = function(request, callback) {
-        if (typeof request == "string")
-            request = {cmd: request}
-        $.ajax("equaresRequestInfo.cmd", {data: request, type: "GET"})
+        $.ajax("equaresRequestInfo.cmd", {data: {cmd: request}, type: "GET"})
             .done(function(data) {
                 var reply = JSON.parse(data);
                 if (reply.error)
@@ -285,6 +283,27 @@ var equaresBox = {};
             .fail(function() {
                 // equaresDebug.html("equaresExec.cmd: Ajax error");
                 alert("equaresRequestInfo.cmd: Ajax error");
+            });
+    }
+
+    equaresBox.infoEx = function(request, callback, errorCallback) {
+        $.ajax("equaresRequestInfoEx.cmd", {data: request, type: "GET"})
+            .done(function(data) {
+                var reply = JSON.parse(data);
+                if (reply.error) {
+                    if (errorCallback instanceof Function)
+                        errorCallback(reply)
+                    else
+                        alert("equaresRequestInfoEx.cmd error: \n" + (reply.stderr || reply.message));
+                }
+                else
+                    callback(eval("(function(){return " + reply + "})()"));
+            })
+            .fail(function() {
+                if (errorCallback instanceof Function)
+                    errorCallback("Ajax error")
+                else
+                    alert("equaresRequestInfo.cmd: Ajax error");
             });
     }
 })()
@@ -457,25 +476,43 @@ $.extend(equaresBox.rules, {
         }
     },
     CxxOde: {
+        init: function() {
+            // Backup port info
+            for (var i=0; i<this.ports.length; ++i) {
+                var port = this.ports[i]
+                port.info0 = port.info
+            }
+        },
+
         prop: function(name) {
+            var box = this
             if (name === "src")
-                equaresBox.info({
-                    cmd: "box -i",
-                    input: "box = new CxxOde\nbox.src = '\n" + this.prop(name) + "'\n"
+                equaresBox.infoEx({
+                    cmd: "box",
+                    options: "ports",
+                    stdin: "box = new CxxOde\nbox.src = '\n" + box.prop(name) + "'\n"
                 }, function(info) {
                     // Update port format
-                    this.info = info
-                    var i=0, j
-                    for (j=0; j<info.inputs.length; ++j, ++i) {
-                        this.ports[i].format = info.inputs[j].format
-                        this.ports[i].hints = info.inputs[j].hints
+                    box.info = info
+                    var i=0
+                    function upd(ports) {
+                        for (var j=0; j<ports.length; ++j, ++i) {
+                            box.ports[i].info = ports[j]
+                            setFormat(box.ports[i], ports[j])
+                        }
                     }
-                    for (j=0; j<info.outputs.length; ++j, ++i) {
-                        this.ports[i].format = info.outputs[j].format
-                        this.ports[i].hints = info.outputs[j].hints
+                    upd(info.inputs)
+                    upd(info.outputs)
+                }, function(reply) {
+                    alert(reply.stderr || reply.message)
+                    // Restore default port info & formats
+                    for (var i=0; i<box.ports.length; ++i) {
+                        var port = box.ports[i]
+                        port.info = port.info0
+                        setFormat(port, port.info)
                     }
                 })
-            }
         }
+    }
 })
 })()
