@@ -563,6 +563,7 @@ equaresui.setSceneSource = function() {
                                     .append(textarea = $(wrap("textarea")))
                                     .appendTo(extrasDiv)
                                 textarea[0].value = prop.getter()
+                                textarea.focus()
                             })
                             .appendTo(host)
                         break
@@ -669,6 +670,7 @@ equaresui.setSceneSource = function() {
                     makeEditor(tdVal, {name: pname_, userType: p.userType, getter: getter, setter: setter})
                 })()
             }
+            table.find("td:first").next().children().first().focus()
         }
         else {
             propsDiv.html("<h1>No selection</h1>")

@@ -486,7 +486,7 @@ $.extend(equaresBox.rules, {
     },
     Rk4: {
         port: function(port) {
-            propagateFormatDirected.call(this, port, 5, [0,1])
+            propagateFormatDirected.call(this, port, 5, [1,4])
         }
     },
     CxxOde: {
