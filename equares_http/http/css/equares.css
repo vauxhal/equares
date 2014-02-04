@@ -2,19 +2,55 @@ body {
     font-family: Sans-Serif;
 }
 
-.myheader {
+#header {
     padding: 0px 0px 0px 0px;
-    font-size: 10px;
-    text-align: center;
+//    font-size: 10px;
+//    text-align: center;
     background-color: #efd;
     border-style: none none solid none;
     border-width: 1px;
     border-color: #ccc;
+    overflow: visible;
 }
-.myheader h1 {
-    margin: 0px;
-    padding: 5px 0px 0px 0px;
+#header > div {
+    display: inline-block;
 }
+#projectname {
+    padding-left: 10px;
+    padding-top: 5px;
+    padding-right: 20px;
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    font-weight: bold;
+    font-size: 20px;
+}
+#projectname + div {
+    position: absolute;
+    left: 100px;
+    top: 0px;
+    z-index: 1000;
+}
+#mainmenu {
+    font-size: 15px;
+    list-style: none;
+    padding: 0px;
+    margin-top: 4px;
+    display: inline-block;
+    outline: none;
+    height: 25px;
+}
+#mainmenu > .ui-menu-item {
+    float: left;
+    width: auto;
+}
+
+/* TODO better */
+#mainmenu a {
+    width: 70px;
+}
+
+
 .mymain {
     background-color: #ffd;
 }

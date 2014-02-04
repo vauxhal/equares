@@ -383,7 +383,7 @@ equaresui.setSceneSource = function() {
             .click(function(){
                 var box = $(this).text();
                 equaresInfo(box, function(info) {
-                    schemeEditor.newBox(box, info);
+                    schemeEditor.newBox(box, info).select()
                 })
             })
             .draggable({
@@ -677,6 +677,51 @@ equaresui.setSceneSource = function() {
             extrasDiv.html("")
         }
     }
+
+    equaresui.openScheme = function() {
+        // var fileToLoad = document.getElementById("fileToLoad").files[0];
+        var fileToLoad = "scheme.txt"
+
+        var fileReader = new FileReader();
+        fileReader.onload = function(fileLoadedEvent)
+        {
+            var textFromFileLoaded = fileLoadedEvent.target.result;
+            // document.getElementById("inputTextToSave").value = textFromFileLoaded;
+            alert(textFromFileLoaded)
+        };
+        fileReader.readAsText(fileToLoad, "UTF-8");
+    }
+
+    equaresui.saveScheme = function() {
+        var schemeText  = "TODO: scheme text"
+        var b = new Blob([schemeText], {type: "text/plain"})
+
+        // var fileNameToSaveAs = document.getElementById("inputFileNameToSaveAs").value;
+        var fileNameToSaveAs = "scheme.txt"
+
+        var downloadLink = document.createElement("a");
+        downloadLink.download = fileNameToSaveAs;
+        downloadLink.innerHTML = "Download File";
+        if (window.webkitURL != null) {
+            // Chrome allows the link to be clicked
+            // without actually adding it to the DOM.
+            downloadLink.href = window.webkitURL.createObjectURL(b);
+        }
+        else {
+            // Firefox requires the link to be added to the DOM
+            // before it can be clicked.
+            downloadLink.href = window.URL.createObjectURL(b);
+            downloadLink.onclick = function(event) { document.body.removeChild(event.target); }
+            downloadLink.style.display = "none";
+            document.body.appendChild(downloadLink);
+        }
+        downloadLink.click();
+
+    }
+    equaresui.runScheme = function() {
+        alert("TODO: equaresui.runScheme()")
+    }
+
 }
 
 $(document).ready(function() {
