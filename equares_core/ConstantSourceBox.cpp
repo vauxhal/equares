@@ -44,11 +44,13 @@ const QVector<double>& ConstantSourceBox::getData() const {
 }
 
 void ConstantSourceBox::setData(const QVector<double>& data) {
+    /* TODO: Remove (relax data check)
     this->data();
     if (data.size() != m_data.size()) {
         context()->throwError(QScriptContext::RangeError, "ConstantSourceBox::setData: Invalid data size");
         return;
     }
+    */
     m_data = data;
 }
 

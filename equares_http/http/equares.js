@@ -187,6 +187,21 @@ server.commands["equaresOutputEvent"] = function(request, response) {
     })();
 };
 
+server.commands["equaresRunSimulation"] = function(request, response) {
+    var user = equares.user("x");
+
+    // Restart server
+    if (user.isRunning())
+        user.stop();
+    user.start();
+
+    // Feed input
+    var simulation = url.parse(request.url, true).query.simulation
+    var command = "===={\n" + "runSimulation(\n" + simulation + "\n)\n" + "====}"
+    user.execCommand(command);
+    server.respondmsg("Started simulation", response);
+}
+
 server.commands["equaresExec"] = function(request, response) {
     var user = equares.user("x");
     var command = url.parse(request.url, true).query.cmd;

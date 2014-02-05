@@ -715,7 +715,13 @@ equaresui.setSceneSource = function() {
 
     }
     equaresui.runScheme = function() {
-        alert("TODO: equaresui.runScheme()")
+        var simulation = schemeEditor.exportSimulation()
+        simulation = JSON.stringify(simulation)
+        $.ajax("equaresRunSimulation.cmd", {data: {simulation: simulation}, type: "GET"})
+            // .done() {}
+            .fail(function(){
+                alert("Ajax error");
+            });
     }
 
 }

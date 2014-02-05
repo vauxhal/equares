@@ -91,6 +91,15 @@ void describeSystem(QScriptEngine& engine, const QStringList& args, const QStrin
     }
 }
 
+static QString readFile(const QString& fileName)
+{
+    QFile file(fileName);
+    file.open(QIODevice::ReadOnly);
+    if (!file.isOpen())
+        throw EquaresException(QString("readFile(): failed to open file %1").arg(fileName));
+    return QString::fromUtf8(file.readAll());
+}
+
 int main(int argc, char **argv)
 {
 #ifdef __linux__
@@ -143,6 +152,9 @@ int main(int argc, char **argv)
         registerEquaresScriptTypes(&engine);
 
         bool ok = true;
+
+        // Execute initialization script
+        engine.evaluate(readFile(":/js/init.js"));
 
         switch (mode) {
         case RunMode:

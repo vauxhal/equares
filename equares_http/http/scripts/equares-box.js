@@ -196,6 +196,14 @@ var equaresBox = {};
         else
             return this.props[name].value
     }
+    Box.prototype.boxprop = function(name) {
+        var prop = this.props[name]
+        if (prop.toBoxProp instanceof Function)
+            return prop.toBoxProp.call(this, prop, name)
+        else
+            return prop.value
+    }
+
     Box.prototype.propType = function(name) {
         var p = this.props[name]
         return p? p.userType: undefined
@@ -343,6 +351,24 @@ function port2type(port) {
         return undefined;
 }
 
+function port2value(value, port) {
+    var f = port.getFormat()
+    var result = value
+    if (f.valid()) {
+        if (f.format.length == 0)
+            result = [];
+        if (f.format.length == 1) {
+            var n = f.format[0]
+            if (f.hints instanceof Array) {
+                result = []
+                for (var i=0; i<n; ++i)
+                    result[i] = value[f.hints[i]];
+            }
+        }
+    }
+    return result;
+}
+
 function defaultValue(type) {
     var result
     if (type instanceof Array) {
@@ -455,6 +481,11 @@ function restoreCxxOdeDefaultPortFormat() {
 
 $.extend(equaresBox.rules, {
     Param: {
+        init: function() {
+            this.props["data"].toBoxProp = function(prop) {
+                return port2value(prop.value, this.ports[0])
+            }
+        },
         port: function(port) {
             var t = this.props["data"].userType = port2type(port)
             this.prop("data", defaultValue(t))

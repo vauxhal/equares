@@ -625,6 +625,25 @@ var ctmEquaresSchemeEditor = {};
         }
         return JSON.stringify(result)
     }
+    Editor.prototype.exportSimulation = function() {
+        var simulation = { boxes: [], links: [] }
+        var i
+        for (i=0; i<this.boxes.length; ++i) {
+            var b = this.boxes[i],   bx = simulation.boxes[i] = {}
+            copyProps(bx, b, [ "name", "type" ])
+            if (b.props instanceof Object) {
+                bx.props = {}
+                for (var propName in b.props)
+                    bx.props[propName] = b.boxprop(propName)
+            }
+        }
+        for (i=0; i<this.links.length; ++i) {
+            var l = this.links[i],   lx = simulation.links[i] = {}
+            lx.source = {box: l.source.box.name, port: l.source.info.name}
+            lx.target = {box: l.target.box.name, port: l.target.info.name}
+        }
+        return simulation
+    }
     Editor.prototype.import = function(text) {
         try {
             var data = JSON.parse(text)

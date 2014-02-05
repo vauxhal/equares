@@ -9,4 +9,7 @@
     <qresource prefix="/box">
         <file alias="settings.ini">res/BoxSettings.ini</file>
     </qresource>
+    <qresource prefix="/js">
+        <file alias="init.js">res/init.js</file>
+    </qresource>
 </RCC>
