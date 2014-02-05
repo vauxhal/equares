@@ -574,6 +574,115 @@ var ctmEquaresSchemeEditor = {};
         return this
     }
 
+    function allProps(obj, suffix) {
+        var result = []
+        suffix = suffix || ""
+        for (var name in obj)
+            result.push(name + suffix)
+        return result
+    }
+
+    function copyProps(dst, src, paths) {
+        if (paths === undefined)
+            paths = allProps(src)
+        for (var i=0; i<paths.length; ++i) {
+            var path = paths[i].split("/")
+            var name = path[0]
+            var suffix = "", subpaths
+            if (path.length > 1) {
+                path.splice(0, 1)
+                subpaths = [path.join("/")]
+                suffix = "/" + subpaths[0]
+            }
+            if (name === "*") {
+                var names = allProps(src, suffix)
+                copyProps(dst, src, names)
+            }
+            else {
+                var ps = src[name]
+                if (ps === undefined)
+                    continue
+                if (ps instanceof Array)
+                    copyProps(dst[name]=[], ps, subpaths)
+                else if (ps instanceof Object)
+                    copyProps(dst[name]={}, ps, subpaths)
+                else
+                    dst[name] = src[name]
+            }
+        }
+    }
+    Editor.prototype.export = function() {
+        var result = { boxes: [], links: [] }
+        var i
+        for (i=0; i<this.boxes.length; ++i) {
+            var b = this.boxes[i],   bx = result.boxes[i] = {}
+            copyProps(bx, b, [ "name", "info", "type", "props/*/value", "status", "x", "y" ])
+        }
+        for (i=0; i<this.links.length; ++i) {
+            var l = this.links[i],   lx = result.links[i] = {}
+            lx.source = {box: l.source.box.name, port: l.source.info.name}
+            lx.target = {box: l.target.box.name, port: l.target.info.name}
+        }
+        return JSON.stringify(result)
+    }
+    Editor.prototype.import = function(text) {
+        try {
+            var data = JSON.parse(text)
+            var boxes = data.boxes, links = data.links, i, b
+            if (!(boxes instanceof Array))
+                throw { message: "boxes is missing or is not an array" }
+            if (!(links instanceof Array))
+                throw { message: "boxes is missing or is not an array" }
+            var editor = this
+            editor.boxes = []
+            editor.links = []
+
+            // Create boxes (no param values so far)
+            var rootOffset = $(editor.root).offset()
+            var t = editor.maingroup.myTransform
+            for (i=0; i<boxes.length; ++i) {
+                b = boxes[i]
+                var opt = {
+                    offset: {left: b.x + rootOffset.left + t.x, top: rootOffset.top + b.y + t.y},
+                    name: b.name
+                }
+                editor.newBox(b.type, b.info, opt)
+            }
+
+            // Create links
+            function findFirst(array, match) {
+                for (var i=0; i<array.length; ++i)
+                    if (match(array[i]))
+                        return array[i]
+                throw {message: "element is not found"}
+            }
+            function findBox(name) {
+                return findFirst(editor.boxes, function(box) { return box.name === name })
+            }
+            function findPort(portData) {
+                var box = findBox(portData.box)
+                return findFirst(box.ports, function(port) { return port.info.name === portData.port })
+            }
+            for (i=0; i<links.length; ++i) {
+                var l = links[i], p1 = findPort(l.source), p2 = findPort(l.target)
+                editor.newLink(p1, p2, true)
+            }
+
+            // Now import box parameters
+            for (i=0; i<boxes.length; ++i) {
+                b = boxes[i]
+                var box = findBox(b.name)
+                for (var propName in b.props)
+                    box.prop(propName, b.props[propName].value)
+            }
+
+            // Visualize scene
+            editor.visualize().update()
+        }
+        catch(e) {
+            alert(e.message)
+        }
+    }
     E.newEditor = function(root) {
         return new Editor(root)
     }

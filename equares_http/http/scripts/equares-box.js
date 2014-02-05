@@ -516,7 +516,8 @@ $.extend(equaresBox.rules, {
                     stdin: "box = new CxxOde\nbox.src = '\n" + box.prop(name) + "'\n"
                 }, function(info) {
                     // Update port format
-                    box.info = info
+                    box.info.inputs = info.inputs
+                    box.info.outputs = info.outputs
                     var i=0
                     function upd(ports) {
                         for (var j=0; j<ports.length; ++j, ++i) {

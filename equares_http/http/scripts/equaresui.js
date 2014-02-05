@@ -680,12 +680,11 @@ equaresui.setSceneSource = function() {
 
     equaresui.openScheme = function(fileToLoad) {
         // var fileToLoad = document.getElementById("fileToLoad").files[0];
-
         var fileReader = new FileReader();
         fileReader.onload = function(fileLoadedEvent)
         {
             var textFromFileLoaded = fileLoadedEvent.target.result;
-            alert(textFromFileLoaded)
+            schemeEditor.import(textFromFileLoaded)
         };
         fileReader.readAsText(fileToLoad, "UTF-8");
     }
@@ -693,7 +692,7 @@ equaresui.setSceneSource = function() {
     equaresui.saveScheme = function(fileName) {
         if (arguments.length < 1)
             fileName = "equares-scheme.json"
-        var schemeText  = "TODO: scheme text"
+        var schemeText = schemeEditor.export()
         var b = new Blob([schemeText], {type: "text/plain"})
 
         var downloadLink = document.createElement("a");
