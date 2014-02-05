@@ -27,7 +27,7 @@ body {
 }
 #projectname + div {
     position: absolute;
-    left: 100px;
+    left: 120px;
     top: 0px;
     z-index: 1000;
 }
@@ -46,8 +46,11 @@ body {
 }
 
 /* TODO better */
-#mainmenu a {
-    width: 70px;
+#mainmenu .ui-menu a {
+    width: 120px;
+}
+#open-scheme-file-dialog input[type=file] {
+    width: 330px;
 }
 
 

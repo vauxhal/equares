@@ -28,6 +28,7 @@
     border: 1px solid #888;
     border-radius: 5px;
     box-shadow: 10px 10px 10px #888;
+    z-index: 2000;
 }
 #scheme-porthelp,
 #scheme-statushelp {
@@ -75,7 +76,11 @@ alignment-baseline: text-before-edge;
 
 Using workaround with bbox instead.
 */
-.scheme-box text {
+.scheme-box text,
+#scheme-boxhelp,
+#scheme-porthelp,
+#scheme-statushelp
+{
     pointer-events: none;
     -webkit-touch-callout: none;
     -webkit-user-select: none;
@@ -147,17 +152,6 @@ Using workaround with bbox instead.
 }
 #scheme-box-props td:first-child {
     width: 25%;
-}
-
-#-scheme-box-props select {
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    text-overflow: "";
-    border: none;
-    background-color: #cfc;
-    background-image: url(drop_arrow.png);
-    background-position: center right;
-    background-repeat: no-repeat;
 }
 
 #scheme-box-props select {

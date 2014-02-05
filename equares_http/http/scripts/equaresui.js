@@ -678,29 +678,26 @@ equaresui.setSceneSource = function() {
         }
     }
 
-    equaresui.openScheme = function() {
+    equaresui.openScheme = function(fileToLoad) {
         // var fileToLoad = document.getElementById("fileToLoad").files[0];
-        var fileToLoad = "scheme.txt"
 
         var fileReader = new FileReader();
         fileReader.onload = function(fileLoadedEvent)
         {
             var textFromFileLoaded = fileLoadedEvent.target.result;
-            // document.getElementById("inputTextToSave").value = textFromFileLoaded;
             alert(textFromFileLoaded)
         };
         fileReader.readAsText(fileToLoad, "UTF-8");
     }
 
-    equaresui.saveScheme = function() {
+    equaresui.saveScheme = function(fileName) {
+        if (arguments.length < 1)
+            fileName = "equares-scheme.json"
         var schemeText  = "TODO: scheme text"
         var b = new Blob([schemeText], {type: "text/plain"})
 
-        // var fileNameToSaveAs = document.getElementById("inputFileNameToSaveAs").value;
-        var fileNameToSaveAs = "scheme.txt"
-
         var downloadLink = document.createElement("a");
-        downloadLink.download = fileNameToSaveAs;
+        downloadLink.download = fileName;
         downloadLink.innerHTML = "Download File";
         if (window.webkitURL != null) {
             // Chrome allows the link to be clicked

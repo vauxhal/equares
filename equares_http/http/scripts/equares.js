@@ -11,6 +11,7 @@ $(document).ready(function() {
     var header = $(c1.dom)
     header.attr("id", "header").html('<div id="projectname">Equares</div>');
 
+    // Create main menu
     function wrap(tag) { return $("<" + tag + "></" + tag + ">") }
     function createMenu(root, items) {
         var m = wrap("ul").appendTo(root)
@@ -38,14 +39,50 @@ $(document).ready(function() {
             {text: "Scheme", handler: function() { equaresui.setSceneSource.call(c2) }}
         ]},
         {text: "Scheme", menu: [
-            {text: "Open ...", handler: function() { equaresui.openScheme() } },
-            {text: "Save as...", handler: function() { equaresui.saveScheme() } },
+            {text: "Open", handler: function() { $("#open-scheme-file-dialog").dialog("open") } },
+            {text: "Save", handler: function() { $("#save-scheme-file-dialog").dialog("open") } },
             {text: "Run", handler: function() { equaresui.runScheme() } }
         ]}
     ]).attr("id", "mainmenu").menu({
         position: {
         my:'left top',
         at:'left bottom'
+        }
+    })
+
+    // Create dialogs
+    function updateOpenState() {
+        var f = $("#open-scheme-file-dialog :file")[0]
+        var o = $(".ui-dialog-buttonpane button:contains('Open')")
+        o.button(f.files.length>0? "enable": "disable")
+    }
+    $("#open-scheme-file-dialog :file").change(updateOpenState)
+
+    $("#open-scheme-file-dialog").dialog({
+        autoOpen: false,
+        modal: true,
+        width: 400,
+        buttons: {
+            Open: function() {
+                equaresui.openScheme($("#open-scheme-file")[0].files[0])
+                $(this).dialog("close")
+            },
+            Cancel: function() { $(this).dialog("close") }
+        },
+        open: function() {
+                //$(this).children("form")[0].reset()
+                updateOpenState()
+            }
+    })
+    $("#save-scheme-file-dialog").dialog({
+        autoOpen: false,
+        modal: true,
+        buttons: {
+            Save: function() {
+                equaresui.saveScheme($("#save-scheme-file-name").val())
+                $(this).dialog("close")
+            },
+            Cancel: function() { $(this).dialog("close") }
         }
     })
 
