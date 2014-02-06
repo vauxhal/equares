@@ -29,6 +29,7 @@ class EQUARES_CORESHARED_EXPORT BitmapRuntimeBox : public RuntimeBox
 {
 public:
     explicit BitmapRuntimeBox(const BitmapBox *box);
+    OutputFileInfoList outputFileInfo() const;
 
 private:
     RuntimeInputPort m_dump;

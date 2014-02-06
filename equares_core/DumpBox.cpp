@@ -63,6 +63,13 @@ DumpRuntimeBox::~DumpRuntimeBox()
         fclose(m_cfile);
 }
 
+OutputFileInfoList DumpRuntimeBox::outputFileInfo() const
+{
+    const DumpBox *box = qobject_cast<const DumpBox*>(owner());
+    Q_ASSERT(box);
+    return OutputFileInfoList() << OutputFileInfo::text(box->fileName());
+}
+
 bool DumpRuntimeBox::dump()
 {
     RuntimeOutputPort

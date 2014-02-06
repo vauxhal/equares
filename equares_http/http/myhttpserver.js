@@ -35,6 +35,7 @@ serveFile.fileTypes["html"] = "text/html";
 serveFile.fileTypes["css"] = "text/css";
 serveFile.fileTypes["js"] = "application/javascript";
 serveFile.fileTypes["txt"] = "text/plain";
+serveFile.fileTypes["json"] = "text/plain";
 serveFile.fileTypes["png"] = "image/png";
 
 function serveCommand(pathname, request, response)

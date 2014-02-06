@@ -46,8 +46,11 @@ body {
 }
 
 /* TODO better */
-#mainmenu .ui-menu a {
+#mainmenu .menu-depth-1 > li > a {
     width: 120px;
+}
+#mainmenu .menu-depth-2 > li > a {
+    width: 250px;
 }
 #open-scheme-file-dialog input[type=file] {
     width: 330px;

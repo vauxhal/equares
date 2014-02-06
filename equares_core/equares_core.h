@@ -338,6 +338,9 @@ public:
     typedef QSharedPointer<RuntimeBox> Ptr;
     virtual ~RuntimeBox () {}
     typedef bool (RuntimeBox::*PortNotifier)();
+    virtual OutputFileInfoList outputFileInfo() const {
+        return OutputFileInfoList();
+    }
 
 protected:
     template<class ThisClass>

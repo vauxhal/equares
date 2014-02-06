@@ -57,6 +57,12 @@ BitmapRuntimeBox::BitmapRuntimeBox(const BitmapBox *box)
         throw EquaresException("BitmapRuntimeBox: no fileName is specified");
 }
 
+OutputFileInfoList BitmapRuntimeBox::outputFileInfo() const
+{
+    QVector<int> size = m_dump.outputPort()->port()->format().size();
+    return OutputFileInfoList() << OutputFileInfo::image(m_fileName, size[0], size[1]);
+}
+
 bool BitmapRuntimeBox::dump()
 {
     RuntimeOutputPort

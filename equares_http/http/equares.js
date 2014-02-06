@@ -189,17 +189,24 @@ server.commands["equaresOutputEvent"] = function(request, response) {
 
 server.commands["equaresRunSimulation"] = function(request, response) {
     var user = equares.user("x");
+    function startSim() {
+        // Start server
+        user.start();
 
-    // Restart server
-    if (user.isRunning())
+        // Feed input
+        var simulation = url.parse(request.url, true).query.simulation
+        var command = "===={\n" + "runSimulation(\n" + simulation + "\n)\n" + "====}"
+        user.execCommand(command);
+        server.respondmsg("Started simulation", response);
+    }
+
+    if (user.isRunning()) {
+        // Run simulation after stopping the currently running server instance
+        user.proc.on('close', startSim);
         user.stop();
-    user.start();
-
-    // Feed input
-    var simulation = url.parse(request.url, true).query.simulation
-    var command = "===={\n" + "runSimulation(\n" + simulation + "\n)\n" + "====}"
-    user.execCommand(command);
-    server.respondmsg("Started simulation", response);
+    }
+    else
+        startSim();
 }
 
 server.commands["equaresExec"] = function(request, response) {

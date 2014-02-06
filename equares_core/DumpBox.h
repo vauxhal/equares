@@ -31,6 +31,7 @@ class EQUARES_CORESHARED_EXPORT DumpRuntimeBox : public RuntimeBox
 public:
     explicit DumpRuntimeBox(const DumpBox *box);
     ~DumpRuntimeBox();
+    OutputFileInfoList outputFileInfo() const;
 
 private:
     RuntimeInputPort m_dump;

@@ -6,6 +6,7 @@
 #include <QTextStream>
 #include <QStringList>
 #include <QFile>
+#include <QSize>
 #include "equares_core_global.h"
 #include "equares_common.h"
 
@@ -97,6 +98,36 @@ private:
     QStringList m_files;
     bool m_needSync;
 };
+
+class EQUARES_CORESHARED_EXPORT OutputFileInfo
+{
+public:
+    enum Type { Text, Image };
+    OutputFileInfo() : m_type(Text) {}
+    QString name() const { return m_name; }
+    Type type() const { return m_type; }
+    QSize size() const { return m_size; }
+    int width() const { return m_size.width(); }
+    int height() const { return m_size.height(); }
+    static OutputFileInfo text(const QString& name) {
+        return OutputFileInfo(name, Text);
+    }
+    static OutputFileInfo image(const QString& name, const QSize& size) {
+        return OutputFileInfo(name, Image, size);
+    }
+    static OutputFileInfo image(const QString& name, int width, int height) {
+        return OutputFileInfo(name, Image, QSize(width, height));
+    }
+    QString toString() const;
+private:
+    explicit OutputFileInfo(const QString& name, Type type, const QSize& size = QSize()) :
+        m_name(name), m_type(type), m_size(size) {}
+    QString m_name;
+    Type m_type;
+    QSize m_size;
+};
+
+typedef QList<OutputFileInfo> OutputFileInfoList;
 
 class EQUARES_CORESHARED_EXPORT ThreadManager
 {

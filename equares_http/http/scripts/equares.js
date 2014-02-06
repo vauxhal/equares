@@ -13,8 +13,11 @@ $(document).ready(function() {
 
     // Create main menu
     function wrap(tag) { return $("<" + tag + "></" + tag + ">") }
-    function createMenu(root, items) {
+    function createMenu(root, items, depth) {
+        if (depth === undefined)
+            depth = 0
         var m = wrap("ul").appendTo(root)
+        m.addClass("menu-depth-"+depth)
         function h0() {}
         for (var i=0; i<items.length; ++i) {
             var item = items[i]
@@ -28,27 +31,35 @@ $(document).ready(function() {
                 })
             })()
             if (item.menu)
-                createMenu(li, item.menu)
+                createMenu(li, item.menu, depth+1)
         }
         return m
     }
-    createMenu(wrap("div").appendTo(header), [
+    var mainMenu = createMenu(wrap("div").appendTo(header), [
         {text: "Layout", menu: [
             {text: "Console", handler: function() { equaresui.setConsoleSource.call(c2) }},
             {text: "Source", handler: function() { equaresui.setWorkbenchSource.call(c2) }},
             {text: "Scheme", handler: function() { equaresui.setSceneSource.call(c2) }}
         ]},
         {text: "Scheme", menu: [
+            {text: "Examples", menu: [
+                {text: "Simple pendulum, phase trajectory", handler: function() { equaresui.loadExample("simple-pendulum-1") }},
+                {text: "Simple pendulum, several plots", handler: function() { equaresui.loadExample("simple-pendulum-2") }},
+                {text: "Double pendulum, trajectory projection", handler: function() { equaresui.loadExample("double-pendulum-t") }},
+                {text: "Simple pendulum, Poincare map", handler: function() { equaresui.loadExample("double-pendulum-psec") }}
+            ]},
             {text: "Open", handler: function() { $("#open-scheme-file-dialog").dialog("open") } },
             {text: "Save", handler: function() { $("#save-scheme-file-dialog").dialog("open") } },
             {text: "Run", handler: function() { equaresui.runScheme() } }
         ]}
-    ]).attr("id", "mainmenu").menu({
-        position: {
-        my:'left top',
-        at:'left bottom'
-        }
-    })
+    ]).attr("id", "mainmenu").menu()
+
+    // Nested menu positioning does not work as expected, TODO
+    /*
+    mainMenu.menu("option", "position", { my:'left top', at:'left bottom' })
+    mainMenu.find(".menu-depth-1").menu().menu("option", "position", { my:'left top', at:'right top' })
+    */
+    mainMenu.menu("option", "position", { my:'left top', at:'left+30 bottom' })
 
     // Create dialogs
     function updateOpenState() {

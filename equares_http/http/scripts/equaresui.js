@@ -678,6 +678,16 @@ equaresui.setSceneSource = function() {
         }
     }
 
+    equaresui.loadExample = function(exampleName) {
+        $.ajax("examples/" + exampleName + ".json")
+            .done(function(text) {
+                schemeEditor.import(text)
+            })
+            .fail(function() {
+                alert("Ajax error");
+            })
+    }
+
     equaresui.openScheme = function(fileToLoad) {
         // var fileToLoad = document.getElementById("fileToLoad").files[0];
         var fileReader = new FileReader();

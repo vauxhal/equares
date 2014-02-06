@@ -40,6 +40,26 @@ bool DefaultThreadOutput::hasErrors() const {
 
 
 
+QString OutputFileInfo::toString() const
+{
+    QString result = "{'name': '" + name() + "', 'type': ";
+    switch (type()) {
+    case OutputFileInfo::Text:
+        result += "'text'";
+        break;
+    case OutputFileInfo::Image:
+        result += "'image'";
+        result += ", 'size': {'width': " + QString::number(width()) + ", 'height': " + QString::number(height()) + "}";
+        break;
+    default:
+        Q_ASSERT(false);
+    }
+    result += "}";
+    return result;
+}
+
+
+
 QList<ThreadManager*> ThreadManager::m_instances;
 
 ThreadManager::ThreadManager()
