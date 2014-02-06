@@ -45,14 +45,14 @@ bool DefaultThreadOutput::hasErrors() const {
 
 QString OutputFileInfo::toString() const
 {
-    QString result = "{'name': '" + name() + "', 'type': ";
+    QString result = "{\"name\": \"" + name() + "\", \"type\": ";
     switch (type()) {
     case OutputFileInfo::Text:
-        result += "'text'";
+        result += "\"text\"";
         break;
     case OutputFileInfo::Image:
-        result += "'image'";
-        result += ", 'size': {'width': " + QString::number(width()) + ", 'height': " + QString::number(height()) + "}";
+        result += "\"image\"";
+        result += ", \"size\": {\"width\": " + QString::number(width()) + ", \"height\": " + QString::number(height()) + "}";
         break;
     default:
         Q_ASSERT(false);

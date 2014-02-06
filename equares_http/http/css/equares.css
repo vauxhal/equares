@@ -20,14 +20,20 @@ body {
     padding-top: 5px;
     padding-right: 20px;
     position: absolute;
-    left: 0px;
+    left: 50px;
     top: 0px;
     font-weight: bold;
     font-size: 20px;
+    color: #63A405;
+}
+#projectlogo {
+    position: absolute;
+    left: 10px;
+    top: 0px;
 }
 #projectname + div {
     position: absolute;
-    left: 120px;
+    left: 160px;
     top: 0px;
     z-index: 1000;
 }
@@ -50,12 +56,31 @@ body {
     width: 120px;
 }
 #mainmenu .menu-depth-2 > li > a {
-    width: 250px;
+    width: 280px;
 }
 #open-scheme-file-dialog input[type=file] {
     width: 330px;
 }
-
+#running-simulation {
+    text-align: center;
+}
+#simulation-output-files {
+    height: 600px;
+    overflow: auto;
+}
+#simulation-output-files img {
+    border: 1px solid #ccc;
+}
+#run-sim-debug-output {
+    height: 50px;
+    overflow: auto;
+    text-align: left;
+}
+div.outputFile {
+    text-align: left;
+    overflow: auto;
+    height: 150px;
+}
 
 .mymain {
     background-color: #ffd;

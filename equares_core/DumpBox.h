@@ -37,6 +37,7 @@ private:
     RuntimeInputPort m_dump;
 
     bool dump();
+    QString fileName() const;
 
     FILE *m_cfile;
 };

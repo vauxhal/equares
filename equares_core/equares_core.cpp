@@ -167,9 +167,10 @@ void Runner::start(const Simulation *sim)
 void Runner::run()
 {
     // Announce output files
+    OutputFileInfoList ofi;
+    QTextStream& out = EQUARES_COUT;
     {
         // Gather output file information from all boxes
-        OutputFileInfoList ofi;
         foreach (const RuntimeBox::Ptr& box, m_rtboxes)
             ofi << box->outputFileInfo();
 
@@ -185,7 +186,6 @@ void Runner::run()
         foreach(const OutputFileInfo& info, ofi)
             info.createStubFile();
 
-        QTextStream& out = EQUARES_COUT;
         out << "begin file announcement" << endl;
         foreach(const OutputFileInfo& info, ofi)
             out << info.toString() << endl;
@@ -209,6 +209,10 @@ void Runner::run()
             m_queue << m_queue.first();
         m_queue.removeFirst();
     }
+
+    // Report final state of output files
+    foreach(const OutputFileInfo& info, ofi)
+        out << "file: " << info.name() << endl;
 }
 
 void Runner::requestTermination() {

@@ -476,10 +476,10 @@ equaresui.setSceneSource = function() {
         setter(value, ok)
     }
 
+    function wrap(tag) { return $("<" + tag + "></" + tag + ">") }
     equaresui.selectBox = function(box) {
         if (box) {
             extrasDiv.html("")
-            function wrap(tag) { return "<" + tag + "></" + tag + ">" }
             function makeEditor(host, prop) {
                 var t = prop.userType
                 if (t === undefined)
@@ -487,12 +487,12 @@ equaresui.setSceneSource = function() {
                 else if (t instanceof Array)
                     host.html("TODO: Array")
                 else if (t instanceof Object) {
-                    var table = $(wrap("table")).appendTo(host), odd = false
+                    var table = wrap("table").appendTo(host), odd = false
                     for (var name in t) {
-                        var row = $(wrap("tr")).appendTo(table)
+                        var row = wrap("tr").appendTo(table)
                         row.addClass(odd ? "odd": "even")
-                        row.append($(wrap("td")).html(name))
-                        var tdVal = $(wrap("td")).appendTo(row)
+                        row.append(wrap("td").html(name))
+                        var tdVal = wrap("td").appendTo(row)
                         ;(function(){    // Important: function provides closure for name_
                             var name_ = name
                             makeEditor(tdVal,
@@ -552,15 +552,15 @@ equaresui.setSceneSource = function() {
                             .click(function() {
                                 extrasDiv.html("")
                                 var textarea
-                                $(wrap("div")).attr("id", "scheme-box-extras-hdr")
-                                    .append($(wrap("h1")).html(prop.name))
+                                wrap("div").attr("id", "scheme-box-extras-hdr")
+                                    .append(wrap("h1").html(prop.name))
                                     .append(
                                          $('<input type="button" class="scheme-box-extras-ok" value="Ok">')
                                             .click(function() { prop.setter(textarea[0].value) })
                                     )
                                     .appendTo(extrasDiv)
-                                $(wrap("div")).attr("id", "scheme-box-extras-text")
-                                    .append(textarea = $(wrap("textarea")))
+                                wrap("div").attr("id", "scheme-box-extras-text")
+                                    .append(textarea = wrap("textarea"))
                                     .appendTo(extrasDiv)
                                 textarea[0].value = prop.getter()
                                 textarea.focus()
@@ -568,14 +568,14 @@ equaresui.setSceneSource = function() {
                             .appendTo(host)
                         break
                     case 'BoxType':
-                        var editor = $(wrap("select")).appendTo(host)
+                        var editor = wrap("select").appendTo(host)
                         equaresInfo("boxTypes", function(boxes) {
                             function findSelIndex() {
                                 var index = -1
                                 var v = prop.getter()
                                 for(var i=0; i<boxes.length; ++i) {
                                     var b = boxes[i]
-                                    editor.append($(wrap("option")).attr("value", b).html(b))
+                                    editor.append(wrap("option").attr("value", b).html(b))
                                     if (b == v)
                                         index = i
                                 }
@@ -636,8 +636,8 @@ equaresui.setSceneSource = function() {
             }
 
             propsDiv.html("")
-            var hdr = $(wrap("h1")).html(box.name).appendTo(propsDiv)
-            var table = $(wrap("table")).appendTo(propsDiv)
+            var hdr = wrap("h1").html(box.name).appendTo(propsDiv)
+            var table = wrap("table").appendTo(propsDiv)
             var props = {
                 name: {
                     userType: 's',
@@ -659,10 +659,10 @@ equaresui.setSceneSource = function() {
             for (pname in props) {
                 odd = !odd
                 var p = props[pname]
-                var row = $(wrap("tr")).appendTo(table)
+                var row = wrap("tr").appendTo(table)
                 row.addClass(odd? "odd": "even")
-                row.append($(wrap("td")).html(pname))
-                var tdVal = $(wrap("td")).appendTo(row)
+                row.append(wrap("td").html(pname))
+                var tdVal = wrap("td").appendTo(row)
                 ;(function(){    // Important: function provides closure for pname_
                     var pname_ = pname,
                         setter = p.setter instanceof Function ?   p.setter :   function(value) { box.prop(pname_, value) },
@@ -727,13 +727,140 @@ equaresui.setSceneSource = function() {
     equaresui.runScheme = function() {
         var simulation = schemeEditor.exportSimulation()
         simulation = JSON.stringify(simulation)
+        function dummyStopSim() {}
+        equaresui.stopSimulation = dummyStopSim
         $.ajax("equaresRunSimulation.cmd", {data: {simulation: simulation}, type: "GET"})
-            // .done() {}
+            .done(function() {
+                var dlg = $("#running-simulation")
+                var stopButton = $(".ui-dialog-buttonpane button:contains('Stop')")
+                stopButton.button("enable")
+                dlg.dialog("open")
+                var status = dlg.find(".status").html("running")
+                var running = true
+                equaresui.stopSimulation = function() {
+                    $.ajax("equaresToggle.cmd")
+                }
+
+                var dbgout = $("#run-sim-debug-output")
+                var outfiles = $("#simulation-output-files")
+                outfiles.html("")
+
+                var equaresStatEvent = new EventSource("equaresStatEvent.cmd");
+                equaresStatEvent.onmessage = function(event) {
+                    if (+event.data === 0) {
+                        // Simulation has finished
+                        status.html("finished");
+                        running = false
+                        stopButton.button("disable")
+                        equaresui.stopSimulation = dummyStopSim
+                        equaresStatEvent.close()
+                        equaresOutputEvent.close()
+                    }
+                }
+                var equaresOutputEvent = new EventSource("equaresOutputEvent.cmd");
+                var rxFile = /^==([0-9])+==\> file: (.*)/,
+                    rxSync = /^==([0-9])+==\> sync/;
+                var outFileInfo = {}
+                var started = false
+                var prefix, syncToken
+                var faStarted = false   // File announcement started
+                var faFinished = false  // File announcement finished
+                equaresOutputEvent.onmessage=function(event) {
+                    data = JSON.parse(event.data);
+                    var str = data.text, i, fi, m
+                    switch (data.stream) {
+                    case 0: return  // Ignore stdin
+                    case 1:         // Parse stdout
+                        if (!started) {
+                            // Wait for start token
+                            m = str.match(/^==([0-9])+==\> started/)
+                            if (m && m.length > 1) {
+                                prefix = "==" + m[1] + "==> "
+                                syncToken = "==" + m[1] + "==<"
+                                started = true
+                            }
+                            return
+                        }
+                        if (!str.match(prefix))
+                            // Ignore everything not starting with the right prefix
+                            return
+                        // Cut prefix
+                        str = str.substr(prefix.length).trimRight()
+                        if (!faStarted) {
+                            // Wait for file annouuncement
+                            if (str === "begin file announcement")
+                                faStarted = true
+                            return
+                        }
+                        if (!faFinished) {
+                            // Process file annouuncement
+                            if (str === "end file announcement") {
+                                // Create elements for displaying announced files
+                                for(i in outFileInfo) {
+                                    outfiles.append('<span>'+i+'</span><br/>' )
+                                    fi = outFileInfo[i]
+                                    switch(fi.type) {
+                                    case "image":
+                                        fi.jq = $('<img src="' + i + '" title="' + i + '"/>')
+                                            .css("width", fi.size.width)
+                                            .css("height", fi.size.height)
+                                            .addClass("outputFile")
+                                            .appendTo(outfiles)
+                                        outfiles.append("<br/>")
+                                        break
+                                    case "text":
+                                        fi.jq = wrap('div').addClass("outputFile").appendTo(outfiles).html("Waiting...")
+                                        break
+                                    default:
+                                        fi.jq = wrap('div').addClass("outputFile").appendTo(outfiles).html("UNKNOWN FILE TYPE")
+                                    }
+                                }
+                                faFinished = true
+                            }
+                            else {
+                                fi = JSON.parse(str)
+                                outFileInfo[fi.name] = fi
+                            }
+                            return
+                        }
+                        m = str.match("file: (.*)")
+                        if (m && m.length > 1) {
+                            var name = m[1]
+                            fi = outFileInfo[name]
+                            switch(fi.type) {
+                            case "image":
+                                fi.jq.attr("src", name + "#" + new Date().getTime())
+                                break
+                            case "text":
+                                // TODO: cut text, add download link
+                                $.ajax(name).done(function(text) {
+                                    fi.jq.html(text.replace("\n", "<br/>"))
+                                })
+                                break
+                            }
+                            return
+                        }
+                        if (str === "sync") {
+                            $.ajax("equaresExec.cmd", {data: {cmd: syncToken}, type: "GET"})
+                            return
+                        }
+                        if (str === "finished") {
+                            equaresui.stopSimulation()
+                            return
+                        }
+
+                        // dbgout.append('<span style="color: green;">' + str + '</span><br/>')
+                        break
+                    case 2:         // Report error
+                        dbgout.append('<span style="color: red;">' + str + '</span><br/>')
+                        break
+                    }
+                }
+            })
             .fail(function(){
                 alert("Ajax error");
             });
     }
-
 }
 
 $(document).ready(function() {

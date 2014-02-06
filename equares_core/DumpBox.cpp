@@ -65,9 +65,7 @@ DumpRuntimeBox::~DumpRuntimeBox()
 
 OutputFileInfoList DumpRuntimeBox::outputFileInfo() const
 {
-    const DumpBox *box = qobject_cast<const DumpBox*>(owner());
-    Q_ASSERT(box);
-    return OutputFileInfoList() << OutputFileInfo::text(box->fileName());
+    return OutputFileInfoList() << OutputFileInfo::text(fileName());
 }
 
 bool DumpRuntimeBox::dump()
@@ -91,5 +89,15 @@ bool DumpRuntimeBox::dump()
         if (ii+1 == m)
             fputc('\n', m_cfile);
     }
+    // TODO: decimate progress reports
+//    fflush(m_cfile);
+//    ThreadManager::instance()->reportProgress(ProgressInfo().setSync(true) << fileName());
     return true;
+}
+
+QString DumpRuntimeBox::fileName() const
+{
+    const DumpBox *box = qobject_cast<const DumpBox*>(owner());
+    Q_ASSERT(box);
+    return box->fileName();
 }

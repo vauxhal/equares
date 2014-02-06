@@ -9,7 +9,7 @@ $(document).ready(function() {
     c2.master = true;
     c3 = rootLayout.add( {height: 15, nosplit: true} );
     var header = $(c1.dom)
-    header.attr("id", "header").html('<div id="projectname">Equares</div>');
+    header.attr("id", "header").html('<img id="projectlogo" src="logo-small.png" title="logo"/><div id="projectname">Equares</div>');
 
     // Create main menu
     function wrap(tag) { return $("<" + tag + "></" + tag + ">") }
@@ -46,7 +46,7 @@ $(document).ready(function() {
                 {text: "Simple pendulum, phase trajectory", handler: function() { equaresui.loadExample("simple-pendulum-1") }},
                 {text: "Simple pendulum, several plots", handler: function() { equaresui.loadExample("simple-pendulum-2") }},
                 {text: "Double pendulum, trajectory projection", handler: function() { equaresui.loadExample("double-pendulum-t") }},
-                {text: "Simple pendulum, Poincare map", handler: function() { equaresui.loadExample("double-pendulum-psec") }}
+                {text: "Double pendulum, Poincare map", handler: function() { equaresui.loadExample("double-pendulum-psec") }}
             ]},
             {text: "Open", handler: function() { $("#open-scheme-file-dialog").dialog("open") } },
             {text: "Save", handler: function() { $("#save-scheme-file-dialog").dialog("open") } },
@@ -94,6 +94,21 @@ $(document).ready(function() {
                 $(this).dialog("close")
             },
             Cancel: function() { $(this).dialog("close") }
+        }
+    })
+
+    $("#running-simulation").dialog({
+        autoOpen: false,
+        modal: true,
+        width: 800,
+        buttons: {
+            Stop: function() {
+                equaresui.stopSimulation()
+            },
+            Close: function() {
+                equaresui.stopSimulation()
+                $(this).dialog("close")
+            }
         }
     })
 
