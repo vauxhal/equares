@@ -1,4 +1,7 @@
 #include "equares_exec.h"
+#include "EquaresException.h"
+#include <QPainter>
+#include <QImage>
 #include <iostream>
 
 DefaultOutputStream::DefaultOutputStream(FILE *os) : m_empty(true)
@@ -56,6 +59,40 @@ QString OutputFileInfo::toString() const
     }
     result += "}";
     return result;
+}
+
+void OutputFileInfo::createStubFile() const
+{
+    switch(m_type) {
+    case Text: {
+        QFile f(m_name);
+        if (!f.open(QFile::WriteOnly))
+            throw EquaresException(QObject::tr("Failed to create output file '%1'").arg(m_name));
+        f.write(QByteArray("Waiting...\n"));
+        break;
+        }
+    case Image: {
+        QImage img(m_size, QImage::Format_Mono);
+        {
+            QPainter painter(&img);
+            QRect rc(QPoint(0,0), m_size);
+            painter.fillRect(rc, Qt::white);
+            int w = m_size.width(), h = m_size.height();
+            painter.drawLine(0, 0, w, h);
+            painter.drawLine(0, h, w, 0);
+            painter.drawLine(0, 0, w, 0);
+            painter.drawLine(0, h-1, w, h-1);
+            painter.drawLine(0, 0, 0, h);
+            painter.drawLine(w-1, 0, w-1, h);
+            // Note: The following would need QGuiApplication
+            // painter.drawText(rc, Qt::AlignCenter, QString("Waiting..."));
+        }
+        img.save(m_name);
+        break;
+    }
+    default:
+        Q_ASSERT(false);
+    }
 }
 
 

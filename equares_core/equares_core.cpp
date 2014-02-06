@@ -168,9 +168,23 @@ void Runner::run()
 {
     // Announce output files
     {
+        // Gather output file information from all boxes
         OutputFileInfoList ofi;
         foreach (const RuntimeBox::Ptr& box, m_rtboxes)
             ofi << box->outputFileInfo();
+
+        // Check that there are no duplicate output file names
+        QSet<QString> fileNames;
+        foreach(const OutputFileInfo& info, ofi)
+            if (fileNames.contains(info.name()))
+                throw EquaresException(QObject::tr("Duplicate output file name '%1'").arg(info.name()));
+            else
+                fileNames << info.name();
+
+        // Generate output file stubs
+        foreach(const OutputFileInfo& info, ofi)
+            info.createStubFile();
+
         QTextStream& out = EQUARES_COUT;
         out << "begin file announcement" << endl;
         foreach(const OutputFileInfo& info, ofi)

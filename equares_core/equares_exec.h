@@ -119,6 +119,8 @@ public:
         return OutputFileInfo(name, Image, QSize(width, height));
     }
     QString toString() const;
+    void createStubFile() const;
+
 private:
     explicit OutputFileInfo(const QString& name, Type type, const QSize& size = QSize()) :
         m_name(name), m_type(type), m_size(size) {}
