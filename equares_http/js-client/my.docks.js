@@ -1474,7 +1474,7 @@ $(document).ready(function() {
         tools: [
             new Tool( {
                 title: "Clear",
-                src: "clear.png",
+                src: "pix/clear.png",
                 alt: "clear",
                 handler: function() { this.clear(); }
             } )
@@ -1484,7 +1484,7 @@ $(document).ready(function() {
 
     t.sourceMenu = new MenuTool( {
         title: "Select source",
-        src: "menu.png",
+        src: "pix/menu.png",
         alt: "select source",
         toolSet: ctmDock.toolSets.sourceMenuTools,
         updateUi: Tools.splitContainer.updateUi

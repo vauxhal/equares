@@ -413,7 +413,7 @@ var ctmEquaresSchemeEditor = {};
         var g = d$(node)
         var stat = g.select(".status")
         stat
-            .attr("xlink:href", "status-"+d.status.level+".png")
+            .attr("xlink:href", "pix/status-"+d.status.level+".png")
             .on("mouseover", equaresui.hpStatusHelp.enter)
             .on("mouseout", equaresui.hpStatusHelp.leave)
     }
@@ -445,7 +445,6 @@ var ctmEquaresSchemeEditor = {};
 
             // Add status image
             g.append("image")
-                // .attr("xlink:href", "status-ok.png")
                 .attr("class", "status")
                 .attr("x", xitem)
                 .attr("y", vmargin)
@@ -478,7 +477,7 @@ var ctmEquaresSchemeEditor = {};
 
             // Add close button image
             g.append("image")
-                .attr("xlink:href", "close.png")
+                .attr("xlink:href", "pix/close.png")
                 .attr("class", "close")
                 .attr("x", xitem)
                 .attr("y", vmargin)

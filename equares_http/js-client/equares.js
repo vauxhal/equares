@@ -9,7 +9,7 @@ $(document).ready(function() {
     c2.master = true;
     c3 = rootLayout.add( {height: 15, nosplit: true} );
     var header = $(c1.dom)
-    header.attr("id", "header").html('<img id="projectlogo" src="logo-small.png" title="logo"/><div id="projectname">Equares</div>');
+    header.attr("id", "header").html('<img id="projectlogo" src="pix/logo-small.png" title="logo"/><div id="projectname">Equares</div>');
 
     // Create main menu
     function wrap(tag) { return $("<" + tag + "></" + tag + ">") }

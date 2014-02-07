@@ -74,7 +74,7 @@ User.prototype.stopped = function() {
 User.prototype.start = function() {
     var user = this;
     console.log( 'Starting equares for user %s', user.name );
-    this.proc = child_process.spawn(equares.programPath, ['-s']);
+    this.proc = child_process.spawn(equares.programPath, ['-s'], {cwd: 'equares-cwd'});
     this.lastev = 1;
     this.proc.on('close', function() {
         console.log( 'equares for user %s has been closed', user.name );
@@ -262,7 +262,7 @@ server.commands["equaresRequestInfo"] = function(request, response) {
         response.end();
     }
     else {
-        child_process.exec(equares.programPath + " -d " + command, function (error, stdout, stderr) {
+        child_process.exec(equares.programPath + " -d " + command, {cwd: 'equares-cwd'}, function (error, stdout, stderr) {
             var result = {
                 stdout: stdout,
                 stderr: stderr
@@ -279,7 +279,7 @@ server.commands["equaresRequestInfoEx"] = function(request, response) {
     var query = url.parse(request.url, true).query
     var describeOptions = query.options || "";
     var command = query.cmd;
-    var proc = child_process.spawn(equares.programPath, ['-i', '-d'+describeOptions, command]);
+    var proc = child_process.spawn(equares.programPath, ['-i', '-d'+describeOptions, command], {cwd: 'equares-cwd'});
     var stdout = "", stderr = "", replied = false
     function reply(text) {
         if (!replied) {

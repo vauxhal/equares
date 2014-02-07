@@ -354,7 +354,7 @@ equaresui.setSceneSource = function() {
     {
         var text = '<h1>Boxes</h1><table>';
         for (var i in boxes)
-            text += '<tr></td><td><img src="question.png"></td><td class="scheme-boxlist-box">' + boxes[i] + '</tr>';
+            text += '<tr></td><td><img src="pix/question.png"></td><td class="scheme-boxlist-box">' + boxes[i] + '</tr>';
         text += '</table>';
         boxDiv.append(text);
         boxDiv.find('tr:odd').addClass('odd');
@@ -799,7 +799,7 @@ equaresui.setSceneSource = function() {
                                     fi = outFileInfo[i]
                                     switch(fi.type) {
                                     case "image":
-                                        fi.jq = $('<img src="' + i + '" title="' + i + '"/>')
+                                        fi.jq = $('<img src="' + "equares-cwd/" + i + '" title="' + i + '"/>')
                                             .css("width", fi.size.width)
                                             .css("height", fi.size.height)
                                             .addClass("outputFile")
@@ -823,15 +823,15 @@ equaresui.setSceneSource = function() {
                         }
                         m = str.match("file: (.*)")
                         if (m && m.length > 1) {
-                            var name = m[1]
+                            var name = m[1], svrname = "equares-cwd/" + name
                             fi = outFileInfo[name]
                             switch(fi.type) {
                             case "image":
-                                fi.jq.attr("src", name + "#" + new Date().getTime())
+                                fi.jq.attr("src", svrname + "#" + new Date().getTime())
                                 break
                             case "text":
                                 // TODO: cut text, add download link
-                                $.ajax(name).done(function(text) {
+                                $.ajax(svrname).done(function(text) {
                                     text.replace("\r", "")
                                     var lines = text.split("\n")
                                         var table = wrap("table").appendTo(fi.jq.html(""))
@@ -886,19 +886,19 @@ $(document).ready(function() {
     ctmDock.toolSets.sourceMenuTools.addTools( [
         ctmDock.newTool( {
             title: "Console",
-            src: "console.png",
+            src: "pix/console.png",
             alt: "console",
             handler: equaresui.setConsoleSource
             } ),
         ctmDock.newTool( {
             title: "Plot",
-            src: "plot.png",
+            src: "pix/plot.png",
             alt: "plot",
             handler: equaresui.setWorkbenchSource
             } ),
         ctmDock.newTool( {
             title: "Scheme",
-            src: "scheme.png",
+            src: "pix/scheme.png",
             alt: "scheme",
             handler: equaresui.setSceneSource
             } )
