@@ -72,7 +72,7 @@ body {
     position: relative;
     padding: 2px;
     position: absolute;
-    z-index: 100;
+    z-index: 10;
 }
 .buttonphantom {
     position: relative;
@@ -117,7 +117,7 @@ body {
     overflow: hidden;
 	border: 1px solid #bbb;
 	display: none;
-    z-index: 200;
+    z-index: 20;
     display: none;
 }
 .tools.h {
