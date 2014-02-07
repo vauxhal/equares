@@ -62,7 +62,7 @@ OutputPorts CrossSectionBox::outputPorts() const {
 
 void CrossSectionBox::checkPortFormat() const {
     if (m_in.format() != m_out.format())
-        throw EquaresException("CrossSectionBox: Incompatible port formats");
+        throwBoxException("CrossSectionBox: Incompatible port formats");
 }
 
 bool CrossSectionBox::propagatePortFormat() {
@@ -106,7 +106,7 @@ CrossSectionRuntimeBox::CrossSectionRuntimeBox(const CrossSectionBox *box)
     m_d2 = m_buf[1].data();
     m_param = box->param();
     if (m_param.index < 0   ||   m_param.index >= m_n)
-        throw EquaresException("CrossSectionRuntimeBox: Invalid cross-section index");
+        throwBoxException("CrossSectionRuntimeBox: Invalid cross-section index");
     m_canCross = false;
     enum { TwoSided = CountNegativeSpeed | CountPositiveSpeed };
     m_twoSided = ( m_param.flags & TwoSided ) == TwoSided;

@@ -21,9 +21,9 @@ OutputPorts BitmapBox::outputPorts() const {
 void BitmapBox::checkPortFormat() const
 {
     if (!m_dump.format().isValid())
-        throw EquaresException("BitmapBox: no format is specified for port 'input'");
+        throwBoxException("BitmapBox: no format is specified for port 'input'");
     if (m_dump.format().dimension() != 2)
-        throw EquaresException("BitmapBox: a 2D format was expected for port 'input'");
+        throwBoxException("BitmapBox: a 2D format was expected for port 'input'");
 }
 
 bool BitmapBox::propagatePortFormat() {
@@ -54,7 +54,7 @@ BitmapRuntimeBox::BitmapRuntimeBox(const BitmapBox *box)
     setInputPorts(RuntimeInputPorts() << &m_dump);
     m_fileName = box->fileName();
     if (m_fileName.isEmpty())
-        throw EquaresException("BitmapRuntimeBox: no fileName is specified");
+        throwBoxException("BitmapRuntimeBox: no fileName is specified");
 }
 
 OutputFileInfoList BitmapRuntimeBox::outputFileInfo() const

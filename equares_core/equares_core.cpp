@@ -1,6 +1,11 @@
 #include "equares_core.h"
 #include <QSet>
 
+void Box::throwBoxException(const QString& what) const
+{
+    throw EquaresBoxException(this, what);
+}
+
 void Simulation::initPortFormat()
 {
     // Clear all non-fixed formats; check that fixed formats are valid

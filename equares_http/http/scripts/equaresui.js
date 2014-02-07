@@ -741,9 +741,7 @@ equaresui.setSceneSource = function() {
                     $.ajax("equaresToggle.cmd")
                 }
 
-                var dbgout = $("#run-sim-debug-output")
-                var outfiles = $("#simulation-output-files")
-                outfiles.html("")
+                var outfiles = $("#simulation-output-files").html("").css("text-align", "center")
 
                 var equaresStatEvent = new EventSource("equaresStatEvent.cmd");
                 equaresStatEvent.onmessage = function(event) {
@@ -834,7 +832,15 @@ equaresui.setSceneSource = function() {
                             case "text":
                                 // TODO: cut text, add download link
                                 $.ajax(name).done(function(text) {
-                                    fi.jq.html(text.replace("\n", "<br/>"))
+                                    text.replace("\r", "")
+                                    var lines = text.split("\n")
+                                        var table = wrap("table").appendTo(fi.jq.html(""))
+                                        for (var i=0; i<lines.length; ++i) {
+                                            var line = lines[i].split("\t")
+                                            var row = wrap("tr").appendTo(table)
+                                            for (var j=0; j<line.length; ++j)
+                                                wrap("td").html(line[j]).appendTo(row)
+                                        }
                                 })
                                 break
                             }
@@ -848,11 +854,23 @@ equaresui.setSceneSource = function() {
                             equaresui.stopSimulation()
                             return
                         }
-
-                        // dbgout.append('<span style="color: green;">' + str + '</span><br/>')
                         break
                     case 2:         // Report error
-                        dbgout.append('<span style="color: red;">' + str + '</span><br/>')
+                        m = str.match(/^==\d+==> ERROR: line \d+: (.*)/)
+                        if (m && m.length > 1) {
+                            str = m[1].trimRight()
+                            equaresui.stopSimulation()
+                            // If possible, select box in problem
+                            m = str.match(/\[box='(.*)'\]/)
+                            if (m && m.length > 1)
+                                schemeEditor.findBox(m[1]).select(true)
+                        }
+                        else {
+                            m = str.match(/^==\d+==> (.*)/)
+                            if (m && m.length > 1)
+                                str = m[1].trimRight()
+                        }
+                        outfiles.css("text-align", "left").append('<span style="color: red">' + str + '</span><br/>')
                         break
                     }
                 }

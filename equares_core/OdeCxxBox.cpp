@@ -9,16 +9,20 @@
 
 #include <iostream>
 
+static void throwBoxException(const Box *box, const QString& what) {
+    throw EquaresBoxException(box, what);
+}
+
 #ifdef _WIN32
 #define PLATFORM WINDOWS
 
-static void buildLibNoQmake(const QDir& dir)
+static void buildLibNoQmake(const QDir& dir, const Box *box)
 {
     QString buildFileName = "build_msvs.bat";
     QFileInfo fi(dir.absoluteFilePath(buildFileName));
     if (!fi.exists()) {
         if (!QFile::copy(":/cxx/"+buildFileName, fi.absoluteFilePath()))
-            throw EquaresException(QString("Failed to copy library build file to '%1'")
+            throwBoxException(box, QString("Failed to copy library build file to '%1'")
                 .arg(fi.absoluteFilePath()));
     }
     QProcess proc;
@@ -26,9 +30,9 @@ static void buildLibNoQmake(const QDir& dir)
     proc.setWorkingDirectory(dir.absolutePath());
     proc.start(cmdline);
     if (!proc.waitForFinished())
-        throw EquaresException("Failed to build dll-file (timed out)");
+        throwBoxException(box, "Failed to build dll-file (timed out)");
     if (proc.exitCode() != 0)
-        throw EquaresException(QString("Failed to build library file:\n%1").arg(
+        throwBoxException(box, QString("Failed to build library file:\n%1").arg(
             QString::fromUtf8(proc.readAllStandardError())));
     Q_ASSERT(QFileInfo(dir.absoluteFilePath("ode.dll")).exists());
 }
@@ -38,16 +42,16 @@ static void buildLibNoQmake(const QDir& dir)
 #ifdef __linux__
 #define PLATFORM LINUX
 
-static void buildLibNoQmake(const QDir& dir)
+static void buildLibNoQmake(const QDir& dir, const Box *box)
 {
     QString cmdline = "g++ -Wall -shared -Wl,-soname,ode.so -fPIC -O2 -o ode.so ode.cpp";
     QProcess proc;
     proc.setWorkingDirectory(dir.absolutePath());
     proc.start(cmdline);
     if (!proc.waitForFinished())
-        throw EquaresException("Failed to build so-file (timed out)");
+        throwBoxException(box, "Failed to build so-file (timed out)");
     if (proc.exitCode() != 0)
-        throw EquaresException(QString("Failed to build library file:\n%1").arg(
+        throwBoxException(box, QString("Failed to build library file:\n%1").arg(
             QString::fromUtf8(proc.readAllStandardError())));
     Q_ASSERT(QFileInfo(dir.absoluteFilePath("ode.so")).exists());
 }
@@ -58,33 +62,33 @@ static void buildLibNoQmake(const QDir& dir)
 #error "Unknown platform"
 #endif // !PLATFORM
 
-static QString readFile(const QString& fileName)
+static QString readFile(const QString& fileName, const Box *box)
 {
     QFile file(fileName);
     file.open(QIODevice::ReadOnly);
     if (!file.isOpen())
-        throw EquaresException(QString("readFile(): failed to open file %1").arg(fileName));
+        throwBoxException(box, QString("readFile(): failed to open file %1").arg(fileName));
     return QString::fromUtf8(file.readAll());
 }
 
-static void buildLibWithQmake(const QDir& dir)
+static void buildLibWithQmake(const QDir& dir, const Box *box)
 {
     QFileInfo fiPro(dir.absoluteFilePath("ode.pro"));
     if (!fiPro.exists()) {
         if (!QFile::copy(":/cxx/ode.pro", fiPro.absoluteFilePath()))
-            throw EquaresException(QString("Failed to copy qmake project file to '%1'")
+            throwBoxException(box, QString("Failed to copy qmake project file to '%1'")
                 .arg(fiPro.absoluteFilePath()));
     }
     QProcess proc;
     QStringList env = QProcess::systemEnvironment();
     QDir appDir(QCoreApplication::applicationDirPath());
-    QString buildTimePath = readFile(appDir.absoluteFilePath("buildpath.txt"));
+    QString buildTimePath = readFile(appDir.absoluteFilePath("buildpath.txt"), box);
     buildTimePath.remove('\r').remove('\n');
-    QString buildTimeInclude = readFile(appDir.absoluteFilePath("buildinclude.txt"));
+    QString buildTimeInclude = readFile(appDir.absoluteFilePath("buildinclude.txt"), box);
     buildTimeInclude.remove('\r').remove('\n');
-    QString buildTimeLib = readFile(appDir.absoluteFilePath("buildlib.txt"));
+    QString buildTimeLib = readFile(appDir.absoluteFilePath("buildlib.txt"), box);
     buildTimeLib.remove('\r').remove('\n');
-    QString makeCmd = readFile(appDir.absoluteFilePath("makecmd.txt"));
+    QString makeCmd = readFile(appDir.absoluteFilePath("makecmd.txt"), box);
     makeCmd.remove('\r').remove('\n');
 #ifdef _WIN32
     // Because it might happen that makeCmd is not found in the path
@@ -105,29 +109,29 @@ static void buildLibWithQmake(const QDir& dir)
     proc.setEnvironment(env);
     proc.start("qmake ode.pro");
     if (!proc.waitForFinished())
-        throw EquaresException("Failed to generate Makefile (timed out)");
+        throwBoxException(box, "Failed to generate Makefile (timed out)");
     if (proc.exitCode() != 0)
-        throw EquaresException(QString("Failed to generate Makefile (qmake returned %1):\n%2").arg(
+        throwBoxException(box, QString("Failed to generate Makefile (qmake returned %1):\n%2").arg(
             QString::number(proc.exitCode()),
             QString::fromUtf8(proc.readAllStandardError())));
 
     proc.start(makeCmd);
     if (!proc.waitForFinished())
-        throw EquaresException("Failed to build library (timed out)");
+        throwBoxException(box, "Failed to build library (timed out)");
 
     if (proc.exitCode() != 0) {
         EQUARES_COUT << proc.readAllStandardOutput() << endl;
-        throw EquaresException(QString("Failed to build library :\n%1").arg(
+        throwBoxException(box, QString("Failed to build library :\n%1").arg(
             QString::fromUtf8(proc.readAllStandardError())));
     }
 }
 
-static void buildLib(const QDir& dir, bool withQmake)
+static void buildLib(const QDir& dir, bool withQmake, const Box *box)
 {
     if (withQmake)
-        buildLibWithQmake(dir);
+        buildLibWithQmake(dir, box);
     else
-        buildLibNoQmake(dir);
+        buildLibNoQmake(dir, box);
 }
 
 REGISTER_BOX(OdeCxxBox, "CxxOde")
@@ -151,11 +155,11 @@ OutputPorts OdeCxxBox::outputPorts() const {
 
 void OdeCxxBox::checkPortFormat() const {
     if (m_param.format() != PortFormat(paramCount()))
-        throw EquaresException("OdeCxxBox: port 'parameters' has an invalid size");
+        throwBoxException("OdeCxxBox: port 'parameters' has an invalid size");
     if (m_state.format() != PortFormat(varCount()+1))
-        throw EquaresException("OdeCxxBox: port 'state' has an invalid size");
+        throwBoxException("OdeCxxBox: port 'state' has an invalid size");
     if (m_rhs.format() != PortFormat(varCount()))
-        throw EquaresException("OdeCxxBox: port 'rhs' has an invalid size");
+        throwBoxException("OdeCxxBox: port 'rhs' has an invalid size");
 }
 
 bool OdeCxxBox::propagatePortFormat() {
@@ -194,7 +198,7 @@ OdeCxxBox& OdeCxxBox::setSrc(const QString& src)
                 break;
             }
         if (className.isEmpty())
-            throw EquaresException("Failed to set source: unable to retrieve struct name");
+            throwBoxException("Failed to set source: unable to retrieve struct name");
     }
 
     // Generate md5 checksum
@@ -213,9 +217,9 @@ OdeCxxBox& OdeCxxBox::setSrc(const QString& src)
     QDir dir = QDir::current();
     QString subdirPath = "equares/" + className + "_" + hashString;
     if (!dir.mkpath(subdirPath))
-        throw EquaresException(QString("Failed to create directory %1").arg(dir.absoluteFilePath(subdirPath)));
+        throwBoxException(QString("Failed to create directory %1").arg(dir.absoluteFilePath(subdirPath)));
     if (!dir.cd(subdirPath))
-        throw EquaresException(QString("Failed to switch to directory %1").arg(dir.absoluteFilePath(subdirPath)));
+        throwBoxException(QString("Failed to switch to directory %1").arg(dir.absoluteFilePath(subdirPath)));
 
     QString baseName = "ode";
 
@@ -224,24 +228,24 @@ OdeCxxBox& OdeCxxBox::setSrc(const QString& src)
         QFileInfo fi(dir.absoluteFilePath(baseName + ".cpp"));
         {
             QString srcFileContent =
-                readFile(":/cxx/OdeFileHeader.cpp") + "\n" +
+                readFile(":/cxx/OdeFileHeader.cpp", this) + "\n" +
                 src + "\n" +
-                readFile(":/cxx/OdeFileFooter.cpp").replace("<X>", className) + "\n" +
+                readFile(":/cxx/OdeFileFooter.cpp", this).replace("<X>", className) + "\n" +
                     "extern \"C\" ODE_EXPORT const char *hash() { return \"" + hashString + "\"; }\n";
             QFile srcFile(fi.absoluteFilePath());
             if (!srcFile.open(QIODevice::WriteOnly))
-                throw EquaresException(QString("Failed to open file %1").arg(fi.absoluteFilePath()));
+                throwBoxException(QString("Failed to open file %1").arg(fi.absoluteFilePath()));
             srcFile.write(srcFileContent.toUtf8());
         }
 
         // Build library
-        buildLib(dir, m_useQmake);
+        buildLib(dir, m_useQmake, this);
     }
 
     // Load library
     QString libName = dir.absoluteFilePath(baseName);
     m_libProxy.clear();
-    m_libProxy = OdeLibProxy::Ptr(new OdeLibProxy(libName));
+    m_libProxy = OdeLibProxy::Ptr(new OdeLibProxy(libName, this));
 
     // Assign source property
     m_src = src;
@@ -265,7 +269,7 @@ OdeCxxBox& OdeCxxBox::setSrc(const QString& src)
 }
 
 QString OdeCxxBox::srcExample() const {
-    return readFile(":/cxx/OdeClass.cpp");
+    return readFile(":/cxx/OdeClass.cpp", this);
 }
 
 bool OdeCxxBox::useQmake() const {
@@ -279,27 +283,27 @@ OdeCxxBox& OdeCxxBox::setUseQmake(bool useQmake) {
 
 int OdeCxxBox::paramCount() const {
     if (m_libProxy.isNull())
-        throw EquaresException("OdeCxxBox::paramCount: No source is specified");
+        throwBoxException("OdeCxxBox::paramCount: No source is specified");
     return m_libProxy->paramCount();
 }
 
 QStringList OdeCxxBox::paramNames() const
 {
     if (m_libProxy.isNull())
-        throw EquaresException("OdeCxxBox::paramNames: No source is specified");
+        throwBoxException("OdeCxxBox::paramNames: No source is specified");
     return m_libProxy->paramNames();
 }
 
 int OdeCxxBox::varCount() const {
     if (m_libProxy.isNull())
-        throw EquaresException("OdeCxxBox::varCount: No source is specified");
+        throwBoxException("OdeCxxBox::varCount: No source is specified");
     return m_libProxy->varCount();
 }
 
 QStringList OdeCxxBox::varNames() const
 {
     if (m_libProxy.isNull())
-        throw EquaresException("OdeCxxBox::varNames: No source is specified");
+        throwBoxException("OdeCxxBox::varNames: No source is specified");
     return m_libProxy->varNames();
 }
 
@@ -307,17 +311,18 @@ const OdeCxxBox::OdeLibProxy *OdeCxxBox::odeLibProxy() const {
     return m_libProxy.data();
 }
 
-OdeCxxBox::OdeLibProxy::OdeLibProxy(const QString& libName) :
-    m_lib(libName)
+OdeCxxBox::OdeLibProxy::OdeLibProxy(const QString& libName, const Box *box) :
+    m_lib(libName),
+    m_box(box)
 {
     m_lib.load();
     if (!m_lib.isLoaded())
-        throw EquaresException(QString("Failed to open library file '%1'").arg(libName));
+        ::throwBoxException(m_box, QString("Failed to open library file '%1'").arg(libName));
 
 #define RESOLVE_SYMBOL(name) \
     m_##name = reinterpret_cast<name##Func>(m_lib.resolve(#name)); \
     if (!m_##name) \
-        throw EquaresException(QString("Failed to resolve symbol '%1' in library '%1'").arg(#name, libName));
+        ::throwBoxException(m_box, QString("Failed to resolve symbol '%1' in library '%1'").arg(#name, libName));
     RESOLVE_SYMBOL(newInstance)
     RESOLVE_SYMBOL(deleteInstance)
     RESOLVE_SYMBOL(paramCount)
@@ -359,7 +364,7 @@ void OdeCxxBox::checkSrc(const QString& src) {
 bool OdeCxxBox::libUpToDate(const QString &libName, const QString& hashString)
 {
     try {
-        OdeLibProxy lib(libName);
+        OdeLibProxy lib(libName, this);
         return lib.hash() == hashString;
     }
     catch (const EquaresException&) {
@@ -373,7 +378,7 @@ OdeCxxRuntimeBox::OdeCxxRuntimeBox(const OdeCxxBox *box) :
     m_odeLibProxy(box->odeLibProxy())
 {
     if (!m_odeLibProxy)
-        throw EquaresException("OdeCxxRuntimeBox: No ODE source is currently set");
+        throwBoxException("OdeCxxRuntimeBox: No ODE source is currently set");
 
     setOwner(box);
 

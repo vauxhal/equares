@@ -20,9 +20,9 @@ OutputPorts CountedFilterBox::outputPorts() const {
 
 void CountedFilterBox::checkPortFormat() const {
     if (m_count.format() != PortFormat(1))
-        throw EquaresException("CountedFilterBox: Incompatible count port format");
+        throwBoxException("CountedFilterBox: Incompatible count port format");
     if (m_in.format() != m_out.format())
-        throw EquaresException("CountedFilterBox: Incompatible input/output port formats");
+        throwBoxException("CountedFilterBox: Incompatible input/output port formats");
 }
 
 bool CountedFilterBox::propagatePortFormat() {

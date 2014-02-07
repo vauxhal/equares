@@ -24,19 +24,19 @@ OutputPorts Rk4AdjustParamBox::outputPorts() const {
 void Rk4AdjustParamBox::checkPortFormat() const
 {
     if (m_step.format() != PortFormat(1))
-        throw EquaresException("Rk4AdjustParamBox: port 'h' has an invalid size");
+        throwBoxException("Rk4AdjustParamBox: port 'h' has an invalid size");
     bool hasStepCount = m_stepCount.isConnected();
     bool hasDuration = m_duration.isConnected();
     if (hasStepCount == hasDuration)
-        throw EquaresException("Rk4AdjustParamBox: exactly one of ports port 'n', 'T' should be connected");
+        throwBoxException("Rk4AdjustParamBox: exactly one of ports port 'n', 'T' should be connected");
     if (hasDuration && m_duration.format() != PortFormat(1))
-        throw EquaresException("Rk4AdjustParamBox: port 't' has an invalid size");
+        throwBoxException("Rk4AdjustParamBox: port 't' has an invalid size");
     if (hasStepCount && m_stepCount.format() != PortFormat(1))
-        throw EquaresException("Rk4AdjustParamBox: port 'n' has an invalid size");
+        throwBoxException("Rk4AdjustParamBox: port 'n' has an invalid size");
     if (m_outputControl.format() != PortFormat(1))
-        throw EquaresException("Rk4AdjustParamBox: port 'nout' has an invalid size");
+        throwBoxException("Rk4AdjustParamBox: port 'nout' has an invalid size");
     if (m_rk4param.format() != PortFormat(3))
-        throw EquaresException("Rk4AdjustParamBox: port 'rk4param' has an invalid size");
+        throwBoxException("Rk4AdjustParamBox: port 'rk4param' has an invalid size");
 }
 
 bool Rk4AdjustParamBox::propagatePortFormat() {

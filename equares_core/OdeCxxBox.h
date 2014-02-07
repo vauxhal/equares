@@ -39,7 +39,7 @@ public:
     public:
         typedef QSharedPointer<OdeLibProxy> Ptr;
 
-        explicit OdeLibProxy(const QString& libName);
+        explicit OdeLibProxy(const QString& libName, const Box *box);
         ~OdeLibProxy();
 
         int paramCount() const {
@@ -78,6 +78,8 @@ public:
         typedef const char* (*hashFunc)();
 
         QLibrary m_lib;
+        const Box *m_box;
+
         newInstanceFunc m_newInstance;
         deleteInstanceFunc m_deleteInstance;
         paramCountFunc m_paramCount;
@@ -103,8 +105,8 @@ private:
 
     OdeLibProxy::Ptr m_libProxy;
 
-    static void checkSrc(const QString& src);
-    static bool libUpToDate(const QString& libName, const QString& hashString);
+    void checkSrc(const QString& src);
+    bool libUpToDate(const QString& libName, const QString& hashString);
 };
 
 class OdeCxxRuntimeBox : public RuntimeBox

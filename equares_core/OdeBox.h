@@ -28,11 +28,11 @@ public:
     }
     void checkPortFormat() const {
         if (m_param.format() != PortFormat(OdeTraits::ParamCount))
-            throw EquaresException("OdeBox: port 'parameters' has an invalid size");
+            throwBoxException("OdeBox: port 'parameters' has an invalid size");
         if (m_state.format() != PortFormat(OdeTraits::VarCount+1))
-            throw EquaresException("OdeBox: port 'state' has an invalid size");
+            throwBoxException("OdeBox: port 'state' has an invalid size");
         if (m_rhs.format() != PortFormat(OdeTraits::VarCount))
-            throw EquaresException("OdeBox: port 'rhs' has an invalid size");
+            throwBoxException("OdeBox: port 'rhs' has an invalid size");
     }
     bool propagatePortFormat() {
         return false;

@@ -26,22 +26,22 @@ OutputPorts Rk4Box::outputPorts() const {
 void Rk4Box::checkPortFormat() const
 {
     if (m_param.format() != PortFormat(3))
-        throw EquaresException("Rk4Box: port 'parameters' has an invalid size");
+        throwBoxException("Rk4Box: port 'parameters' has an invalid size");
     PortFormat rhsfmt = m_rhs.format();
     if (!rhsfmt.isValid())
-        throw EquaresException("Rk4Box: no format is specified for port 'rhs'");
+        throwBoxException("Rk4Box: no format is specified for port 'rhs'");
     if (rhsfmt.dimension() != 1)
-        throw EquaresException("Rk4Box: port 'rhs' has an invalid dimension");
+        throwBoxException("Rk4Box: port 'rhs' has an invalid dimension");
     if (rhsfmt.size(0) == 0)
-        throw EquaresException("Rk4Box: port 'rhs' has an empty length");
+        throwBoxException("Rk4Box: port 'rhs' has an empty length");
     PortFormat stfmt = rhsfmt;
     stfmt.setSize(0, rhsfmt.size(0)+1);
     if (m_initState.format() != stfmt)
-        throw EquaresException("Rk4Box: port 'initState' has an incompatible format");
+        throwBoxException("Rk4Box: port 'initState' has an incompatible format");
     if (m_rhsState.format() != stfmt)
-        throw EquaresException("Rk4Box: port 'rhsState' has an incompatible format");
+        throwBoxException("Rk4Box: port 'rhsState' has an incompatible format");
     if (m_nextState.format() != stfmt)
-        throw EquaresException("Rk4Box: port 'nextState' has an incompatible format");
+        throwBoxException("Rk4Box: port 'nextState' has an incompatible format");
 }
 
 bool Rk4Box::propagatePortFormat()
@@ -118,7 +118,7 @@ bool Rk4RuntimeBox::start()
         // Something is missing for computing rhs
         return false;
     if (!m_rhs.state().hasData())
-        throw EquaresException("Rk4RuntimeBox::start() failed: probably wrong connections of ODE box");
+        throwBoxException("Rk4RuntimeBox::start() failed: probably wrong connections of ODE box");
 
     double *nextData = m_nextState.data().data();
     const double *k1 = m_k[0].data(),   *k2 = m_k[1].data(),   *k3 = m_k[2].data(),   *k4 = m_k[3].data();

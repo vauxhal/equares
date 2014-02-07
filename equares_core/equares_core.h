@@ -201,7 +201,7 @@ class EQUARES_CORESHARED_EXPORT Box :
 {
     Q_OBJECT
     Q_PROPERTY(QString name READ name WRITE setName)
-    Q_PROPERTY(QString name READ type)
+    Q_PROPERTY(QString type READ type)
 
 public:
     typedef QSharedPointer<Box> Ptr;
@@ -220,8 +220,31 @@ public:
 
     Box& loadSettings(QSettings& settings);
 
+protected:
+    void throwBoxException(const QString& what) const;
+
 private:
 };
+
+class EquaresBoxException : public EquaresException
+{
+public:
+    ~EquaresBoxException() throw() {}
+    explicit EquaresBoxException(const Box *box, const QString& what) throw() : EquaresException(what), m_box(box) {}
+    const char *what() const throw() {
+        QString boxName;
+        if (m_box)
+            boxName = m_box->name();
+        if (boxName.isEmpty())
+            m_buf = EquaresException::what();
+        else
+            m_buf = ("[box='" + boxName + "'] ").toUtf8() + EquaresException::what();
+        return m_buf.constData();
+    }
+private:
+    const Box *m_box;
+    mutable QByteArray m_buf;
+ };
 
 class EQUARES_CORESHARED_EXPORT Port :
     public OwnedBy<Box>,
@@ -346,6 +369,9 @@ protected:
     template<class ThisClass>
     static PortNotifier toPortNotifier(bool (ThisClass::*notifier)()) {
         return static_cast<PortNotifier>(notifier);
+    }
+    void throwBoxException(const QString& what) const {
+        throw EquaresBoxException(owner(), what);
     }
 
 };

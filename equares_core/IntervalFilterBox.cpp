@@ -46,7 +46,7 @@ OutputPorts IntervalFilterBox::outputPorts() const {
 
 void IntervalFilterBox::checkPortFormat() const {
     if (m_in.format() != m_out.format())
-        throw EquaresException("IntervalFilterBox: Incompatible port formats");
+        throwBoxException("IntervalFilterBox: Incompatible port formats");
 }
 
 bool IntervalFilterBox::propagatePortFormat() {
@@ -90,7 +90,7 @@ IntervalFilterRuntimeBox::IntervalFilterRuntimeBox(const IntervalFilterBox *box)
     m_d2 = m_buf[1].data();
     m_param = box->param();
     if (m_param.index < 0   ||   m_param.index >= m_n)
-        throw EquaresException("IntervalFilterRuntimeBox: Invalid index");
+        throwBoxException("IntervalFilterRuntimeBox: Invalid index");
     m_hasPrevData = false;
 
     OutputPorts out = box->outputPorts();

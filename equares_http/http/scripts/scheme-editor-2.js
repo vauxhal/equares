@@ -644,6 +644,15 @@ var ctmEquaresSchemeEditor = {};
         }
         return simulation
     }
+    function findFirst(array, match) {
+        for (var i=0; i<array.length; ++i)
+            if (match(array[i]))
+                return array[i]
+        throw {message: "element is not found"}
+    }
+    Editor.prototype.findBox = function (name) {
+        return findFirst(this.boxes, function(box) { return box.name === name })
+    }
     Editor.prototype.import = function(text) {
         try {
             var data = JSON.parse(text)
@@ -669,17 +678,8 @@ var ctmEquaresSchemeEditor = {};
             }
 
             // Create links
-            function findFirst(array, match) {
-                for (var i=0; i<array.length; ++i)
-                    if (match(array[i]))
-                        return array[i]
-                throw {message: "element is not found"}
-            }
-            function findBox(name) {
-                return findFirst(editor.boxes, function(box) { return box.name === name })
-            }
             function findPort(portData) {
-                var box = findBox(portData.box)
+                var box = editor.findBox(portData.box)
                 return findFirst(box.ports, function(port) { return port.info.name === portData.port })
             }
             for (i=0; i<links.length; ++i) {
@@ -690,7 +690,7 @@ var ctmEquaresSchemeEditor = {};
             // Now import box parameters
             for (i=0; i<boxes.length; ++i) {
                 b = boxes[i]
-                var box = findBox(b.name)
+                var box = editor.findBox(b.name)
                 for (var propName in b.props)
                     box.prop(propName, b.props[propName].value)
             }

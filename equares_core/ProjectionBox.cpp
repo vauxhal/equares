@@ -20,11 +20,11 @@ OutputPorts ProjectionBox::outputPorts() const {
 void ProjectionBox::checkPortFormat() const
 {
     if (m_out.format() != PortFormat(m_indices.size()))
-        throw EquaresException("ProjectionBox: Invalid output port format");
+        throwBoxException("ProjectionBox: Invalid output port format");
     int inputSize = m_in.format().dataSize();
     foreach (int index, m_indices) {
         if (index < 0   ||   index >= inputSize)
-            throw EquaresException("ProjectionBox: Invalid input port format or invalid projection indices");
+            throwBoxException("ProjectionBox: Invalid input port format or invalid projection indices");
     }
 }
 

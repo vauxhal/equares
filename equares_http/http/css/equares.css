@@ -68,13 +68,8 @@ body {
     height: 600px;
     overflow: auto;
 }
-#simulation-output-files img {
+.outputFile {
     border: 1px solid #ccc;
-}
-#run-sim-debug-output {
-    height: 50px;
-    overflow: auto;
-    text-align: left;
 }
 div.outputFile {
     text-align: left;

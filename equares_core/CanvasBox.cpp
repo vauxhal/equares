@@ -62,9 +62,9 @@ OutputPorts CanvasBox::outputPorts() const {
 void CanvasBox::checkPortFormat() const
 {
     if (m_in.format() != PortFormat(2))
-        throw EquaresException("CanvasBox: Invalid input port format");
+        throwBoxException("CanvasBox: Invalid input port format");
     if (m_out.format() != PortFormat(m_param[0].resolution, m_param[1].resolution))
-        throw EquaresException("CanvasBox: Invalid output port format");
+        throwBoxException("CanvasBox: Invalid output port format");
 }
 
 bool CanvasBox::propagatePortFormat() {

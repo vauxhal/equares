@@ -20,9 +20,9 @@ OutputPorts ValveBox::outputPorts() const {
 
 void ValveBox::checkPortFormat() const {
     if (m_valve.format() != PortFormat(1))
-        throw EquaresException("ValveBox: Incompatible valve port format");
+        throwBoxException("ValveBox: Incompatible valve port format");
     if (m_in.format() != m_out.format())
-        throw EquaresException("ValveBox: Incompatible input/output port formats");
+        throwBoxException("ValveBox: Incompatible input/output port formats");
 }
 
 bool ValveBox::propagatePortFormat() {

@@ -19,7 +19,7 @@ OutputPorts DumpBox::outputPorts() const {
 void DumpBox::checkPortFormat() const
 {
     if (!m_dump.format().isValid())
-        throw EquaresException("DumpBox: no format is specified for port 'dump'");
+        throwBoxException("DumpBox: no format is specified for port 'dump'");
 }
 
 bool DumpBox::propagatePortFormat() {
@@ -53,7 +53,7 @@ DumpRuntimeBox::DumpRuntimeBox(const DumpBox *box)
     else {
         m_cfile = fopen(box->fileName().toUtf8().data(), "w");
         if(!m_cfile)
-            throw EquaresException(QString("DumpRuntimeBox: Failed to open output file '%1'").arg(box->fileName()));
+            throwBoxException(QString("DumpRuntimeBox: Failed to open output file '%1'").arg(box->fileName()));
     }
 }
 

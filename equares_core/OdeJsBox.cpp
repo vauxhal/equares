@@ -21,11 +21,11 @@ OutputPorts OdeJsBox::outputPorts() const {
 
 void OdeJsBox::checkPortFormat() const {
     if (m_param.format() != PortFormat(paramCount()))
-        throw EquaresException("OdeJsBox: port 'parameters' has an invalid size");
+        throwBoxException("OdeJsBox: port 'parameters' has an invalid size");
     if (m_state.format() != PortFormat(varCount()+1))
-        throw EquaresException("OdeJsBox: port 'state' has an invalid size");
+        throwBoxException("OdeJsBox: port 'state' has an invalid size");
     if (m_rhs.format() != PortFormat(varCount()))
-        throw EquaresException("OdeJsBox: port 'rhs' has an invalid size");
+        throwBoxException("OdeJsBox: port 'rhs' has an invalid size");
 }
 
 bool OdeJsBox::propagatePortFormat() {
@@ -50,19 +50,19 @@ OdeJsBox& OdeJsBox::setOde(const QScriptValue& ode) {
 
 int OdeJsBox::paramCount() const {
     if (!m_ode.isObject())
-        throw EquaresException("OdeJsBox: property 'ode' must be an object");
+        throwBoxException("OdeJsBox: property 'ode' must be an object");
     QScriptValue n = m_ode.property("paramCount");
     if (!n.isNumber())
-        throw EquaresException("OdeJsBox: property 'ode.paramCount' must be a number");
+        throwBoxException("OdeJsBox: property 'ode.paramCount' must be a number");
     return n.toInt32();
 }
 
 int OdeJsBox::varCount() const {
     if (!m_ode.isObject())
-        throw EquaresException("OdeJsBox: property 'ode' must be an object");
+        throwBoxException("OdeJsBox: property 'ode' must be an object");
     QScriptValue n = m_ode.property("varCount");
     if (!n.isNumber())
-        throw EquaresException("OdeJsBox: property 'ode.varCount' must be a number");
+        throwBoxException("OdeJsBox: property 'ode.varCount' must be a number");
     return n.toInt32();
 }
 
@@ -93,7 +93,7 @@ OdeJsRuntimeBox::OdeJsRuntimeBox(const OdeJsBox *box)
 
     m_rhsFunc = m_ode.property("rhs");
     if (!m_rhsFunc.isFunction())
-        throw EquaresException("OdeJsBox: property 'ode.rhs' must be a function");
+        throwBoxException("OdeJsBox: property 'ode.rhs' must be a function");
     m_argsForRhs = m_engine->newArray(3);
 
     m_prepareFunc = m_ode.property("prepare");
@@ -101,7 +101,7 @@ OdeJsRuntimeBox::OdeJsRuntimeBox(const OdeJsBox *box)
         m_hasPrepareFunc = false;
     else {
         if (!m_prepareFunc.isFunction())
-            throw EquaresException("OdeJsBox: property 'ode.prepare' must be a function if it exists");
+            throwBoxException("OdeJsBox: property 'ode.prepare' must be a function if it exists");
         m_hasPrepareFunc = true;
         m_argsForPrepare = m_engine->newArray(1);
     }

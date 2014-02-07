@@ -101,14 +101,10 @@ $(document).ready(function() {
         autoOpen: false,
         modal: true,
         width: 800,
+        close: function() { equaresui.stopSimulation() },
         buttons: {
-            Stop: function() {
-                equaresui.stopSimulation()
-            },
-            Close: function() {
-                equaresui.stopSimulation()
-                $(this).dialog("close")
-            }
+            Stop: function() { equaresui.stopSimulation() },
+            Close: function() { $(this).dialog("close") }
         }
     })
 
