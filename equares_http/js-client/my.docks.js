@@ -637,10 +637,10 @@ Container.prototype.setLayout = function( options ) {
         layout.options.master = true;
     $(this.dom).empty().append($(layout.dom));
     var toolSet = options.tools;
-    if( toolSet == undefined )
+    if( toolSet === undefined )
         toolSet = ctmDock.toolSets.free
     if( toolSet instanceof Object )
-        layout.header( { tools: ctmDock.toolSets.free } );
+        layout.header( { tools: ctmDock.toolSets.free, toolhandle: options.toolhandle } );
     return layout;
 }
 Container.prototype.resize = function() {
@@ -651,7 +651,7 @@ Container.prototype.resize = function() {
     // Call resize handlers, if any
     if( this.resizeHandlers instanceof Array )
         for( var idx in this.resizeHandlers )
-            this.resizeHandlers[idx]();
+            this.resizeHandlers[idx].call(this);
 }
 Container.prototype.addResizeHandler = function( resizeHandler ) {
     this.resizeHandlers.push( resizeHandler )
@@ -696,7 +696,7 @@ Container.prototype.init = function( options ) {
     this.height = new Range( options.height );
     var j = $(this.dom);
     j.width( this.width.min ).height( this.height.min );
-    if( options.tools )
+    if( options.tools && options.toolhandle !== false)
         this.makeToolHandle( options.tools );
     if( typeof(options.title) == "string" )
         this.title = options.title;
@@ -851,8 +851,10 @@ NormalContainer.prototype.clear = function() {
 // -------- Header container - for storing minimized containers of the parent layout
 function HeaderContainer( options ) {
     var hdrOptions = { width: 20, height: 20 };
-    if( options instanceof Object )
+    if( options instanceof Object ) {
         hdrOptions.tools = options.tools;
+        hdrOptions.toolhandle = options.toolhandle;
+    }
     this.init( hdrOptions );
     $(this.dom)
         .addClass( "header_container" )

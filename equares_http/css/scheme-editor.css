@@ -212,11 +212,21 @@ Using workaround with bbox instead.
     bottom: 0px;
 }
 
+#scheme-box-extras-text .linedwrap {
+    position: absolute;
+    top: 0px;
+    bottom: 0px;
+    padding-bottom: 4px;
+}
+#scheme-box-extras-text .linedtextarea {
+    height: 100%;
+}
 #scheme-box-extras textarea {
     resize: none;
     border: none;
     width: 100%;
     height: 100%;
+    padding-top: 0px;
 }
 
 .svg-main {

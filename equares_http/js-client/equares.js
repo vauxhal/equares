@@ -36,12 +36,10 @@ $(document).ready(function() {
         return m
     }
     var mainMenu = createMenu(wrap("div").appendTo(header), [
-        {text: "Layout", menu: [
-            {text: "Console", handler: function() { equaresui.setConsoleSource.call(c2) }},
-            {text: "Source", handler: function() { equaresui.setWorkbenchSource.call(c2) }},
-            {text: "Scheme", handler: function() { equaresui.setSceneSource.call(c2) }}
+        {text: "Go", menu: [
+            {text: "Simulation editor", handler: function() { equaresui.setSceneSource.call(c2) }}
         ]},
-        {text: "Scheme", menu: [
+        {text: "Simulation", menu: [
             {text: "Examples", menu: [
                 {text: "Simple pendulum, phase trajectory", handler: function() { equaresui.loadExample("simple-pendulum-1") }},
                 {text: "Simple pendulum, several plots", handler: function() { equaresui.loadExample("simple-pendulum-2") }},
