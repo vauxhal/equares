@@ -174,13 +174,14 @@ equaresui.setSceneSource = function() {
     var settingsLayout = settingsCell.setLayout({type: "vertical", fixed: true});
     var propsCell = settingsLayout.add( { title: "Properties" } );
     var extrasCell = settingsLayout.add( { title: "Extras" } );
-    extrasCell.addResizeHandler(function() {
-        var j = $(this.dom)
-        var zzz = j.find(".linedwrap")
-        j.find(".linedwrap")
-            .width(j.width())
-            .height(j.height())
-    })
+    ;(function() {
+        var resizing = 0
+        extrasCell.addResizeHandler(function() {
+            if (++resizing == 1)
+                $(this.dom).find("textarea.linenum-text").resize()
+            --resizing
+        })
+    })()
     var extrasDiv = $('<div id="scheme-box-extras"></div>').appendTo($(extrasCell.dom))
 
     var portHelp = $('<div id="scheme-porthelp"></div>').appendTo($("body")).hide();
@@ -323,7 +324,7 @@ equaresui.setSceneSource = function() {
                                 wrap("div").attr("id", "scheme-box-extras-text")
                                     .append(textarea = wrap("textarea"))
                                     .appendTo(extrasDiv)
-                                textarea.linedtextarea()
+                                textarea.linenum()
                                 textarea[0].value = prop.getter()
                                 textarea.focus()
                             })
