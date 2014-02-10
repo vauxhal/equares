@@ -23,8 +23,6 @@ equaresui.setSceneSource = function() {
     boxDiv.addClass('scheme-boxlist');
     var draggingBox = false;
 
-    var equaresInfo = equaresBox.info
-
     var boxItemHelpText = function(item, caption) {
         if (item === undefined)
             return "";
@@ -41,7 +39,7 @@ equaresui.setSceneSource = function() {
                     text += "<br/>" + p.help;
                 if (p.format) {
                     var f = new equaresBox.PortFormat(p)
-                    text += text += "<br/>Format: " + f.toHtml()
+                    text += "<br/>Format: " + f.toHtml()
                 }
                 text += "</li>"
             }
@@ -90,8 +88,9 @@ equaresui.setSceneSource = function() {
         }
     }
 
-    var setBoxes = function(boxes)
-    {
+    // Fill box div with box types
+    ;(function() {
+        var boxes = equaresBox.boxTypes
         var text = '<h1>Boxes</h1><table>';
         for (var i in boxes)
             text += '<tr></td><td><img src="pix/question.png"></td><td class="scheme-boxlist-box">' + boxes[i] + '</tr>';
@@ -106,25 +105,22 @@ equaresui.setSceneSource = function() {
             var pos = o.offset();
             pos.left += o.width();
             var box = o.parent().next().text();
-            equaresInfo(box, function(info) {
-                boxHelp
-                    .html(boxHelpText(box, info));
-                var wh = $(window).height(),   bh = boxHelp.outerHeight();
-                if (pos.top + bh > wh)
-                    pos.top = Math.max(0,wh-bh);
-                boxHelp
-                    .show('fast')
-                    .offset(pos);
-            })
+            var info = equaresBox.boxInfo[box]
+            boxHelp
+                .html(boxHelpText(box, info));
+            var wh = $(window).height(),   bh = boxHelp.outerHeight();
+            if (pos.top + bh > wh)
+                pos.top = Math.max(0,wh-bh);
+            boxHelp
+                .show('fast')
+                .offset(pos);
         })
         boxDiv.find('td').find('img').each(function() { hpBoxHelp.target(this) })
 
         boxDiv.find(".scheme-boxlist-box")
             .click(function(){
                 var box = $(this).text();
-                equaresInfo(box, function(info) {
-                    schemeEditor.newBox(box, info).select()
-                })
+                schemeEditor.newBox(box).select()
             })
             .draggable({
                 helper: function() {
@@ -136,10 +132,7 @@ equaresui.setSceneSource = function() {
                 stop: function() { draggingBox = false; },
                 scope: "newBox"
             });
-    }
-
-    // Fill box div with box types
-    equaresInfo("boxTypes", setBoxes)
+    })()
 
     var schemeCell = layout.add( { title: "Scheme" } );
     var schemeEditor = ctmEquaresSchemeEditor.newEditor(schemeCell.dom)
@@ -149,9 +142,7 @@ equaresui.setSceneSource = function() {
         scope: "newBox",
         drop: function(event, ui) {
             var box = ui.helper.text();
-            equaresInfo(box, function(info) {
-                schemeEditor.newBox(box, info, ui).select()
-            })
+            schemeEditor.newBox(box, ui).select()
         }
     });
 
@@ -318,29 +309,26 @@ equaresui.setSceneSource = function() {
                         break
                     case 'BoxType':
                         var editor = wrap("select").appendTo(host)
-                        equaresInfo("boxTypes", function(boxes) {
-                            function findSelIndex() {
-                                var index = -1
-                                var v = prop.getter()
-                                for(var i=0; i<boxes.length; ++i) {
-                                    var b = boxes[i]
-                                    editor.append(wrap("option").attr("value", b).html(b))
-                                    if (b == v)
-                                        index = i
-                                }
-                                return index
+                        function findSelIndex() {
+                            var index = -1
+                            var v = prop.getter()
+                            var boxes = equaresBox.boxTypes
+                            for(var i=0; i<boxes.length; ++i) {
+                                var b = boxes[i]
+                                editor.append(wrap("option").attr("value", b).html(b))
+                                if (b == v)
+                                    index = i
                             }
-                            var edom = editor[0]
-                            edom.selectedIndex = findSelIndex()
-                            editor.change(function() {
-                                var type = this[edom.selectedIndex].value
-                                equaresInfo(type, function(info){
-                                    prop.setter(type, info)
-                                    var i = findSelIndex()
-                                    if (edom.selectedIndex != i)
-                                        edom.selectedIndex = i
-                                })
-                            })
+                            return index
+                        }
+                        var edom = editor[0]
+                        edom.selectedIndex = findSelIndex()
+                        editor.change(function() {
+                            var type = this[edom.selectedIndex].value
+                            prop.setter(type)
+                            var i = findSelIndex()
+                            if (edom.selectedIndex != i)
+                                edom.selectedIndex = i
                         })
                         break
                     default:
@@ -399,7 +387,7 @@ equaresui.setSceneSource = function() {
                 type: {
                     userType: 'BoxType',
                     getter: function() { return box.type },
-                    setter: function(newType, boxInfo) { box.changeType(newType, boxInfo) }
+                    setter: function(newType) { box.changeType(newType) }
                 }
             }
             for (var pname in box.props)

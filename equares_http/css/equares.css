@@ -88,3 +88,21 @@ div.outputFile {
     border-width: 1px;
     border-color: #ccc;
 }
+#loading-progress-overlay {
+    background-color: #ffd;
+    position: fixed;
+    top: 0; right: 0; bottom: 0; left: 0;
+    opacity: 0.9; /* also -moz-opacity, etc. */
+    z-index: 1000;
+}
+#loading-progress {
+    position: fixed;
+    top: 50px; right: 50px; left: 50px;
+}
+#loading-progress-label {
+    position: absolute;
+    left: 50%;
+    top: 4px;
+    font-weight: bold;
+    text-shadow: 1px 1px 0 #fff;
+}

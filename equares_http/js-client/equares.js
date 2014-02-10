@@ -44,7 +44,8 @@ $(document).ready(function() {
                 {text: "Simple pendulum, phase trajectory", handler: function() { equaresui.loadExample("simple-pendulum-1") }},
                 {text: "Simple pendulum, several plots", handler: function() { equaresui.loadExample("simple-pendulum-2") }},
                 {text: "Double pendulum, trajectory projection", handler: function() { equaresui.loadExample("double-pendulum-t") }},
-                {text: "Double pendulum, Poincare map", handler: function() { equaresui.loadExample("double-pendulum-psec") }}
+                {text: "Double pendulum, Poincare map", handler: function() { equaresui.loadExample("double-pendulum-psec") }},
+                {text: "Double pendulum b, Poincare map", handler: function() { equaresui.loadExample("double-pendulum-b-psec") }}
             ]},
             {text: "Open", handler: function() { $("#open-scheme-file-dialog").dialog("open") } },
             {text: "Save", handler: function() { $("#save-scheme-file-dialog").dialog("open") } },
@@ -106,10 +107,25 @@ $(document).ready(function() {
         }
     })
 
+    var loadingProgressLabel = $("#loading-progress-label"),
+        loadingProgress = $("#loading-progress").progressbar({
+        value: false,
+        change: function() {
+            loadingProgressLabel.text( loadingProgress.progressbar( "value" ) + "%" );
+        },
+        complete: function() {
+            $("#loading-progress-overlay").hide()
+        }
+    })
+
     $(c2.dom).addClass("mymain");
     $(c3.dom).addClass("myfooter").html('<a target="_blank" href="http://ctmech.ru/">Computer Technologies in Engineering</a>');
     rootLayout.resize();    // Because borders have changed
 
-    // Set scene source by default
-    equaresui.setSceneSource.call(c2)
+    // Init equaresBox engine; Set scene source by default when the initialization is done
+    equaresBox.init(function() {
+        equaresui.setSceneSource.call(c2)
+    }, function(percent) {
+        loadingProgress.progressbar("value", percent)
+    })
 });

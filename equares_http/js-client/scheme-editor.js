@@ -62,10 +62,10 @@ var ctmEquaresSchemeEditor = {};
     }
 
     // Constructor for type used as the D3 data for a box
-    function Box(boxType, boxInfo, options) {
+    function Box(boxType, options) {
         var opt = options || {}
         var name = opt.name || nameBox(boxType)
-        equaresBox.Box.call(this, name, boxType, boxInfo)
+        equaresBox.Box.call(this, name, boxType, opt)
         var pos = opt.pos || {}
         this.x = pos.x || 0
         this.y = pos.y || 0
@@ -77,11 +77,11 @@ var ctmEquaresSchemeEditor = {};
     }
     Box.prototype = new equaresBox.Box()
     Box.prototype.rename = function(newName) { return renameBox(this, newName) }
-    Box.prototype.changeType = function(boxType, boxInfo) {
+    Box.prototype.changeType = function(boxType) {
         // Replace box with a new one
         removeBoxVisualizer(this)
         var e = this.editor
-        var newBox = new Box(boxType, boxInfo, {
+        var newBox = new Box(boxType, {
             name: this.name,
             pos: {x: this.x, y: this.y},
             iid: this.iid,
@@ -314,7 +314,7 @@ var ctmEquaresSchemeEditor = {};
         // Enable scene panning
         this.mainrect.on("mousedown", function() { thisEditor.dragHelper.beginPan() })
     }
-    Editor.prototype.newBox = function(boxType, boxInfo, options) {
+    Editor.prototype.newBox = function(boxType, options) {
         var opt = options || {}
 
         if (opt.offset) {
@@ -328,7 +328,7 @@ var ctmEquaresSchemeEditor = {};
         opt.iid = ++this.iid
         opt.editor = this
         opt.index = this.boxes.length
-        var result = new Box(boxType, boxInfo, opt)
+        var result = new Box(boxType, opt)
         this.boxes.push(result)
         this.visualize()
         return result
@@ -609,10 +609,16 @@ var ctmEquaresSchemeEditor = {};
                 var ps = src[name]
                 if (ps === undefined)
                     continue
-                if (ps instanceof Array)
-                    copyProps(dst[name]=[], ps, subpaths)
-                else if (ps instanceof Object)
-                    copyProps(dst[name]={}, ps, subpaths)
+                if (ps instanceof Array) {
+                    if (!(dst[name] instanceof Array))
+                        dst[name] = []
+                    copyProps(dst[name], ps, subpaths)
+                }
+                else if (ps instanceof Object) {
+                    if (!(dst[name] instanceof Object))
+                        dst[name] = {}
+                    copyProps(dst[name], ps, subpaths)
+                }
                 else
                     dst[name] = src[name]
             }
@@ -623,7 +629,7 @@ var ctmEquaresSchemeEditor = {};
         var i
         for (i=0; i<this.boxes.length; ++i) {
             var b = this.boxes[i],   bx = result.boxes[i] = {}
-            copyProps(bx, b, [ "name", "info", "type", "props/*/value", "status", "x", "y" ])
+            copyProps(bx, b, [ "name", "info/inputs", "info/outputs", "type", "props/*/value", "status", "x", "y" ])
         }
         for (i=0; i<this.links.length; ++i) {
             var l = this.links[i],   lx = result.links[i] = {}
@@ -679,9 +685,10 @@ var ctmEquaresSchemeEditor = {};
                 b = boxes[i]
                 var opt = {
                     offset: {left: b.x + rootOffset.left + t.x, top: rootOffset.top + b.y + t.y},
-                    name: b.name
+                    name: b.name,
+                    info: b.info
                 }
-                editor.newBox(b.type, b.info, opt)
+                editor.newBox(b.type, opt)
             }
 
             // Create links

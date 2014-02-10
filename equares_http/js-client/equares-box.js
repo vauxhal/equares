@@ -174,11 +174,15 @@ var equaresBox = {};
         dst[name] = eval("(function(){return " + f + "})()")
     }
 
-    var Box = equaresBox.Box = function(name, type, info) {
+    var Box = equaresBox.Box = function(name, type, options) {
         if (arguments.length == 0)
             return
         this.name = name
         this.type = type
+        var opt = options || {}
+        var info = $.extend(true, {}, equaresBox.boxInfo[type])
+        if (opt.info)
+            $.extend(info, opt.info)
         this.info = info
         this.ports = []
         function addPorts(box, ports, PortCtor) {
@@ -339,6 +343,36 @@ var equaresBox = {};
                     alert("equaresRequestInfo.cmd: Ajax error");
             });
     }
+
+    equaresBox.init = function(callback, progressCallback) {
+        if (equaresBox.boxTypes)
+            callback()
+        else equaresBox.info("boxTypes", function(boxTypes) {
+            equaresBox.boxTypes = boxTypes
+            equaresBox.boxInfo = {}
+            var n = 0
+            function loadBox(i) {
+                var boxType = boxTypes[i]
+                equaresBox.info(boxType, function(boxInfo) {
+                    equaresBox.boxInfo[boxType] = boxInfo
+                    ++n
+                    if (progressCallback instanceof Function) {
+                        var percent = Math.round(100*n / boxTypes.length)
+                        progressCallback(percent)
+                    }
+                    if (n == boxTypes.length)
+                        callback()
+                    // dbg-loading-progress
+                    // else setTimeout(function(){ loadBox(i+1) }, 100)
+                })
+            }
+            // dbg-loading-progress
+            // setTimeout(function(){loadBox(0)}, 500)
+            for (var i=0; i<boxTypes.length; ++i)
+                loadBox(i)
+        })
+    }
+
 })()
 
 ;(function(){
