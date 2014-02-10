@@ -40,23 +40,8 @@ equaresui.setSceneSource = function() {
                 if (p.help)
                     text += "<br/>" + p.help;
                 if (p.format) {
-                    text += "<br/>Format: ";
-                    var count = 1;
-                    for (var i=0; i<p.format.length; ++i) {
-                        if (i > 0)
-                            text += " x ";
-                        text += p.format[i];
-                        count *= p.format[i];
-                    }
-                    text += count == 1? " element": " elements";
-                }
-                if (p.hints) {
-                    text += "<br/>Elements: ";
-                    for (var i=0; i<p.hints.length; ++i) {
-                        if (i > 0)
-                            text += ", ";
-                        text += "<i>" + p.hints[i] + "</i>";
-                    }
+                    var f = new equaresBox.PortFormat(p)
+                    text += text += "<br/>Format: " + f.toHtml()
                 }
                 text += "</li>"
             }
@@ -186,14 +171,15 @@ equaresui.setSceneSource = function() {
 
     var portHelp = $('<div id="scheme-porthelp"></div>').appendTo($("body")).hide();
     var hpPortHelp = equaresui.hpPortHelp = new HoverPopup(portHelp, function() {
-        var o = $(this);
-        var pos = o.offset();
-        pos.left += this.getBBox().width + 5; // 2*o.attr('r') + 5;
-        var d = this.__data__;
-        portHelp.html(d.info.name + ' (' + d.type + ')');
+        var o = $(this)
+        var pos = o.offset()
+        pos.left += this.getBBox().width + 5
+        var d = this.__data__
+        var f = d.getFormat()
+        portHelp.html(d.info.name + ' (' + d.type + ')<br/>Format: ' + f.toHtml())
         portHelp
             .show('fast')
-            .offset(pos);
+            .offset(pos)
     },
     300)
 
@@ -562,7 +548,7 @@ equaresui.setSceneSource = function() {
                                     fi = outFileInfo[i]
                                     switch(fi.type) {
                                     case "image":
-                                        fi.jq = $('<img src="' + "equares-cwd/" + i + '" title="' + i + '"/>')
+                                        fi.jq = $('<img src="' + "equares-cwd/" + i + '" alt="' + i + '"/>')
                                             .css("width", fi.size.width)
                                             .css("height", fi.size.height)
                                             .addClass("outputFile")

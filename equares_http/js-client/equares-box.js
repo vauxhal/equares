@@ -63,6 +63,31 @@ var equaresBox = {};
             return false
         return h1? arraysEqual(this.hints, that.hints): true
     }
+    PortFormat.prototype.toHtml = function() {
+        if (this.format instanceof Array) {
+            var text = ""
+            var count = 1;
+            for (var i=0; i<this.format.length; ++i) {
+                if (i > 0)
+                    text += " x ";
+                text += this.format[i];
+                count *= this.format[i];
+            }
+            text += count == 1? " element": " elements";
+            if (this.hints) {
+                text += " ("
+                for (i=0; i<this.hints.length; ++i) {
+                    if (i > 0)
+                        text += ", "
+                    text += "<i>" + this.hints[i] + "</i>"
+                }
+                text += ")"
+            }
+            return text
+        }
+        else
+            return "unspecified"
+    }
 
     var Port = equaresBox.Port = function (info, box, index) {
         if (arguments.length == 0)
@@ -74,12 +99,11 @@ var equaresBox = {};
         this.hints = info.hints
         this.pos = info.pos
     }
-    Port.prototype.getFormat = function(excludeSelf) {
-        var f = arguments[0]
-        if (f instanceof PortFormat)
-            f.accum(this)
+    Port.prototype.getFormat = function(arg) {
+        if (arg instanceof PortFormat)
+            arg.accum(this)
         else {
-            f = new PortFormat(excludeSelf? {}: this)
+            arg = new PortFormat(arg === true? {}: this)
             ++timestamp
         }
         this.timestamp = timestamp
@@ -88,9 +112,9 @@ var equaresBox = {};
             var p = c[i]
             if (p.timestamp === timestamp)
                 continue
-            p.getFormat(f)
+            p.getFormat(arg)
         }
-        return f
+        return arg
     }
 
     var InputPort = equaresBox.InputPort = function() {
@@ -518,6 +542,14 @@ $.extend(equaresBox.rules, {
     Rk4: {
         port: function(port) {
             propagateFormatDirected.call(this, port, 5, [1,4])
+        }
+    },
+    Canvas: {
+        prop: function(name) {
+            if (name === "param") {
+                var v = this.prop(name)
+                setFormat(this.ports[2], {format: [v.x.resolution, v.y.resolution]})
+            }
         }
     },
     CxxOde: {

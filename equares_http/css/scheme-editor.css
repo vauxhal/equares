@@ -114,9 +114,14 @@ Using workaround with bbox instead.
 }
 
 .scheme-link {
-    stroke: #879;
     stroke-width: 5;
     cursor: url(close-16.png) 8 8,crosshair
+}
+.scheme-link-good {
+    stroke: #879;
+}
+.scheme-link-bad {
+    stroke: #b44141;
 }
 
 .scheme-drag-line {

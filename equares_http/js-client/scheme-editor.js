@@ -359,7 +359,7 @@ var ctmEquaresSchemeEditor = {};
         equaresBox.connect(port1, port2)
         this.links.push({ source: port1, target: port2, iid: this.iid++, index: this.links.length })
         if (!dontVisualize)
-            this.visualize()
+            this.visualize().update()
     }
     Editor.prototype.findLink = function(port1, port2) {
         var links = this.links
@@ -375,9 +375,8 @@ var ctmEquaresSchemeEditor = {};
         equaresBox.disconnect(link.source, link.target)
         links.splice(linkIndex, 1)
         updateArrayIndices(links, linkIndex)
-        this.visualize()
         if (!dontVisualize)
-            this.visualize()
+            this.visualize().update()
     }
     Editor.prototype.dataKey = function(d) {
         return "k" + d.iid;
@@ -409,6 +408,15 @@ var ctmEquaresSchemeEditor = {};
             .attr("x2", p2.x)
             .attr("y2", p2.y)
     }
+    function updateLink(d) {
+        positionLink.apply(this, arguments)
+        var f1 = d.source.getFormat(), f2 = d.target.getFormat()
+        var good = !f1.bad && f1.equals(f2)
+        d$(this)
+            .classed("scheme-link-good", good)
+            .classed("scheme-link-bad", !good)
+    }
+
     function setBoxStatus(node, d) {
         var g = d$(node)
         var stat = g.select(".status")
@@ -547,7 +555,7 @@ var ctmEquaresSchemeEditor = {};
         linkUpd.enter().insert("line", "#scheme-drag-line")
             .attr("class", "scheme-link")
             .on("click", function(d) { thisEditor.deleteLink(d.index) })
-            .each(positionLink)
+            .each(updateLink)
         linkUpd.exit()
             .transition()
             .duration(350)
@@ -569,7 +577,7 @@ var ctmEquaresSchemeEditor = {};
 
         var linkUpd = this.maingroup.selectAll(".scheme-link")
             .data(this.links, this.dataKey)
-        linkUpd.each(positionLink)
+        linkUpd.each(updateLink)
         return this
     }
 
