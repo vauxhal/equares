@@ -260,7 +260,11 @@ equaresui.setSceneSource = function() {
                                     if (ok)
                                         prop.setter(value)
                                     e.value = prop.getter()
+                                    $(e).removeClass('modified')
                                 })
+                            })
+                            .keypress(function() {
+                                $(this).addClass('modified')
                             })
                             .appendTo(host)
                         break
@@ -273,6 +277,10 @@ equaresui.setSceneSource = function() {
                                     val[i] = +val[i]
                                 prop.setter(val)
                                 this.value = prop.getter().toString()
+                                $(this).removeClass('modified')
+                            })
+                            .keypress(function() {
+                                $(this).addClass('modified')
                             })
                             .appendTo(host)
                         break
@@ -295,7 +303,10 @@ equaresui.setSceneSource = function() {
                                     .append(wrap("h1").html(prop.name))
                                     .append(
                                          $('<input type="button" class="scheme-box-extras-ok" value="Ok">')
-                                            .click(function() { prop.setter(textarea[0].value) })
+                                            .click(function() {
+                                                prop.setter(textarea[0].value)
+                                                textarea.removeClass('modified')
+                                            })
                                     )
                                     .appendTo(extrasDiv)
                                 wrap("div").attr("id", "scheme-box-extras-text")
@@ -303,6 +314,9 @@ equaresui.setSceneSource = function() {
                                     .appendTo(extrasDiv)
                                 textarea.linenum()
                                 textarea[0].value = prop.getter()
+                                textarea.keypress(function() {
+                                    $(this).addClass('modified')
+                                })
                                 textarea.focus()
                             })
                             .appendTo(host)

@@ -513,14 +513,74 @@ function setFormat(port, format) {
     }
 }
 
+function setGoodStatus(box) { box.status = { level: "ok", text: "Ok" } }
+function setUnspecPortStatus(box, arg) {
+    var msg
+    switch (typeof arg) {
+    case "string":
+        msg = arg
+        break
+    case "number":
+        msg = "Unknown format of port '" + box.ports[arg].info.name + "'"
+        break
+    case "object":
+        var portNames = []
+        for (var i in arg)
+            portNames.push("'" + box.ports[arg[i]].info.name + "'")
+        msg = "Unknown format of ports " + portNames.join(", ")
+        break
+    default:
+        msg = "Unknown port format"
+    }
+    box.status = { level: "warning", text: msg }
+}
+function setBadPortStatus(box, arg, explanation) {
+    var msg
+    switch (typeof arg) {
+    case "string":
+        msg = arg
+        break
+    case "number":
+        msg = "Bad format of port '" + box.ports[arg].info.name + "'"
+        break
+    case "object":
+        var portNames = []
+        for (var i in arg)
+            portNames.push("'" + box.ports[arg[i]].info.name + "'")
+        msg = "Bad format of ports " + portNames.join(", ")
+        break
+    default:
+        msg = "Bad port format"
+    }
+    if (typeof explanation == "string")
+        msg += ": " + explanation
+    box.status = { level: "error", text: msg }
+}
+
 function projectionOutFormat() {
     var indices = this.prop("indices")
     var fin = this.ports[0].getFormat()
     var hints
-    if (fin.valid() && fin.hints) {
-        hints = []
-        for (var i=0; i<indices.length; ++i)
-            hints[i] = fin.hints[indices[i]]
+    if (fin.valid()) {
+        var err
+        if (fin.format.length != 1)
+            err = "1D data was expected at port 'input'"
+        if (fin.hints) {
+            hints = []
+            for (var i=0; i<indices.length; ++i)
+                hints[i] = fin.hints[indices[i]] || "?"
+        }
+        for (i=0; !err && i<indices.length; ++i) {
+            if (indices[i] >= fin.format[0])
+                err = "One or more index is out of range"
+        }
+        if (err)
+            this.status = { level: "error", text: err }
+        else
+            setGoodStatus(this)
+        }
+    else {
+        setUnspecPortStatus(this, 0)
     }
     setFormat(this.ports[1], {format: [indices.length], hints: hints})
 }
@@ -542,14 +602,25 @@ function propagateFormat(port1, iin, iout) {
     if (f1.valid() == f2.valid()) {
         setFormat(port1, {})
         setFormat(port2, {})
-    }
-    else if (f1.valid()) {
-        setFormat(port1, {})
-        setFormat(port2, f1)
+        if (f1.valid()) {
+            if (f1.equals(f2))
+                setGoodStatus(this)
+            else
+                setBadPortStatus(this, [iin, iout], "the same format was exoected")
+        }
+        else
+            setUnspecPortStatus(this, [iin, iout])
     }
     else {
-        setFormat(port1, f2)
-        setFormat(port2, {})
+        if (f1.valid()) {
+            setFormat(port1, {})
+            setFormat(port2, f1)
+        }
+        else {
+            setFormat(port1, f2)
+            setFormat(port2, {})
+        }
+        setGoodStatus(this)
     }
 }
 
@@ -579,53 +650,120 @@ function restoreCxxOdeDefaultPortFormat() {
     }
 }
 
+function checkRk4Ports(box)
+{
+    var f = []
+    for (var i=0; i<7; ++i) f[i] = box.ports[i].getFormat()
+    var criticalPorts = [2,5]
+    for (i=0; i<criticalPorts.length; ++i) {
+        var n = criticalPorts[i], fn = f[n]
+        if (fn.format === undefined) {
+            setUnspecPortStatus(box, n)
+            return
+        }
+        if (fn.format.length != 1) {
+            setBadPortStatus(box, n, "expected 1D port data")
+            return
+        }
+    }
+    if (f[2].format[0]+1 != f[5].format[0]) {
+        box.status = { level: "error", text: "Incompatible formats of ports 'rhs' and 'rhsState'" }
+        return
+    }
+    setGoodStatus(box)
+}
+
 $.extend(equaresBox.rules, {
     Param: {
         init: function() {
             this.props["data"].toBoxProp = function(prop) {
                 return port2value(prop.value, this.ports[0])
             }
+            setUnspecPortStatus(this)
         },
         port: function(port) {
             var t = this.props["data"].userType = port2type(port)
+            ;(t === undefined ? setUnspecPortStatus : setGoodStatus)(this)
             this.prop("data", defaultValue(t))
             this.stateChanged("propset")
         }
     },
     CrossSection: {
+        init: function() { setUnspecPortStatus(this, [0, 1]) },
         port: function(port) { propagateFormat.call(this, port, 0, 1) }
     },
     CountedFilter: {
+        init: function() { setUnspecPortStatus(this, [1, 2]) },
         port: function(port) { propagateFormat.call(this, port, 1, 2) }
     },
     IntervalFilter: {
+        init: function() { setUnspecPortStatus(this, [0, 1]) },
         port: function(port) { propagateFormat.call(this, port, 0, 1) }
     },
     Valve: {
+        init: function() { setUnspecPortStatus(this, [1, 2]) },
         port: function(port) { propagateFormat.call(this, port, 1, 2) }
     },
     Projection: {
         init: projectionOutFormat,
         prop: function(name) {
-            if (name === "indices")
+            if (name === "indices") {
                 projectionOutFormat.call(this)
+                this.editor.update()
+            }
         },
         port: function(port) {
-            if (port.info.name === "input")
+            if (port.info.name === "input") {
                 projectionOutFormat.call(this)
+                this.editor.update()
             }
+        }
     },
     Rk4: {
+        init: function() { checkRk4Ports(this) },
         port: function(port) {
             propagateFormatDirected.call(this, port, 5, [1,4])
+            checkRk4Ports(this)
         }
     },
     Canvas: {
+        init: function() { setUnspecPortStatus(this) },
         prop: function(name) {
             if (name === "param") {
                 var v = this.prop(name)
                 setFormat(this.ports[2], {format: [v.x.resolution, v.y.resolution]})
             }
+        },
+        port: function(port) {
+            if (port.info.name === "input") {
+                var f = port.getFormat()
+                if (f.valid()) {
+                    if (f.format.length == 1) {
+                        if (f.format[0] == 2)
+                            setGoodStatus(this)
+                        else
+                            setBadPortStatus(this, 0, "expected 1D vector of 2 elements")
+                    }
+                    else
+                        setBadPortStatus(this, 0, "expected 1D port data")
+                }
+                else
+                    setUnspecPortStatus(this)
+            }
+        }
+    },
+    Bitmap: {
+        init: function() { setUnspecPortStatus(this) },
+        port: function(port) {
+            var f = port.getFormat()
+            if (f.valid()) {
+                if (f.format.length == 2)
+                    setGoodStatus(this)
+                else
+                    setBadPortStatus(this, 0, "expected 2D port data")
+            }
+            else
+                setUnspecPortStatus(this)
         }
     },
     CxxOde: {
@@ -667,7 +805,7 @@ $.extend(equaresBox.rules, {
                     }
                     upd(info.inputs)
                     upd(info.outputs)
-                    box.status = { level: "ok", text: "Ok" }
+                    setGoodStatus(box)
                     box.editor.update()
                     box.emit('critical')
                 }, function(reply) {
