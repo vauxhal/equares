@@ -176,7 +176,7 @@ struct EQUARES_CORESHARED_EXPORT BoxProperty
 {
     BoxProperty() {}
     explicit BoxProperty(const QString& name, const QString& helpString) :
-        name(name), helpString(helpString) {}
+        name(name), helpString(helpString), critical(false) {}
     QString name;
     QString helpString;
     QString userType;
@@ -184,6 +184,7 @@ struct EQUARES_CORESHARED_EXPORT BoxProperty
     QString toBoxType;
     QStringList deps;
     QString resolveUserType;
+    bool critical;
     BoxProperty& loadSettings(QSettings& settings);
 };
 typedef QList<BoxProperty> BoxPropertyList;

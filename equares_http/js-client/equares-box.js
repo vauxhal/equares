@@ -18,6 +18,41 @@ var equaresBox = {};
                 return false
         return true
     }
+    var findFirst = equaresBox.findFirst = function(array, match) {
+        for (var i=0; i<array.length; ++i)
+            if (match(array[i]))
+                return array[i]
+        throw {message: "element is not found"}
+    }
+
+    var EventEmitter = equaresBox.EventEmitter = function() {
+        this.eventHandlers = {}
+    }
+    EventEmitter.prototype.handlers = function(event) {
+        var result = this.eventHandlers[event]
+        return result || []
+    }
+    EventEmitter.prototype.on = EventEmitter.prototype.addListener = function(event, handler) {
+        var h = this.handlers(event)
+        h.push(handler)
+        this.eventHandlers[event] = h
+    }
+    EventEmitter.prototype.removeListener = function(event, handler) {
+        var h = this.handlers(event)
+        try {
+            var i = findFirst(h, function(item) { return item === handler })
+            h.splice(i, 1)
+            this.eventHandlers[event] = h
+        }
+        catch(e) {}
+    }
+    EventEmitter.prototype.emit = function(event) {
+        var args = cloneArray(arguments)
+        args.splice(0, 1)
+        var h = this.handlers(event)
+        for (var i=0; i<h.length; ++h)
+            h[i].apply(this, args)
+    }
 
     var PortFormat = equaresBox.PortFormat = function(port)
     {
@@ -195,7 +230,7 @@ var equaresBox = {};
         for(var i in info.properties) {
             var pi = info.properties[i]
             var p = this.props[pi.name] = {}
-            // p.name = pi.name
+            p.critical = pi.critical
             if (pi.userType.length > 0)
                 p.userType = JSON.parse(pi.userType)
             importFunc(p, pi, "toBoxType")
@@ -215,6 +250,7 @@ var equaresBox = {};
         this.status = { level: "ok", text: "Ok" }
         this.stateChanged("init")
     }
+    Box.prototype = new EventEmitter()
     Box.prototype.prop = function(name, value) {
         if (arguments.length == 2) {
             this.props[name].value = value
@@ -231,10 +267,16 @@ var equaresBox = {};
         else
             return prop.value
     }
-
     Box.prototype.propType = function(name) {
         var p = this.props[name]
         return p? p.userType: undefined
+    }
+    Box.prototype.criticalPropCount = function() {
+        var result = 0
+        for (var propName in this.props)
+            if (this.props[propName].critical)
+                ++result
+        return result
     }
     Box.prototype.stateChanged = function(kind, id) {
         var rule = rules[this.type]
@@ -598,11 +640,12 @@ $.extend(equaresBox.rules, {
 
         prop: function(name) {
             var box = this
-            if (name === "src")
+            if (name === "src") {
                 if (box.prop(name).length == 0) {
                     setCxxOdeDefaultStatus.call(box)
                     restoreCxxOdeDefaultPortFormat.call(box)
                     box.editor.update()
+                    box.emit('critical')
                     return
                 }
                 box.status = { level: "waiting", text: "Compiling..." }
@@ -626,11 +669,23 @@ $.extend(equaresBox.rules, {
                     upd(info.outputs)
                     box.status = { level: "ok", text: "Ok" }
                     box.editor.update()
+                    box.emit('critical')
                 }, function(reply) {
                     restoreCxxOdeDefaultPortFormat.call(box)
                     box.status = { level: "error", text: reply.stderr || reply.message }
                     box.editor.update()
+                    box.emit('critical')
                 })
+            }
+        }
+    },
+    JsOde: {
+        prop: function(name) {
+            var box = this
+            if (name === "ode") {
+                // TODO
+                box.emit('critical')
+            }
         }
     }
 })

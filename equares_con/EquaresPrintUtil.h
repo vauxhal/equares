@@ -92,9 +92,10 @@ struct BoxPropPrinter {
             os << ",\n     deps: [";
             printContainer(os, boxProp.deps, SimplePrinter<QString>(), ", ");
             os << "]";
+        }
         if (!boxProp.resolveUserType.isEmpty())
             os << ",\n     resolveUserType: '" << escapeString(boxProp.resolveUserType) << "'";
-        }
+        os << ",\n     critical: " << (boxProp.critical? "true": "false");
         os << "}";
     }
 private:

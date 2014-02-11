@@ -65,6 +65,7 @@ BoxProperty& BoxProperty::loadSettings(QSettings& settings)
     toBoxType = settings.value("toboxtype").toString();
     deps = settings.value("deps").toStringList();
     resolveUserType = settings.value("resolveusertype").toString();
+    critical = settings.value("critical").toBool();
     return *this;
 }
 

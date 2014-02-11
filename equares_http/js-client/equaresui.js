@@ -416,9 +416,19 @@ equaresui.setSceneSource = function() {
     }
 
     equaresui.loadExample = function(exampleName) {
+        var loadingProgress = $("#loading-progress")
+        loadingProgress.progressbar("value", 0)
+        $("#loading-progress-overlay").show()
         $.ajax("examples/" + exampleName + ".json")
             .done(function(text) {
-                schemeEditor.import(text)
+                schemeEditor.import(text,
+                    function() {
+                        loadingProgress.progressbar("value", 100)
+                    },
+                    function(percent) {
+                        loadingProgress.progressbar("value", percent)
+                    }
+                )
             })
             .fail(function() {
                 alert("Ajax error");

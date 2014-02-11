@@ -657,19 +657,14 @@ var ctmEquaresSchemeEditor = {};
         }
         return simulation
     }
-    function findFirst(array, match) {
-        for (var i=0; i<array.length; ++i)
-            if (match(array[i]))
-                return array[i]
-        throw {message: "element is not found"}
-    }
+    var findFirst = equaresBox.findFirst
     Editor.prototype.findBox = function (name) {
         return findFirst(this.boxes, function(box) { return box.name === name })
     }
-    Editor.prototype.import = function(text) {
+    Editor.prototype.import = function(text, callback, progressCallback) {
         try {
             var data = JSON.parse(text)
-            var boxes = data.boxes, links = data.links, i, b
+            var boxes = data.boxes, links = data.links, i, j, b, box
             if (!(boxes instanceof Array))
                 throw { message: "boxes is missing or is not an array" }
             if (!(links instanceof Array))
@@ -691,29 +686,71 @@ var ctmEquaresSchemeEditor = {};
                 editor.newBox(b.type, opt)
             }
 
-            // Create links
-            function findPort(portData) {
-                var box = editor.findBox(portData.box)
-                return findFirst(box.ports, function(port) { return port.info.name === portData.port })
+            // Count the total number of critical parameters in all boxes;
+            // bind listeners to the 'critical' box event
+            var ncp = 0,   icp = 0
+            function onSetCriticalProp() {
+                ++icp
+                if (progressCallback instanceof Function) {
+                    var percent = Math.round(100*icp / ncp)
+                    progressCallback(percent)
+                }
+                if (icp == ncp)
+                    continueLoading();
             }
-            for (i=0; i<links.length; ++i) {
-                var l = links[i], p1 = findPort(l.source), p2 = findPort(l.target)
-                editor.newLink(p1, p2, true)
+            for (i=0; i<editor.boxes.length; ++i) {
+                box = editor.boxes[i]
+                box.on('critical', onSetCriticalProp)
+                ncp += box.criticalPropCount()
             }
 
-            // Now import box parameters
-            for (i=0; i<boxes.length; ++i) {
-                b = boxes[i]
-                var box = editor.findBox(b.name)
-                for (var propName in b.props)
-                    box.prop(propName, b.props[propName].value)
+            function setProps(critical) {
+                for (var i=0; i<boxes.length; ++i) {
+                    var b = boxes[i], box = editor.findBox(b.name)
+                    for (var propName in b.props)
+                        if (box.props[propName].critical == critical)
+                            box.prop(propName, b.props[propName].value)
+                }
             }
 
-            // Visualize scene
-            editor.visualize().update()
+            // This is done as soon as all critical props are set
+            function continueLoading() {
+                // Remove critical event listener from all boxes
+                var box, i
+                for (i=0; i<editor.boxes.length; ++i) {
+                    box = editor.boxes[i]
+                    box.removeListener('critical', onSetCriticalProp)
+                }
+
+                // Create links
+                function findPort(portData) {
+                    var box = editor.findBox(portData.box)
+                    return findFirst(box.ports, function(port) { return port.info.name === portData.port })
+                }
+                for (i=0; i<links.length; ++i) {
+                    var l = links[i], p1 = findPort(l.source), p2 = findPort(l.target)
+                    editor.newLink(p1, p2, true)
+                }
+
+                // Now set non-critical box properties
+                setProps(false)
+
+                // Visualize scene
+                editor.visualize().update()
+                if (callback instanceof Function)
+                    callback()
+            }
+
+            // Set critical properties; do the rest as soon as they are all set
+            if (ncp > 0)
+                setProps(true)
+            else
+                continueLoading()
         }
         catch(e) {
             alert(e.message)
+            if (callback instanceof Function)
+                callback()
         }
     }
     E.newEditor = function(root) {
