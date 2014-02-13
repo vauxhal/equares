@@ -93,7 +93,7 @@ equaresui.setSceneSource = function() {
         var boxes = equaresBox.boxTypes
         var text = '<h1>Boxes</h1><table>';
         for (var i in boxes)
-            text += '<tr></td><td><img src="pix/question.png"></td><td class="scheme-boxlist-box">' + boxes[i] + '</tr>';
+            text += '<tr></td><td><img src="images/question.png"></td><td class="scheme-boxlist-box">' + boxes[i] + '</tr>';
         text += '</table>';
         boxDiv.append(text);
         boxDiv.find('tr:odd').addClass('odd');
@@ -434,8 +434,8 @@ equaresui.setSceneSource = function() {
         loadingProgress.progressbar("value", 0)
         $("#loading-progress-overlay").show()
         $.ajax("examples/" + exampleName + ".json")
-            .done(function(text) {
-                schemeEditor.import(text,
+            .done(function(obj) {
+                schemeEditor.import(obj,
                     function() {
                         loadingProgress.progressbar("value", 100)
                     },
@@ -455,7 +455,7 @@ equaresui.setSceneSource = function() {
         fileReader.onload = function(fileLoadedEvent)
         {
             var textFromFileLoaded = fileLoadedEvent.target.result;
-            schemeEditor.import(textFromFileLoaded)
+            schemeEditor.import(JSON.parse(textFromFileLoaded))
         };
         fileReader.readAsText(fileToLoad, "UTF-8");
     }
@@ -609,6 +609,14 @@ equaresui.setSceneSource = function() {
                         }
                         if (str === "sync") {
                             $.ajax("equaresExec.cmd", {data: {cmd: syncToken}, type: "GET"})
+
+                            // deBUG, TODO: Remove
+                            .done(function(reply) {
+                                var x = 1
+                            })
+                            .fail(function(error) {
+                                var x = 1
+                            })
                             return
                         }
                         if (str === "finished") {
@@ -647,19 +655,19 @@ $(document).ready(function() {
     ctmDock.toolSets.sourceMenuTools.addTools( [
         ctmDock.newTool( {
             title: "Console",
-            src: "pix/console.png",
+            src: "images/console.png",
             alt: "console",
             handler: equaresui.setConsoleSource
             } ),
         ctmDock.newTool( {
             title: "Plot",
-            src: "pix/plot.png",
+            src: "images/plot.png",
             alt: "plot",
             handler: equaresui.setWorkbenchSource
             } ),
         ctmDock.newTool( {
             title: "Scheme",
-            src: "pix/scheme.png",
+            src: "images/scheme.png",
             alt: "scheme",
             handler: equaresui.setSceneSource
             } )

@@ -1,2 +1,2 @@
 call prep-vars.bat
-cmd /k node js-server\index.js
+cmd /k node app.js

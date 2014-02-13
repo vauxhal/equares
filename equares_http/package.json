@@ -1,0 +1,15 @@
+{
+  "name": "equares",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "start": "node app.js"
+  },
+  "dependencies": {
+    "line-input-stream": "1.0.1",
+    "express": "3.4.8",
+    "jade": "*",
+    "mongodb": "*",
+    "monk": "*"
+  }
+}

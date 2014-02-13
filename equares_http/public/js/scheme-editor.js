@@ -421,7 +421,7 @@ var ctmEquaresSchemeEditor = {};
         var g = d$(node)
         var stat = g.select(".status")
         stat
-            .attr("xlink:href", "pix/status-"+d.status.level+".png")
+            .attr("xlink:href", "images/status-"+d.status.level+".png")
             .on("mouseover", equaresui.hpStatusHelp.enter)
             .on("mouseout", equaresui.hpStatusHelp.leave)
     }
@@ -485,7 +485,7 @@ var ctmEquaresSchemeEditor = {};
 
             // Add close button image
             g.append("image")
-                .attr("xlink:href", "pix/close.png")
+                .attr("xlink:href", "images/close.png")
                 .attr("class", "close")
                 .attr("x", xitem)
                 .attr("y", vmargin)
@@ -661,9 +661,8 @@ var ctmEquaresSchemeEditor = {};
     Editor.prototype.findBox = function (name) {
         return findFirst(this.boxes, function(box) { return box.name === name })
     }
-    Editor.prototype.import = function(text, callback, progressCallback) {
+    Editor.prototype.import = function(data, callback, progressCallback) {
         try {
-            var data = JSON.parse(text)
             var boxes = data.boxes, links = data.links, i, j, b, box
             if (!(boxes instanceof Array))
                 throw { message: "boxes is missing or is not an array" }

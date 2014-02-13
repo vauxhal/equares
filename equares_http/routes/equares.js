@@ -1,11 +1,12 @@
 // equares.js
-var server = require("./myhttpserver");
 var child_process = require('child_process');
 var lins = require('line-input-stream');
 var stream = require('stream');
 var url = require("url");
 
 var equares = {};
+equares.cwd = "public/equares-cwd"
+
 equares.programPath = (function() {
     var path = process.env["EQUARES_BIN"];
     if( path == undefined ) {
@@ -74,7 +75,7 @@ User.prototype.stopped = function() {
 User.prototype.start = function() {
     var user = this;
     console.log( 'Starting equares for user %s', user.name );
-    this.proc = child_process.spawn(equares.programPath, ['-s'], {cwd: 'equares-cwd'});
+    this.proc = child_process.spawn(equares.programPath, ['-s'], {cwd: equares.cwd});
     this.lastev = 1;
     this.proc.on('close', function() {
         console.log( 'equares for user %s has been closed', user.name );
@@ -113,19 +114,26 @@ User.prototype.toggle = function() {
         this.start();
 };
 
-server.commands["equaresToggle"] = function(request, response) {
+var commands = exports.commands = {}
+
+commands["equaresToggle"] = function(request, response) {
     var user = equares.user("x");
     user.toggle();
     response.end();
 };
 
-server.commands["equaresStat"] = function(request, response) {
+commands["equaresStat"] = function(request, response) {
     var user = equares.user("x");
-    server.respondmsg(user.isRunning()? "1": "0", response);
+    response.send(user.isRunning()? "1": "0");
 };
 
-server.commands["equaresStatEvent"] = function(request, response) {
-    response.writeHead(200, {'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache'});
+commands["equaresStatEvent"] = function(request, response) {
+    response.writeHead(200, {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive'
+    });
+    response.write('\n');
     var user = equares.user("x");
     var goon = true;
     response.on('error', function() {
@@ -149,8 +157,13 @@ server.commands["equaresStatEvent"] = function(request, response) {
     })();
 };
 
-server.commands["equaresOutputEvent"] = function(request, response) {
-    response.writeHead(200, {'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache'});
+commands["equaresOutputEvent"] = function(request, response) {
+    response.writeHead(200, {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive'
+    });
+    response.write('\n');
     var user = equares.user("x");
     var goon = true;
     var nstreams = 3;// user.stdio.length;
@@ -187,7 +200,7 @@ server.commands["equaresOutputEvent"] = function(request, response) {
     })();
 };
 
-server.commands["equaresRunSimulation"] = function(request, response) {
+commands["equaresRunSimulation"] = function(request, response) {
     var user = equares.user("x");
     function startSim() {
         // Start server
@@ -197,7 +210,7 @@ server.commands["equaresRunSimulation"] = function(request, response) {
         var simulation = url.parse(request.url, true).query.simulation
         var command = "===={\n" + "runSimulation(\n" + simulation + "\n)\n" + "====}"
         user.execCommand(command);
-        server.respondmsg("Started simulation", response);
+        response.send("Started simulation");
     }
 
     if (user.isRunning()) {
@@ -209,15 +222,15 @@ server.commands["equaresRunSimulation"] = function(request, response) {
         startSim();
 }
 
-server.commands["equaresExec"] = function(request, response) {
+commands["equaresExec"] = function(request, response) {
     var user = equares.user("x");
     var command = url.parse(request.url, true).query.cmd;
     user.execCommand(command);
-    server.respondmsg(user.isRunning(user)? "1": "0", response);
+    response.send(user.isRunning(user)? "1": "0");
     response.end();
 };
 
-server.commands["equaresExecSync"] = function(request, response) {
+commands["equaresExecSync"] = function(request, response) {
     var user = equares.user("x");
     if (!user.isRunning())
     {
@@ -255,14 +268,14 @@ server.commands["equaresExecSync"] = function(request, response) {
 
 var equaresInfoCache = {};
 
-server.commands["equaresRequestInfo"] = function(request, response) {
+commands["equaresRequestInfo"] = function(request, response) {
     var command = url.parse(request.url, true).query.cmd;
     if (equaresInfoCache[command]) {
         response.write(equaresInfoCache[command]);
         response.end();
     }
     else {
-        child_process.exec(equares.programPath + " -d " + command, {cwd: 'equares-cwd'}, function (error, stdout, stderr) {
+        child_process.exec(equares.programPath + " -d " + command, {cwd: equares.cwd}, function (error, stdout, stderr) {
             var result = {
                 stdout: stdout,
                 stderr: stderr
@@ -275,11 +288,11 @@ server.commands["equaresRequestInfo"] = function(request, response) {
     }
 }
 
-server.commands["equaresRequestInfoEx"] = function(request, response) {
+commands["equaresRequestInfoEx"] = function(request, response) {
     var query = url.parse(request.url, true).query
     var describeOptions = query.options || "";
     var command = query.cmd;
-    var proc = child_process.spawn(equares.programPath, ['-i', '-d'+describeOptions, command], {cwd: 'equares-cwd'});
+    var proc = child_process.spawn(equares.programPath, ['-i', '-d'+describeOptions, command], {cwd: equares.cwd});
     var stdout = "", stderr = "", replied = false
     function reply(text) {
         if (!replied) {
@@ -313,4 +326,9 @@ server.commands["equaresRequestInfoEx"] = function(request, response) {
             return;
         reply(JSON.stringify({error: -1, message: "Failed to start equares"}))
     });
+}
+
+exports.bind = function(app) {
+    for (var cmd in commands)
+        app.get("/" + cmd + ".cmd", commands[cmd])
 }

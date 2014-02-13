@@ -1374,7 +1374,7 @@ Tools.toggleTabbedView.updateUi = function( ui ) {
     var layout = this.layout();
     if( layout ) {
         $(ui).show();
-        ui.src = layout.options.tabbed ?   "css/splitview.png" :   "css/tabview.png";
+        ui.src = layout.options.tabbed ?   "stylesheets/splitview.png" :   "stylesheets/tabview.png";
     }
     else
         $(ui).hide();
@@ -1383,28 +1383,28 @@ Tools.toggleTabbedView.updateUi = function( ui ) {
 ctmDock.tools = {
     splitVB: new Tool( {
         title: "Add new split on the top",
-        src: "css/layout-split-vb.png",
+        src: "stylesheets/layout-split-vb.png",
         alt: "vertical split at start",
         handler: function( ui ) { Tools.splitContainer.call( this, ui, { vertical: true, addNewBefore: true } ); },
         updateUi: Tools.splitContainer.updateUi
         } ),
     splitVE: new Tool( {
         title: "Add new split on the bottom",
-        src: "css/layout-split-ve.png",
+        src: "stylesheets/layout-split-ve.png",
         alt: "vertical split at end",
         handler: function( ui ) { Tools.splitContainer.call( this, ui, { vertical: true, addNewBefore: false } ); },
         updateUi: Tools.splitContainer.updateUi
         } ),
     splitHB: new Tool( {
         title: "Add new split on the left",
-        src: "css/layout-split-hb.png",
+        src: "stylesheets/layout-split-hb.png",
         alt: "horizontal split at start",
         handler: function( ui ) { Tools.splitContainer.call( this, ui, { vertical: false, addNewBefore: true } ); },
         updateUi: Tools.splitContainer.updateUi
         } ),
     splitHE: new Tool( {
         title: "Add new split on the right",
-        src: "css/layout-split-he.png",
+        src: "stylesheets/layout-split-he.png",
         alt: "horizontal split at end",
         handler: function( ui ) { Tools.splitContainer.call( this, ui, { vertical: false, addNewBefore: false } ); },
         updateUi: Tools.splitContainer.updateUi
@@ -1412,21 +1412,21 @@ ctmDock.tools = {
 
     closeContainer: new Tool( {
         title: "Close container",
-        src: "css/close.png",
+        src: "stylesheets/close.png",
         alt: "close",
         handler: Tools.closeContainer,
         updateUi: Tools.closeContainer.updateUi
         } ),
     minimizeContainer: new Tool( {
         title: "Minimize container",
-        src: "css/minimize.png",
+        src: "stylesheets/minimize.png",
         alt: "minimize",
         handler: Tools.minimizeContainer,
         updateUi: Tools.minimizeContainer.updateUi
         } ),
     toggleTabbedView: new Tool( {
         title: "Toggle tabbed / split view",
-        src: "css/splitview.png",
+        src: "stylesheets/splitview.png",
         alt: "tabbed/split",
         handler: Tools.toggleTabbedView,
         updateUi: Tools.toggleTabbedView.updateUi
@@ -1476,7 +1476,7 @@ $(document).ready(function() {
         tools: [
             new Tool( {
                 title: "Clear",
-                src: "pix/clear.png",
+                src: "images/clear.png",
                 alt: "clear",
                 handler: function() { this.clear(); }
             } )
@@ -1486,7 +1486,7 @@ $(document).ready(function() {
 
     t.sourceMenu = new MenuTool( {
         title: "Select source",
-        src: "pix/menu.png",
+        src: "images/menu.png",
         alt: "select source",
         toolSet: ctmDock.toolSets.sourceMenuTools,
         updateUi: Tools.splitContainer.updateUi
