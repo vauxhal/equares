@@ -1,0 +1,6 @@
+extends error
+
+block errordetail
+  h1 Error: #{error.message}
+  if settings['verbose errors']
+    pre= error.stack

@@ -644,8 +644,8 @@ equaresui.setSceneSource = function() {
                     }
                 }
             })
-            .fail(function(){
-                alert("Ajax error");
+            .fail(function(error){
+                alert(error.responseText || error.statusText || ("Ajax error: " + error.status));
             });
     }
 }

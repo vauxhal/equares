@@ -201,6 +201,10 @@ commands["equaresOutputEvent"] = function(request, response) {
 };
 
 commands["equaresRunSimulation"] = function(request, response) {
+    if (!request.isAuthenticated()) {
+        response.send(403, "You are not logged in")
+        return
+    }
     var user = equares.user("x");
     function startSim() {
         // Start server
