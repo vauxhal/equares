@@ -227,7 +227,6 @@ commands["equaresExec"] = function(request, response) {
     var command = url.parse(request.url, true).query.cmd;
     user.execCommand(command);
     response.send(user.isRunning(user)? "1": "0");
-    response.end();
 };
 
 commands["equaresExecSync"] = function(request, response) {

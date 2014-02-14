@@ -9,6 +9,7 @@ var user = require('./routes/user');
 var equares = require('./routes/equares');
 var http = require('http');
 var path = require('path');
+var url = require('url');
 
 var app = express();
 
@@ -23,7 +24,8 @@ app.use(express.json());
 app.use(express.urlencoded());
 app.use(express.methodOverride());
 app.use(express.cookieParser('your secret here'));
-app.use(express.session());
+app.use(express.session({secret: "dde9796b-28ae-4b55-9d03-2cecc8d9ead3"}));
+
 app.use(app.router);
 app.use(express.static(path.join(__dirname, 'public')));
 

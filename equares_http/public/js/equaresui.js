@@ -490,7 +490,7 @@ equaresui.setSceneSource = function() {
         simulation = JSON.stringify(simulation)
         function dummyStopSim() {}
         equaresui.stopSimulation = dummyStopSim
-        $.ajax("equaresRunSimulation.cmd", {data: {simulation: simulation}, type: "GET"})
+        $.ajax("equaresRunSimulation.cmd", {data: {simulation: simulation}, type: "GET", cache: false})
             .done(function() {
                 var dlg = $("#running-simulation")
                 var stopButton = $(".ui-dialog-buttonpane button:contains('Stop')")
@@ -499,7 +499,7 @@ equaresui.setSceneSource = function() {
                 var status = dlg.find(".status").html("running")
                 var running = true
                 equaresui.stopSimulation = function() {
-                    $.ajax("equaresToggle.cmd")
+                    $.ajax("equaresToggle.cmd", {type: "GET", cache: false})
                 }
 
                 var outfiles = $("#simulation-output-files").html("").css("text-align", "center")
@@ -608,7 +608,7 @@ equaresui.setSceneSource = function() {
                             return
                         }
                         if (str === "sync") {
-                            $.ajax("equaresExec.cmd", {data: {cmd: syncToken}, type: "GET"})
+                            $.ajax("equaresExec.cmd", {data: {cmd: syncToken}, type: "GET", cache: false})
 
                             // deBUG, TODO: Remove
                             .done(function(reply) {
