@@ -13,6 +13,7 @@
     "mongoose": "~3.6.4",
     "passport": "*",
     "passport-local": "*",
-    "captcha": "*"
+    "captcha": "*",
+    "connect-flash": "*"
   }
 }

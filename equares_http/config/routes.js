@@ -11,23 +11,24 @@ module.exports = function(app, passport){
 	});
 
 	app.get("/login", function(req, res){ 
-		res.render("login");
+        res.render("login", {message: req.flash('error')});
 	});
 
 	app.post("/login" 
 		,passport.authenticate('local',{
 			successRedirect : "/",
 			failureRedirect : "/login",
+            failureFlash: true
 		})
 	);
 
 	app.get("/signup", function (req, res) {
-		res.render("signup");
+        res.render("signup", {message: req.flash('message')});
 	});
 
 	app.post("/signup", Auth.userExist, function (req, res, next) {
         if (req.body.captcha != req.session.captcha) {
-            // TODO better
+            req.flash('message', 'Human test failed. Please try again')
             res.redirect("/signup")
             return
         }

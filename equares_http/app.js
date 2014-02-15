@@ -14,6 +14,7 @@ var url = require('url');
 var mongoose = require('mongoose');
 var passport = require('passport');
 var captcha = require('captcha');
+var flash = require('connect-flash');
 
 
 var env = process.env.NODE_ENV || 'development',
@@ -43,6 +44,8 @@ app.use(captcha({ url: '/captcha.jpg', color:'#0064cd', background: 'rgb(20,30,2
 
 app.use(passport.initialize());
 app.use(passport.session());
+
+app.use(flash());
 
 app.use(app.router);
 app.use(express.static(path.join(__dirname, 'public')));
