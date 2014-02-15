@@ -3,4 +3,7 @@ form(id="signup", method="POST", action="/signup")
     input#email(type='text', name='email')
     lable(for='password') Password
     input#password(type='password', name='password')
+    lable(for='captcha') Are you a human?
+    input#captcha(type='text', name='captcha')
+    img(src="/captcha.jpg")
     input(type="submit", value="SignUp")

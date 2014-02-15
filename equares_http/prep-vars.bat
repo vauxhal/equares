@@ -10,11 +10,13 @@ if "%QT5_BIN%"=="" (
 	goto :end
 )
 
+if "%MONGODB_BIN%"=="" (
+	echo ERROR: MONGODB_BIN environment variable is not set, don't know where mongodb binaries are.
+	goto :end
+)
+
 call "%NODEJS_ROOT%\nodevars.bat"
 set PATH=%QT5_BIN%;%PATH%
-
-rem TODO: Remove
-rem call "C:\Program Files\nodejs\nodevars.bat"
-rem set PATH=c:\oss\Qt\Qt5.2.0\5.2.0\msvc2012_64_opengl\bin;%PATH%
+set PATH=%MONGODB_BIN%;%PATH%
 
 :end

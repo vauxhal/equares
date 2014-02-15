@@ -26,6 +26,12 @@ module.exports = function(app, passport){
 	});
 
 	app.post("/signup", Auth.userExist, function (req, res, next) {
+        if (req.body.captcha != req.session.captcha) {
+            // TODO better
+            res.redirect("/signup")
+            return
+        }
+
 		User.signup(req.body.email, req.body.password, function(err, user){
 			if(err) throw err;
 			req.login(user, function(err){

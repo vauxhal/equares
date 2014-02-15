@@ -13,6 +13,7 @@ var url = require('url');
 
 var mongoose = require('mongoose');
 var passport = require('passport');
+var captcha = require('captcha');
 
 
 var env = process.env.NODE_ENV || 'development',
@@ -37,6 +38,8 @@ app.use(express.urlencoded());
 app.use(express.methodOverride());
 app.use(express.cookieParser('your secret here'));
 app.use(express.session({secret: "dde9796b-28ae-4b55-9d03-2cecc8d9ead3"}));
+
+app.use(captcha({ url: '/captcha.jpg', color:'#0064cd', background: 'rgb(20,30,200)' })); // captcha params
 
 app.use(passport.initialize());
 app.use(passport.session());

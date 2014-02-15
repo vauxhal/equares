@@ -1,2 +1,3 @@
-set PATH=D:\oss\mongodb-win32-i386-2.4.9\bin;%PATH%
-mongod.exe --dbpath data
+call prep-vars.bat
+cmd /k mongod.exe --dbpath data --port 3100
+
