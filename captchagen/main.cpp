@@ -1,4 +1,4 @@
-#include <QGuiApplication>
+#include <QApplication>
 #include <QImage>
 #include <QPainter>
 #include <QPainterPath>
@@ -113,7 +113,7 @@ void renderCaptcha(QImage *img, const QRect& rect, const QString& text)
 
 int main(int argc, char *argv[])
 {
-    QGuiApplication a(argc, argv, false);
+    QApplication a(argc, argv, false);
     QStringList args = a.arguments();
     if (args.length() != 2)
     {
