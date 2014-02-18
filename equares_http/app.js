@@ -10,10 +10,10 @@ var equares = require('./routes/equares');
 var http = require('http');
 var path = require('path');
 var url = require('url');
+var captcha = require('./mycaptcha');
 
 var mongoose = require('mongoose');
 var passport = require('passport');
-var captcha = require('captcha');
 var flash = require('connect-flash');
 
 
@@ -40,7 +40,7 @@ app.use(express.methodOverride());
 app.use(express.cookieParser('your secret here'));
 app.use(express.session({secret: "dde9796b-28ae-4b55-9d03-2cecc8d9ead3"}));
 
-app.use(captcha({ url: '/captcha.jpg', color:'#0064cd', background: 'rgb(20,30,200)' })); // captcha params
+app.use(captcha({ url: '/captcha.png' })); // captcha params
 
 app.use(passport.initialize());
 app.use(passport.session());

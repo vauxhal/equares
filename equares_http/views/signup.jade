@@ -1,5 +1,14 @@
+script(src='js-3rd/jquery-1.10.2.min.js', type='text/javascript')
+script.
+    $(document).ready(function() {
+        $('#newcaptcha').click(function() {
+            $('#captchaimg').attr('src', '/captcha.png#' + (new Date).toGMTString())
+        })
+    })
+
 if message
     p= message
+
 form(id="signup", method="POST", action="/signup")
     lable(for='email') Email
     input#email(type='text', name='email')
@@ -7,5 +16,6 @@ form(id="signup", method="POST", action="/signup")
     input#password(type='password', name='password')
     lable(for='captcha') Are you a human?
     input#captcha(type='text', name='captcha')
-    img(src="/captcha.jpg")
+    img#captchaimg(src="/captcha.png")
+    input#newcaptcha(type="button", value="show new image")
     input(type="submit", value="SignUp")
