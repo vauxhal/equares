@@ -1,4 +1,13 @@
+#include <QtGlobal>
+
+#if QT_VERSION >= 0x050000
+#include <QGuiApplication>
+#define QApp QGuiApplication
+#else
 #include <QApplication>
+#define QApp QApplication
+#endif
+
 #include <QImage>
 #include <QPainter>
 #include <QPainterPath>
@@ -113,7 +122,7 @@ void renderCaptcha(QImage *img, const QRect& rect, const QString& text)
 
 int main(int argc, char *argv[])
 {
-    QApplication a(argc, argv, false);
+    QApp a(argc, argv, false);
     QStringList args = a.arguments();
     if (args.length() != 2)
     {
