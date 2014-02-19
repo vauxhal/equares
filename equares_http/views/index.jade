@@ -1,5 +1,46 @@
-extends layout
+extends page
+block vars
+    - var title = 'Equares'
+
+block otherCss
+    style.
+        .mymain > div {
+            padding-left: 20px;
+            padding-right: 20px;
+            overflow: auto;
+            }
+        .mymain {
+            overflow: auto;
+            }
 
 block content
-  h1= title
-  p Welcome to #{title}
+  div
+    h1 About
+    p Equares is an online system for numerical analysis of equations (including, but not limited to ordinary differential equations).
+
+    h1 Why
+    p We have formulated our requirements as follows:
+    ul
+        li.
+            Speed matters. Equares performs faster than
+            #{xlink("http://www.mathworks.com/products/matlab/", "MATLAB")},
+            #{xlink("http://www.scilab.org/", "SciLab")},
+            and the like.
+        li Freedom matters. Equares is free software. Thus, everyone can extend its functionality.
+        li User should be able to use it easily without having to do advanced training.
+        li User shouldn't have to install a ton of software to get it all work.
+        li Blah blah blah.
+
+    p.
+        Fast basically means implementation of your custom equations in a native language, e.g. C++. So our system needs a compiler to compile your equations.
+        But we don't want to force user to install a compiler! That's why Equares is an online system: we install everything on the server, you just use it.
+
+    h1 Target audience
+    p Everyone having an equation at hand and wishing to investigate it. Students, engineers, maybe even scientists.
+
+    h1 Features
+    ul
+        li Phase trajectories
+        li Poincare maps
+        li Phase portraits (TODO)
+        li Stability diagrams (TODO)

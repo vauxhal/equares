@@ -4,7 +4,7 @@
  */
 
 var express = require('express');
-var routes = require('./routes');
+var routes = require('./routes/');
 var user = require('./routes/user');
 var equares = require('./routes/equares');
 var http = require('http');

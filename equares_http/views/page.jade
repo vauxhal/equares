@@ -1,0 +1,91 @@
+doctype html
+html
+    - function link(href, name) {
+        a(href=href, class='external')= name
+    - }
+    - function xlink(href, name) {
+        a(href=href, class='external', target='_blank')
+            img(src='/images/xlink.png')
+            = name
+    - }
+    block vars
+    head
+        title= title
+        link(rel='stylesheet', href='stylesheets/ui-lightness/jquery-ui-1.10.3.custom.min.css')
+        link(rel='stylesheet', href='stylesheets/my.docks.css')
+        //- link(rel='stylesheet', href='stylesheets/equarescmd.css')
+        link(rel='stylesheet', href='stylesheets/equares.css')
+        style.
+            a {
+                text-decoration: none;
+            }
+            a.external {
+                text-decoration: underline;
+            }
+            #login {
+                position: absolute;
+                right: 10px;
+                top: 8px;
+            }
+            #login > * {
+                margin-left: 8px;
+                margin-right: 8px;
+            }
+
+        block otherCss
+        script(type='text/javascript' src='js-3rd/jquery-1.10.2.min.js')
+        script(type='text/javascript' src='js-3rd/jquery-ui-1.10.3.custom.min.js')
+        script(type='text/javascript' src='js/my.docks.js')
+        block otherScripts
+        script.
+            $(document).ready(function() {
+                var content = $("#root").html()
+                var rootLayout = ctmDock.makeRoot().setLayout( {
+                    type: "vertical",
+                    tools: false
+                } );
+                var c1, c2, c3;
+                c1 = rootLayout.add( {height: 35, nosplit: true} );
+                c2 = rootLayout.add( {nosplit: true} );
+                c2.master = true;
+                c3 = rootLayout.add( {height: 15, nosplit: true} );
+                var header = $(c1.dom)
+                header
+                    .attr("id", "header")
+                    .html('<img id="projectlogo" src="images/logo-small.png" alt="logo"/><div id="projectname">Equares</div>');
+                $(c2.dom)
+                    .html(content)
+                    .addClass("mymain")
+                $(c3.dom).addClass("myfooter").html('<a target="_blank" href="http://ctmech.ru/">Computer Technologies in Engineering</a>');
+
+                var menu = $('#menu')
+                menu.remove().appendTo(header)
+                menu = menu.children()
+                menu.attr("id", "mainmenu").menu()
+                menu.menu("option", "position", { my:'left top', at:'left+30 bottom' })
+
+                $('#login').remove().appendTo(header)
+
+                rootLayout.resize();    // Because borders have changed
+            })
+    body
+        #root
+            block content
+        #menu
+            ul
+                li: a(href="#") Home
+                li: a(href="#") About
+                li
+                    a(href="#") Docs
+                    ul
+                        li: a(href="#") Basic usage
+                        li: a(href="#") Development
+                li: a(href="#") Examples
+                li: a(href="#") Feedback
+        #login
+            if user
+                | Logged in as #{user}
+                a(href="/logout") Log out
+            else
+                a(href="/login") Log in
+                a(href="/signup") Sign up
