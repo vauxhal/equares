@@ -9,5 +9,5 @@ exports.index = function(req, res){
 };
 */
 exports.index = function(req, res){
-    res.render('index', {user: (req.isAuthenticated()? "TODO": false)});
+    res.render('index', {user: (req.isAuthenticated()? req.user.email: false)});
 };
