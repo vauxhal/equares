@@ -3,33 +3,47 @@ var Auth = require('./authorization.js');
 
 module.exports = function(app, passport){
 	app.get("/", function(req, res){ 
-		if(req.isAuthenticated()){
-		  res.render("home", { user : req.user}); 
-		}else{
-			res.render("home", { user : null});
-		}
+        res.render("home");
 	});
 
-	app.get("/login", function(req, res){ 
-        res.render("login", {message: req.flash('error')});
-	});
-
-    /*
-	app.post("/login" 
-		,passport.authenticate('local',{
-            successRedirect : "/",
-			failureRedirect : "/login",
-            failureFlash: true
-		})
-	);
-    */
+             /*
     app.post("/login",
         passport.authenticate('local', {
-            successRedirect : "/",
-            failureRedirect : "/login",
             failureFlash: true
-        })
+        }), function(req, res) {
+
+            // deBUG
+            var auth = req.isAuthenticated()
+
+            res.end();
+        }
     )
+        */
+    app.post("/login", function(req, res, next) {
+        if (req.session.needsLoginCaptcha && req.body.captcha !== req.session.captcha) {
+            req.flash('error', 'Human test failed')
+            return res.send(401)
+        }
+        passport.authenticate(
+            'local',
+            function(err, user, info) {
+                if (err)
+                    return next(err)
+                if (!user) {
+                    // Authorization failed
+                    req.session.needsLoginCaptcha = true
+                    req.flash('error', 'Incorrect user name or password')
+                    return res.send(401)
+                }
+                req.logIn(user, function(err) {
+                    if (err)
+                        return next(err)
+                    req.session.needsLoginCaptcha = false
+                    return res.end()
+                })
+            }
+        )(req, res, next)
+    })
 
 	app.get("/signup", function (req, res) {
         res.render("signup", {message: req.flash('message')});
@@ -63,6 +77,6 @@ module.exports = function(app, passport){
         if (req.isAuthenticated())
             res.render('userinfo', {user: req.user.email})
         else
-            res.render('loginform')
+            res.render('loginform', {message: req.flash('error'), captcha: req.session.needsLoginCaptcha})
     })
 }

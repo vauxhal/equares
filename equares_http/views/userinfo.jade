@@ -5,8 +5,6 @@ script.
         $('#logout').click(function(e) {
             e.preventDefault()
             $.post('/logout')
-                .done(function() {
-                    loadLoginForm($('#login'))
-                })
+                .always(function() { loadLoginForm($('#login')) })
         })
     })()

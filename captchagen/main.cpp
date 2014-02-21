@@ -131,7 +131,7 @@ int main(int argc, char *argv[])
     }
     QString text = args[1];
 
-    QImage img(QSize(200, 50), QImage::Format_ARGB32);
+    QImage img(QSize(150, 35), QImage::Format_ARGB32);
     int seed = static_cast<int>(QDateTime::currentMSecsSinceEpoch());
     srand(seed);
     renderCaptcha(&img, img.rect(), text);

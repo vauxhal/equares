@@ -1,8 +1,15 @@
+if message
+    span(style='color: red;')= message
 form(action='/login', method='post')
     label(for='email') Email
     input#email(type='text', name='email')
     label(for='password') Password
     input#password(type='password', name='password')
+    if captcha
+        label(for='captcha') Are you a human?
+        input#captcha(type='text', name='captcha')
+        img#captchaimg(src='/captcha.png')
+        input#newcaptcha(type="button", value="show new image")
     input(type='submit', value='Log in')
 a(href='/signup') Signup
 script.
@@ -11,8 +18,9 @@ script.
         loginDiv.find('input[type=submit]').click(function(e) {
             e.preventDefault()
             $.post("/login", loginDiv.children().serialize())
-                .done(function() {
-                    loadLoginForm(loginDiv)
-                })
+                .always(function() { loadLoginForm(loginDiv) })
+        })
+        loginDiv.find('#newcaptcha').click(function() {
+            $('#captchaimg').attr('src', '/captcha.png#' + (new Date).toGMTString())
         })
     })()

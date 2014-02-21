@@ -15,6 +15,7 @@ exports.userExist = function(req, res, next) {
         if (count === 0) {
             next();
         } else {
+            req.flash('message', 'User with specified email is already registered')
             res.redirect("/signup");
         }
     });
