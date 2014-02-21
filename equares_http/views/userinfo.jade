@@ -1,0 +1,12 @@
+| Logged in as #{user}
+a(href='/logout' id='logout') Log out
+script.
+    (function() {
+        $('#logout').click(function(e) {
+            e.preventDefault()
+            $.post('/logout')
+                .done(function() {
+                    loadLoginForm($('#login'))
+                })
+        })
+    })()

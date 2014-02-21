@@ -58,6 +58,9 @@ body {
 #mainmenu .menu-depth-2 > li > a {
     width: 280px;
 }
+#login > form {
+    display: inline;
+}
 #open-scheme-file-dialog input[type=file] {
     width: 330px;
 }

@@ -14,13 +14,22 @@ module.exports = function(app, passport){
         res.render("login", {message: req.flash('error')});
 	});
 
+    /*
 	app.post("/login" 
 		,passport.authenticate('local',{
-			successRedirect : "/",
+            successRedirect : "/",
 			failureRedirect : "/login",
             failureFlash: true
 		})
 	);
+    */
+    app.post("/login",
+        passport.authenticate('local', {
+            successRedirect : "/",
+            failureRedirect : "/login",
+            failureFlash: true
+        })
+    )
 
 	app.get("/signup", function (req, res) {
         res.render("signup", {message: req.flash('message')});
@@ -46,8 +55,14 @@ module.exports = function(app, passport){
         res.render("profile", { user : req.user});
 	});
 
-	app.get('/logout', function(req, res){
+    app.post('/logout', function(req, res){
 		req.logout();
-		res.redirect('/login');
+        res.end();
 	});
+    app.get('/loginform', function(req, res) {
+        if (req.isAuthenticated())
+            res.render('userinfo', {user: req.user.email})
+        else
+            res.render('loginform')
+    })
 }

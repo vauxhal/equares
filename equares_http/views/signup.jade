@@ -10,11 +10,11 @@ if message
     p= message
 
 form(id="signup", method="POST", action="/signup")
-    lable(for='email') Email
+    label(for='email') Email
     input#email(type='text', name='email')
-    lable(for='password') Password
+    label(for='password') Password
     input#password(type='password', name='password')
-    lable(for='captcha') Are you a human?
+    label(for='captcha') Are you a human?
     input#captcha(type='text', name='captcha')
     img#captchaimg(src="/captcha.png")
     input#newcaptcha(type="button", value="show new image")
