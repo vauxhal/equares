@@ -31,13 +31,9 @@ html
                 margin-left: 8px;
                 margin-right: 8px;
             }
-            #login img {
-                margin-top: -8px;
-            }
-
         block otherCss
-        script(type='text/javascript' src='js-3rd/jquery-1.10.2.min.js')
-        script(type='text/javascript' src='js-3rd/jquery-ui-1.10.3.custom.min.js')
+        script(type='text/javascript' src='js-3rd/jquery-1.10.2.js')
+        script(type='text/javascript' src='js-3rd/jquery-ui-1.10.3.custom.js')
         script(type='text/javascript' src='js/my.docks.js')
         block otherScripts
         script.
@@ -46,7 +42,7 @@ html
                 .done(function(data) {
                     loginDiv.html(data)
                 })
-                .error(function(err) { loginDiv.html("Ajax error: " + err) })
+                .error(function(err) { loginDiv.html("Ajax error: " + err.status + " " + err.statusText) })
             }
 
             $(document).ready(function() {

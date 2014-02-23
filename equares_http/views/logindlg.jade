@@ -1,8 +1,8 @@
 style.
-    form#signup > * {
+    form#logindlg > * {
         display: block;
     }
-    form#signup > label {
+    form#logindlg > label {
         margin-top: 10px;
     }
 
@@ -16,17 +16,12 @@ script.
 #errormsg
     include errormsg
 
-form(id="signup", method="POST", action="/signup")
-    label(for='username') Name
+form#logindlg(action='/login', method='post')
+    label(for='username') Name or email
     input#username(type='text', name='username')
-    label(for='email') Email
-    input#email(type='text', name='email')
     label(for='password') Password
     input#password(type='password', name='password')
-    label(for='password2') Confirm password
-    input#password(type='password', name='password2')
     label(for='captcha') Confirm you're a human: enter code shown in the picture below
     input#captcha(type='text', name='captcha')
-    img#captchaimg(src="/captcha.png")
-    input#newcaptcha(type="button", value="show new image")
-    //- input(type="submit", value="Sign up")
+    img#captchaimg(src='/captcha.png')
+    input#newcaptcha(type="button", value="new image")

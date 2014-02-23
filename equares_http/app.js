@@ -5,7 +5,7 @@
 
 var express = require('express');
 var routes = require('./routes/');
-var user = require('./routes/user');
+//var user = require('./routes/user');
 var equares = require('./routes/equares');
 var http = require('http');
 var path = require('path');
@@ -13,7 +13,7 @@ var url = require('url');
 var captcha = require('./mycaptcha');
 
 var mongoose = require('mongoose');
-var passport = require('passport');
+//var passport = require('passport');
 var flash = require('connect-flash');
 
 
@@ -22,8 +22,8 @@ var env = process.env.NODE_ENV || 'development',
 
 
 mongoose.connect(config.db);
-require('./config/user')
-require('./config/passport')(passport)
+//require('./config/user')
+//require('./config/passport')(passport)
 
 var app = express();
 
@@ -41,11 +41,11 @@ app.use(express.cookieParser('your secret here'));
 app.use(express.session({secret: "dde9796b-28ae-4b55-9d03-2cecc8d9ead3"}));
 
 app.use(captcha({ url: '/captcha.png' })); // captcha params
-
-app.use(passport.initialize());
-app.use(passport.session());
-
 app.use(flash());
+
+//app.use(passport.initialize());
+//app.use(passport.session());
+require('./auth')(app)
 
 app.use(app.router);
 app.use(express.static(path.join(__dirname, 'public')));
@@ -56,7 +56,7 @@ if ('development' == env) {
 }
 
 app.get('/', routes.index);
-app.get('/users', user.list);
+//app.get('/users', user.list);
 
 equares.bind(app)
 
@@ -78,7 +78,7 @@ app.use(function(req, res, next){
   res.type('txt').send('Not found');
 });
 
-require('./config/routes')(app, passport);
+//require('./config/routes')(app, passport);
 
 http.createServer(app).listen(app.get('port'), function(){
   console.log('Express server listening on port ' + app.get('port'));

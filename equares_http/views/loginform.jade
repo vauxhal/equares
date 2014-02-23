@@ -1,17 +1,56 @@
 if message
     span(style='color: red;')= message
-form(action='/login', method='post')
-    label(for='email') Email
-    input#email(type='text', name='email')
-    label(for='password') Password
-    input#password(type='password', name='password')
-    if captcha
-        label(for='captcha') Are you a human?
-        input#captcha(type='text', name='captcha')
-        img#captchaimg(src='/captcha.png')
-        input#newcaptcha(type="button", value="show new image")
-    input(type='submit', value='Log in')
-a(href='/signup') Signup
+if captcha
+    style.
+        form#login > * {
+            display: block;
+        }
+        form#login > label {
+            margin-top: 10px;
+        }
+    a#loginlink(href="/login") Log in
+    script.
+        $('#loginlink').click(function(e) {
+            e.preventDefault()
+            $.get('/logindlg').done(function(text) {
+                $('<div id="logindlg"></div>')
+                    .appendTo('body')
+                    .html(text)
+                    .dialog({
+                        modal: true,
+                        buttons: {
+                            "Log in": function() {
+                                var dlg = $(this)
+                                $.post("/login", dlg.find('form').serialize())
+                                    .done(function() {
+                                        dlg.dialog('close')
+                                        loadLoginForm($('#login'))
+                                    })
+                                    .fail(function() {
+                                        $.get('/errormsg').done(function(text) {
+                                            dlg.find('#errormsg').html(text)
+                                        })
+                                        dlg.find('#newcaptcha').click()
+                                    })
+                            },
+                            "Cancel": function() {
+                                $(this).dialog('close')
+                            }
+                        },
+                        close: function() {
+                            $(this).remove()
+                        }
+                    })
+            })
+        })
+else
+    form(action='/login', method='post')
+        label(for='username') Name or email
+        input#username(type='text', name='username')
+        label(for='password') Password
+        input#password(type='password', name='password')
+        input(type='submit', value='Log in')
+a#signup(href='/signup') Signup
 script.
     (function() {
         var loginDiv = $('#login')
@@ -22,5 +61,39 @@ script.
         })
         loginDiv.find('#newcaptcha').click(function() {
             $('#captchaimg').attr('src', '/captcha.png#' + (new Date).toGMTString())
+        })
+        $("a#signup").click(function(e) {
+            e.preventDefault()
+            $.get('/signup')
+                .done(function(text) {
+                    $('<div id="signupdlg"></div>')
+                        .appendTo('body')
+                        .html(text)
+                        .dialog({
+                            modal: true,
+                            buttons: {
+                                "Sign up": function() {
+                                    var dlg = $(this)
+                                    $.post("/signup", dlg.find('form').serialize())
+                                        .done(function() {
+                                            dlg.dialog('close')
+                                            loadLoginForm(loginDiv)
+                                        })
+                                        .fail(function() {
+                                            $.get('/errormsg').done(function(text) {
+                                                dlg.find('#errormsg').html(text)
+                                            })
+                                            dlg.find('#newcaptcha').click()
+                                        })
+                                },
+                                "Cancel": function() {
+                                    $(this).dialog('close')
+                                }
+                            },
+                            close: function() {
+                                $(this).remove()
+                            }
+                        })
+                })
         })
     })()
