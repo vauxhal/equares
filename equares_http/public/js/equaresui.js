@@ -433,7 +433,7 @@ equaresui.setSceneSource = function() {
         var loadingProgress = $("#loading-progress")
         loadingProgress.progressbar("value", 0)
         $("#loading-progress-overlay").show()
-        $.ajax("examples/" + exampleName + ".json")
+        $.get(exampleName + ".json")
             .done(function(obj) {
                 schemeEditor.import(obj,
                     function() {

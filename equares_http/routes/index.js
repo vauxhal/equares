@@ -1,13 +1,8 @@
-
-/*
- * GET home page.
- */
-
-/*
-exports.index = function(req, res){
-  res.render('index', { title: 'Express' });
-};
-*/
-exports.index = function(req, res){
-    res.render('index');
-};
+module.exports = {
+    index: function(req, res){
+        res.render('index')
+    },
+    editor: function(req, res){
+        res.render('editor')
+    }
+}

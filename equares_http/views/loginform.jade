@@ -13,7 +13,7 @@ if captcha
         $('#loginlink').click(function(e) {
             e.preventDefault()
             $.get('/logindlg').done(function(text) {
-                $('<div id="logindlg"></div>')
+                $('<div id="logindlg" title="Log in"></div>')
                     .appendTo('body')
                     .html(text)
                     .dialog({
@@ -50,7 +50,7 @@ else
         label(for='password') Password
         input#password(type='password', name='password')
         input(type='submit', value='Log in')
-a#signup(href='/signup') Signup
+a#signup(href='/signup') Sign up
 script.
     (function() {
         var loginDiv = $('#login')
@@ -66,7 +66,7 @@ script.
             e.preventDefault()
             $.get('/signup')
                 .done(function(text) {
-                    $('<div id="signupdlg"></div>')
+                    $('<div id="signupdlg" title="Sign up"></div>')
                         .appendTo('body')
                         .html(text)
                         .dialog({

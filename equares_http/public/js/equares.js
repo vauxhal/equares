@@ -1,64 +1,14 @@
-$(document).ready(function() {
-    var rootLayout = ctmDock.makeRoot().setLayout( {
-        type: "vertical",
-        tools: false
-    } );
-    var c1, c2, c3;
-    c1 = rootLayout.add( {height: 35, nosplit: true} );
-    c2 = rootLayout.add( {nosplit: true} );
-    c2.master = true;
-    c3 = rootLayout.add( {height: 15, nosplit: true} );
-    var header = $(c1.dom)
-    header.attr("id", "header").html('<img id="projectlogo" src="images/logo-small.png" title="logo"/><div id="projectname">Equares</div>');
-
-    // Create main menu
-    function wrap(tag) { return $("<" + tag + "></" + tag + ">") }
-    function createMenu(root, items, depth) {
-        if (depth === undefined)
-            depth = 0
-        var m = wrap("ul").appendTo(root)
-        m.addClass("menu-depth-"+depth)
-        function h0() {}
-        for (var i=0; i<items.length; ++i) {
-            var item = items[i]
-            var li = wrap("li").appendTo(m)
-            var a = wrap("a").html(item.text).attr("href", "#").appendTo(li)
-            ;(function(){
-                var h = item.handler instanceof Function? item.handler: h0
-                a.click(function(e) {
-                    e.preventDefault()
-                    h()
-                })
-            })()
-            if (item.menu)
-                createMenu(li, item.menu, depth+1)
-        }
-        return m
+ctm.initPage.push(function(c1, c2, c3) {
+    function setMenuItemHandler(j, func) {
+        j.click(function(e) {
+            e.preventDefault()
+            func.call(this)
+        })
     }
-    var mainMenu = createMenu(wrap("div").appendTo(header), [
-        {text: "Go", menu: [
-            {text: "Simulation editor", handler: function() { equaresui.setSceneSource.call(c2) }}
-        ]},
-        {text: "Simulation", menu: [
-            {text: "Examples", menu: [
-                {text: "Simple pendulum, phase trajectory", handler: function() { equaresui.loadExample("simple-pendulum-1") }},
-                {text: "Simple pendulum, several plots", handler: function() { equaresui.loadExample("simple-pendulum-2") }},
-                {text: "Double pendulum, trajectory projection", handler: function() { equaresui.loadExample("double-pendulum-t") }},
-                {text: "Double pendulum, Poincare map", handler: function() { equaresui.loadExample("double-pendulum-psec") }},
-                {text: "Double pendulum b, Poincare map", handler: function() { equaresui.loadExample("double-pendulum-b-psec") }}
-            ]},
-            {text: "Open", handler: function() { $("#open-scheme-file-dialog").dialog("open") } },
-            {text: "Save", handler: function() { $("#save-scheme-file-dialog").dialog("open") } },
-            {text: "Run", handler: function() { equaresui.runScheme() } }
-        ]}
-    ]).attr("id", "mainmenu").menu()
-
-    // Nested menu positioning does not work as expected, TODO
-    /*
-    mainMenu.menu("option", "position", { my:'left top', at:'left bottom' })
-    mainMenu.find(".menu-depth-1").menu().menu("option", "position", { my:'left top', at:'right top' })
-    */
-    mainMenu.menu("option", "position", { my:'left top', at:'left+30 bottom' })
+    setMenuItemHandler($('.example-simulation'), function() { equaresui.loadExample(this.href) })
+    setMenuItemHandler($('#run-simulation'), function() { equaresui.runScheme() })
+    setMenuItemHandler($('#upload-simulation'), function() { $("#open-scheme-file-dialog").dialog("open") })
+    setMenuItemHandler($('#download-simulation'), function() { $("#save-scheme-file-dialog").dialog("open") })
 
     // Create dialogs
     function updateOpenState() {
@@ -120,7 +70,6 @@ $(document).ready(function() {
 
     $(c2.dom).addClass("mymain");
     $(c3.dom).addClass("myfooter").html('<a target="_blank" href="http://ctmech.ru/">Computer Technologies in Engineering</a>');
-    rootLayout.resize();    // Because borders have changed
 
     // Init equaresBox engine; Set scene source by default when the initialization is done
     equaresBox.init(function() {
@@ -128,4 +77,4 @@ $(document).ready(function() {
     }, function(percent) {
         loadingProgress.progressbar("value", percent)
     })
-});
+})

@@ -10,6 +10,7 @@ html
     - }
     block vars
     head
+        meta(charset="utf-8")
         title= title
         link(rel='stylesheet', href='stylesheets/ui-lightness/jquery-ui-1.10.3.custom.min.css')
         link(rel='stylesheet', href='stylesheets/my.docks.css')
@@ -35,6 +36,8 @@ html
         script(type='text/javascript' src='js-3rd/jquery-1.10.2.js')
         script(type='text/javascript' src='js-3rd/jquery-ui-1.10.3.custom.js')
         script(type='text/javascript' src='js/my.docks.js')
+        script.
+            ctm = {initPage: []}
         block otherScripts
         script.
             function loadLoginForm(loginDiv) {
@@ -69,23 +72,43 @@ html
                 menu.remove().appendTo(header)
                 menu = menu.children()
                 menu.attr("id", "mainmenu").menu()
+                // Nested menu positioning does not work as expected, TODO
+                /*
+                mainMenu.menu("option", "position", { my:'left top', at:'left bottom' })
+                mainMenu.find(".menu-depth-1").menu().menu("option", "position", { my:'left top', at:'right top' })
+                */
                 menu.menu("option", "position", { my:'left top', at:'left+30 bottom' })
+
+                // Set menu-depth-# class on ul tags
+                ;(function setDepth(root, depth) {
+                    root.children('ul').each(function() {
+                        $(this)
+                            .addClass('menu-depth-'+depth)
+                            .children().each(function() {
+                                setDepth($(this), depth+1)
+                            })
+                    })
+                })(menu.parent(), 0)
 
                 loadLoginForm($('<div id="login"></div>').appendTo(header))
 
                 rootLayout.resize();    // Because borders have changed
+                
+                for (var n=ctm.initPage.length, i=0; i<n; ++i)
+                    ctm.initPage[i](c1, c2, c3)
             })
     body
         #root
             block content
         #menu
             ul
-                li: a(href="#") Home
-                li: a(href="#") About
+                li: a(href="/") Home
                 li
-                    a(href="#") Docs
+                    a#menu-editor(href="/editor") Editor
+                    block menu-editor
+                li: a(href="/about") About
+                li
+                    a(href="/doc") Docs
                     ul
-                        li: a(href="#") Basic usage
-                        li: a(href="#") Development
-                li: a(href="#") Examples
-                li: a(href="#") Feedback
+                        li: a(href="/doc/basic") Basic usage
+                        li: a(href="/doc/dev") Development

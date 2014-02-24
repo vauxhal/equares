@@ -1,0 +1,54 @@
+extends page
+block vars
+    - var title = 'Equares editor'
+
+block otherCss
+    link(rel='stylesheet', href='stylesheets/scheme-editor.css')
+    //- link(rel='stylesheet', href='stylesheets/equarescmd.css')
+    link(rel='stylesheet', href='stylesheets/jquery-linenum.css')
+
+block otherScripts
+    script(type='text/javascript' src='js-3rd/d3.v3.js')
+    script(type='text/javascript' src='js/jquery-linenum.js')
+    script(type='text/javascript' src='js/equaresui.js')
+    script(type='text/javascript' src='js/equares.js')
+    script(type='text/javascript' src='js/equares-box.js')
+    script(type='text/javascript' src='js/scheme-editor.js')
+
+block content
+    #root
+    #open-scheme-file-dialog(title='Open scheme file')
+        form
+            fieldset
+                label(for='name') Name
+                input#open-scheme-file(type='file', name='name' class='text ui-widget-content ui-corner-all')
+
+    #save-scheme-file-dialog(title='Save scheme file')
+        form
+            fieldset
+                label(for='name') Name
+                input#save-scheme-file-name(type='text', name='name', class='text ui-widget-content ui-corner-all', value='equares-scheme.eqs')
+    div
+        #running-simulation(title='Running simulation')
+            p Status: <span class="status"></span>
+            p Simulation output files
+            #simulation-output-files
+
+    #loading-progress-overlay
+        #loading-progress
+            #loading-progress-label Loading...
+
+block menu-editor
+    ul
+        li
+            a(href='#') Examples
+            ul
+                li: a.example-simulation(href='/examples/simple-pendulum-1') Simple pendulum, phase trajectory
+                li: a.example-simulation(href='/examples/simple-pendulum-2') Simple pendulum, several plots
+                li: a.example-simulation(href='/examples/double-pendulum-t') Double pendulum, trajectory projection
+                li: a.example-simulation(href='/examples/double-pendulum-psec') Double pendulum, Poincare map
+                li: a.example-simulation(href='/examples/double-pendulum-b-psec') Double pendulum b, Poincare map
+        li: a#run-simulation(href='#') Run
+        li -
+        li: a#upload-simulation(href='#') Upload...
+        li: a#download-simulation(href='#') Download...
