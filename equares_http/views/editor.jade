@@ -43,11 +43,8 @@ block menu-editor
         li
             a(href='#') Examples
             ul
-                li: a.example-simulation(href='/examples/simple-pendulum-1') Simple pendulum, phase trajectory
-                li: a.example-simulation(href='/examples/simple-pendulum-2') Simple pendulum, several plots
-                li: a.example-simulation(href='/examples/double-pendulum-t') Double pendulum, trajectory projection
-                li: a.example-simulation(href='/examples/double-pendulum-psec') Double pendulum, Poincare map
-                li: a.example-simulation(href='/examples/double-pendulum-b-psec') Double pendulum b, Poincare map
+                each x in examples
+                    li: a.example-simulation(href='/examples/' + x.name) #{x.description}
         li: a#run-simulation(href='#') Run
         li -
         li: a#upload-simulation(href='#') Upload...
