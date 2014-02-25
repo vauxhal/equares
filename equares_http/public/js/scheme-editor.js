@@ -636,7 +636,7 @@ var ctmEquaresSchemeEditor = {};
             lx.source = {box: l.source.box.name, port: l.source.info.name}
             lx.target = {box: l.target.box.name, port: l.target.info.name}
         }
-        return JSON.stringify(result)
+        return result
     }
     Editor.prototype.exportSimulation = function() {
         var simulation = { boxes: [], links: [] }

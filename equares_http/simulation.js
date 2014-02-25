@@ -1,47 +1,61 @@
 var fs = require('fs')
 var mongoose = require('mongoose')
+var ObjectId = mongoose.Schema.Types.ObjectId
 
 var SimSchema = mongoose.Schema({
-    name:           String,
+    name:           {type: String, index: {unique: true}},
     description:    String,
-    definition:     String
+    definition:     String,
+    user:           {type: ObjectId, index: true}
 })
 
 var Sim = mongoose.model('Sim', SimSchema, 'simulations')
 
-/*
-function importExampleFiles(info) {
-    Sim.remove({}, function() {
-        for (var n=info.length, i=0; i<n; ++i) {
-            (function() {
-                var x = info[i]
-                var definition = ""
-                fs.createReadStream('public/examples/' + x.name + '.json')
-                    .on('data', function(data) { definition += data })
-                    .on('end', function() {
-                        console.log(x.name)
-                        Sim.create({
-                            name: x.name,
-                            description: x.description,
-                            definition: definition
-                        }, function(err, sim) {
-                            if (err)
-                                throw err
-                        })
-                    })
-            })()
-        }
+// Refresh example simulations in database
+function refreshExamples() {
+    var dir = 'public/examples/'
+    var nFilesLoaded = 0
+    var nDirs
+    
+    function readFile(fileName) {
+        var text = ""
+        fs.createReadStream(dir + fileName)
+            .on('data', function(data) { text += data })
+            .on('end', function() {
+                var obj = JSON.parse(text)
+                var name = obj.name, description = obj.description
+                delete obj.name
+                delete obj.description
+                console.log("  " + fileName + ": " + name + " (" + description + ")")
+                Sim.create({
+                    name: name,
+                    description: description,
+                    definition: JSON.stringify(obj),
+                    user: null
+                }, function(err, sim) {
+                    if (err)
+                        console.log(err)
+                    if (++nFilesLoaded == nDirs)
+                        console.log('... Finished loading example simulations')
+                })
+            })
+    }
+
+    fs.readdir(dir, function(err, files) {
+        if (err)
+            console.log(err)
+        else Sim.remove({user: null}, function() {
+            console.log('Loading example simulations to the database ...')
+            nDirs = files.length
+            for (var i=0; i<nDirs; ++i) {
+                var fileName = files[i]
+                readFile(fileName)
+            }
+        })
     })
 }
 
-importExampleFiles([
-    { name: 'simple-pendulum-1', description: 'Simple pendulum, phase trajectory' },
-    { name: 'simple-pendulum-2', description: 'Simple pendulum, several plots' },
-    { name: 'double-pendulum-t', description: 'Double pendulum, trajectory projection' },
-    { name: 'double-pendulum-psec', description: 'Double pendulum, Poincare map' },
-    { name: 'double-pendulum-b-psec', description: 'Double pendulum b, Poincare map' }
-])
-//*/
+refreshExamples()
 
 module.exports = {
     Sim: Sim

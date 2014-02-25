@@ -50,6 +50,7 @@ if ('development' == env) {
 
 app.get('/', routes.index);
 app.get('/editor', routes.editor);
+app.get('/examples/*', routes.example);
 
 equares.bind(app)
 

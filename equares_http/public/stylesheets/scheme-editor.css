@@ -172,6 +172,7 @@ Using workaround with bbox instead.
 #scheme-box-props input[type=text] {
     border: none;
     background-color: transparent;
+    width: 100%;
 }
 
 #scheme-box-props input[type=text].modified {

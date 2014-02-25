@@ -198,7 +198,6 @@ equaresui.setSceneSource = function() {
     300)
 
     var propsDiv = $('<div id="scheme-box-props"></div>').appendTo($(propsCell.dom))
-    propsDiv.html("<h1>Properties</h1>")
     function validateBoxProp(value, userType, setter) {
         var s = value.toString().trim()
         var ok = true
@@ -216,179 +215,207 @@ equaresui.setSceneSource = function() {
         setter(value, ok)
     }
 
+    function makeEditor(host, prop) {
+        var t = prop.userType
+        if (t === undefined)
+            host.html("N/A")
+        else if (t instanceof Array)
+            host.html("TODO: Array")
+        else if (t instanceof Object) {
+            var table = wrap("table").appendTo(host), odd = false
+            for (var name in t) {
+                var row = wrap("tr").appendTo(table)
+                row.addClass(odd ? "odd": "even")
+                row.append(wrap("td").html(name))
+                var tdVal = wrap("td").appendTo(row)
+                ;(function(){    // Important: function provides closure for name_
+                    var name_ = name
+                    makeEditor(tdVal,
+                        {
+                            name: name,
+                            userType: t[name],
+                            getter: function() { return prop.getter()[name_] },
+                            setter: function(val) {
+                                var v = prop.getter()
+                                v[name_] = val
+                                prop.setter(v)
+                            }
+                        })
+                })()
+                odd = !odd
+            }
+        }
+        else if (typeof(t) == "string") {
+            switch (t) {
+            case 's': case 'i': case 'd':
+                $('<input type="text">')
+                    .attr("value", prop.getter().toString())
+                    .change(function() {
+                        var e = this
+                        validateBoxProp(this.value, t, function(value, ok) {
+                            if (ok)
+                                prop.setter(value)
+                            e.value = prop.getter()
+                            $(e).removeClass('modified')
+                        })
+                    })
+                    .keypress(function() {
+                        $(this).addClass('modified')
+                    })
+                    .appendTo(host)
+                break
+            case 'i:*':
+                $('<input type="text">')
+                    .attr("value", prop.getter().toString())
+                    .change(function() {
+                        var val = this.value.match(/-?[0-9]+/g) || []
+                        for (var i=0; i<val.length; ++i)
+                            val[i] = +val[i]
+                        prop.setter(val)
+                        this.value = prop.getter().toString()
+                        $(this).removeClass('modified')
+                    })
+                    .keypress(function() {
+                        $(this).addClass('modified')
+                    })
+                    .appendTo(host)
+                break
+            case 'b':
+                $('<input type="checkbox">')
+                    .attr("checked", prop.getter())
+                    .change(function() {
+                        prop.setter(this.checked)
+                        this.checked = prop.getter()
+                    })
+                    .appendTo(host)
+                break
+            case 't':
+                $('<input type="button">')
+                    .attr("value", "...")
+                    .click(function() {
+                        extrasDiv.html("")
+                        var textarea
+                        wrap("div").attr("id", "scheme-box-extras-hdr")
+                            .append(wrap("h1").html(prop.name))
+                            .append(
+                                 $('<input type="button" class="scheme-box-extras-ok" value="Ok">')
+                                    .click(function() {
+                                        prop.setter(textarea[0].value)
+                                        textarea.removeClass('modified')
+                                    })
+                            )
+                            .appendTo(extrasDiv)
+                        wrap("div").attr("id", "scheme-box-extras-text")
+                            .append(textarea = wrap("textarea"))
+                            .appendTo(extrasDiv)
+                        textarea.linenum()
+                        textarea[0].value = prop.getter()
+                        textarea.keypress(function() {
+                            $(this).addClass('modified')
+                        })
+                        textarea.focus()
+                    })
+                    .appendTo(host)
+                break
+            case 'BoxType':
+                var editor = wrap("select").appendTo(host)
+                function findSelIndex() {
+                    var index = -1
+                    var v = prop.getter()
+                    var boxes = equaresBox.boxTypes
+                    for(var i=0; i<boxes.length; ++i) {
+                        var b = boxes[i]
+                        editor.append(wrap("option").attr("value", b).html(b))
+                        if (b == v)
+                            index = i
+                    }
+                    return index
+                }
+                var edom = editor[0]
+                edom.selectedIndex = findSelIndex()
+                editor.change(function() {
+                    var type = this[edom.selectedIndex].value
+                    prop.setter(type)
+                    var i = findSelIndex()
+                    if (edom.selectedIndex != i)
+                        edom.selectedIndex = i
+                })
+                break
+            default:
+                if (t[0] == 'f') {
+                    // Edit a combination of flags
+                    var tx = {}
+                    function hasFlag(flag) {
+                        var v = prop.getter()
+                        for(var i=0; i<v.length; ++i)
+                            if (v[i] == flag)
+                                return true
+                        return false
+                    }
+                    var flags = t.substr(1).match(/\w+/g)
+                    var flagProp = { name: prop.name, userType: {} }
+                    for (var i=0; i<flags.length; ++i)
+                        flagProp.userType[flags[i]] = 'b'
+                    flagProp.getter = function() {
+                        var result = {}
+                        for (var i=0; i<flags.length; ++i) {
+                            var flag = flags[i]
+                            result[flag] = hasFlag(flag)
+                            }
+                        return result
+                        }
+                    flagProp.setter = function(val) {
+                        var result = []
+                        for (var i=0; i<flags.length; ++i) {
+                            var flag = flags[i]
+                            if (val[flag])
+                                result.push(flag)
+                        }
+                        prop.setter(result)
+                    }
+                makeEditor(host, flagProp)
+                }
+                else
+                    host.html("TODO: " + t)
+                break
+            }
+        }
+    }
+
+    function loadProps(title, props, options) {
+        options = options || {}
+        var makeGetter = options.makeGetter || function(pname, props) { return function() { return props[pname] } },
+            makeSetter = options.makeSetter || function(pname, props) { return function(value) { props[pname] = value } }
+        extrasDiv.html("")
+        propsDiv.html("")
+        var hdr = wrap("h1").html(title).appendTo(propsDiv)
+        var table = wrap("table").appendTo(propsDiv)
+        var odd = true
+        for (pname in props) {
+            odd = !odd
+            var p = props[pname]
+            var row = wrap("tr").appendTo(table)
+            row.addClass(odd? "odd": "even")
+            row.append(wrap("td").html(pname))
+            var userType = p.userType
+            if (!userType) switch(typeof p) {
+                case "number":   userType = 'd';   break
+                default:   userType = 's';   break
+            }
+            makeEditor(
+                wrap("td").appendTo(row), {
+                    name: pname,
+                    userType: userType,
+                    getter: p.getter instanceof Function ?   p.getter :   makeGetter(pname, props),
+                    setter: p.setter instanceof Function ?   p.setter :   makeSetter(pname, props)
+                }
+            )
+        }
+        table.find("td:first").next().children().first().focus()
+    }
+
     equaresui.selectBox = function(box) {
         if (box) {
-            extrasDiv.html("")
-            function makeEditor(host, prop) {
-                var t = prop.userType
-                if (t === undefined)
-                    host.html("N/A")
-                else if (t instanceof Array)
-                    host.html("TODO: Array")
-                else if (t instanceof Object) {
-                    var table = wrap("table").appendTo(host), odd = false
-                    for (var name in t) {
-                        var row = wrap("tr").appendTo(table)
-                        row.addClass(odd ? "odd": "even")
-                        row.append(wrap("td").html(name))
-                        var tdVal = wrap("td").appendTo(row)
-                        ;(function(){    // Important: function provides closure for name_
-                            var name_ = name
-                            makeEditor(tdVal,
-                                {
-                                    name: name,
-                                    userType: t[name],
-                                    getter: function() { return prop.getter()[name_] },
-                                    setter: function(val) {
-                                        var v = prop.getter()
-                                        v[name_] = val
-                                        prop.setter(v)
-                                    }
-                                })
-                        })()
-                        odd = !odd
-                    }
-                }
-                else if (typeof(t) == "string") {
-                    switch (t) {
-                    case 's': case 'i': case 'd':
-                        $('<input type="text">')
-                            .attr("value", prop.getter().toString())
-                            .change(function() {
-                                var e = this
-                                validateBoxProp(this.value, t, function(value, ok) {
-                                    if (ok)
-                                        prop.setter(value)
-                                    e.value = prop.getter()
-                                    $(e).removeClass('modified')
-                                })
-                            })
-                            .keypress(function() {
-                                $(this).addClass('modified')
-                            })
-                            .appendTo(host)
-                        break
-                    case 'i:*':
-                        $('<input type="text">')
-                            .attr("value", prop.getter().toString())
-                            .change(function() {
-                                var val = this.value.match(/-?[0-9]+/g) || []
-                                for (var i=0; i<val.length; ++i)
-                                    val[i] = +val[i]
-                                prop.setter(val)
-                                this.value = prop.getter().toString()
-                                $(this).removeClass('modified')
-                            })
-                            .keypress(function() {
-                                $(this).addClass('modified')
-                            })
-                            .appendTo(host)
-                        break
-                    case 'b':
-                        $('<input type="checkbox">')
-                            .attr("checked", prop.getter())
-                            .change(function() {
-                                prop.setter(this.checked)
-                                this.checked = prop.getter()
-                            })
-                            .appendTo(host)
-                        break
-                    case 't':
-                        $('<input type="button">')
-                            .attr("value", "...")
-                            .click(function() {
-                                extrasDiv.html("")
-                                var textarea
-                                wrap("div").attr("id", "scheme-box-extras-hdr")
-                                    .append(wrap("h1").html(prop.name))
-                                    .append(
-                                         $('<input type="button" class="scheme-box-extras-ok" value="Ok">')
-                                            .click(function() {
-                                                prop.setter(textarea[0].value)
-                                                textarea.removeClass('modified')
-                                            })
-                                    )
-                                    .appendTo(extrasDiv)
-                                wrap("div").attr("id", "scheme-box-extras-text")
-                                    .append(textarea = wrap("textarea"))
-                                    .appendTo(extrasDiv)
-                                textarea.linenum()
-                                textarea[0].value = prop.getter()
-                                textarea.keypress(function() {
-                                    $(this).addClass('modified')
-                                })
-                                textarea.focus()
-                            })
-                            .appendTo(host)
-                        break
-                    case 'BoxType':
-                        var editor = wrap("select").appendTo(host)
-                        function findSelIndex() {
-                            var index = -1
-                            var v = prop.getter()
-                            var boxes = equaresBox.boxTypes
-                            for(var i=0; i<boxes.length; ++i) {
-                                var b = boxes[i]
-                                editor.append(wrap("option").attr("value", b).html(b))
-                                if (b == v)
-                                    index = i
-                            }
-                            return index
-                        }
-                        var edom = editor[0]
-                        edom.selectedIndex = findSelIndex()
-                        editor.change(function() {
-                            var type = this[edom.selectedIndex].value
-                            prop.setter(type)
-                            var i = findSelIndex()
-                            if (edom.selectedIndex != i)
-                                edom.selectedIndex = i
-                        })
-                        break
-                    default:
-                        if (t[0] == 'f') {
-                            // Edit a combination of flags
-                            var tx = {}
-                            function hasFlag(flag) {
-                                var v = prop.getter()
-                                for(var i=0; i<v.length; ++i)
-                                    if (v[i] == flag)
-                                        return true
-                                return false
-                            }
-                            var flags = t.substr(1).match(/\w+/g)
-                            var flagProp = { name: prop.name, userType: {} }
-                            for (var i=0; i<flags.length; ++i)
-                                flagProp.userType[flags[i]] = 'b'
-                            flagProp.getter = function() {
-                                var result = {}
-                                for (var i=0; i<flags.length; ++i) {
-                                    var flag = flags[i]
-                                    result[flag] = hasFlag(flag)
-                                    }
-                                return result
-                                }
-                            flagProp.setter = function(val) {
-                                var result = []
-                                for (var i=0; i<flags.length; ++i) {
-                                    var flag = flags[i]
-                                    if (val[flag])
-                                        result.push(flag)
-                                }
-                                prop.setter(result)
-                            }
-                        makeEditor(host, flagProp)
-                        }
-                        else
-                            host.html("TODO: " + t)
-                        break
-                    }
-                }
-            }
-
-            propsDiv.html("")
-            var hdr = wrap("h1").html(box.name).appendTo(propsDiv)
-            var table = wrap("table").appendTo(propsDiv)
             var props = {
                 name: {
                     userType: 's',
@@ -406,38 +433,34 @@ equaresui.setSceneSource = function() {
             }
             for (var pname in box.props)
                 props[pname] = { userType: box.propType(pname) }
-            var odd = true
-            for (pname in props) {
-                odd = !odd
-                var p = props[pname]
-                var row = wrap("tr").appendTo(table)
-                row.addClass(odd? "odd": "even")
-                row.append(wrap("td").html(pname))
-                var tdVal = wrap("td").appendTo(row)
-                ;(function(){    // Important: function provides closure for pname_
-                    var pname_ = pname,
-                        setter = p.setter instanceof Function ?   p.setter :   function(value) { box.prop(pname_, value) },
-                        getter = p.getter instanceof Function ?   p.getter :   function() { return box.prop(pname_) }
-                    makeEditor(tdVal, {name: pname_, userType: p.userType, getter: getter, setter: setter})
-                })()
-            }
-            table.find("td:first").next().children().first().focus()
+            loadProps(box.name, props, {
+                makeGetter: function(pname, props) { return function() { return box.prop(pname) } },
+                makeSetter: function(pname, props) { return function(value) { box.prop(pname, value) } }
+            })
         }
-        else {
-            propsDiv.html("<h1>No selection</h1>")
-            extrasDiv.html("")
-        }
+        else
+            loadProps("Simulation properties", simProps)
     }
+    
+    // Load simulation properties
+    var simProps = {
+        name: "",
+        description: ""
+    };
+    equaresui.selectBox(null)
 
     equaresui.loadExample = function(exampleName) {
         var loadingProgress = $("#loading-progress")
         loadingProgress.progressbar("value", 0)
         $("#loading-progress-overlay").show()
-        $.get(exampleName + ".json")
+        $.get(exampleName)
             .done(function(obj) {
                 schemeEditor.import(obj,
                     function() {
                         loadingProgress.progressbar("value", 100)
+                        simProps.name = obj.name || ""
+                        simProps.description = obj.description || ""
+                        equaresui.selectBox(null)
                     },
                     function(percent) {
                         loadingProgress.progressbar("value", percent)
@@ -455,7 +478,12 @@ equaresui.setSceneSource = function() {
         fileReader.onload = function(fileLoadedEvent)
         {
             var textFromFileLoaded = fileLoadedEvent.target.result;
-            schemeEditor.import(JSON.parse(textFromFileLoaded))
+            var obj = JSON.parse(textFromFileLoaded)
+            schemeEditor.import(obj, function() {
+                simProps.name = obj.name || ""
+                simProps.description = obj.description || ""
+                equaresui.selectBox(null)
+            })
         };
         fileReader.readAsText(fileToLoad, "UTF-8");
     }
@@ -463,7 +491,9 @@ equaresui.setSceneSource = function() {
     equaresui.saveScheme = function(fileName) {
         if (arguments.length < 1)
             fileName = "equares-scheme.eqs"
-        var schemeText = schemeEditor.export()
+        var obj = schemeEditor.export()
+        $.extend(obj, simProps)
+        var schemeText = JSON.stringify(obj)
         var b = new Blob([schemeText], {type: "text/plain"})
 
         var downloadLink = document.createElement("a");
@@ -650,27 +680,4 @@ equaresui.setSceneSource = function() {
     }
 }
 
-$(document).ready(function() {
-    // Add source menu tools for equares docks
-    ctmDock.toolSets.sourceMenuTools.addTools( [
-        ctmDock.newTool( {
-            title: "Console",
-            src: "images/console.png",
-            alt: "console",
-            handler: equaresui.setConsoleSource
-            } ),
-        ctmDock.newTool( {
-            title: "Plot",
-            src: "images/plot.png",
-            alt: "plot",
-            handler: equaresui.setWorkbenchSource
-            } ),
-        ctmDock.newTool( {
-            title: "Scheme",
-            src: "images/scheme.png",
-            alt: "scheme",
-            handler: equaresui.setSceneSource
-            } )
-    ] );
-});
 })();
