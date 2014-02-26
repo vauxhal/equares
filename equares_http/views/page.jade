@@ -92,10 +92,10 @@ html
 
                 loadLoginForm($('<div id="login"></div>').appendTo(header))
 
-                rootLayout.resize();    // Because borders have changed
-                
                 for (var n=ctm.initPage.length, i=0; i<n; ++i)
                     ctm.initPage[i](c1, c2, c3)
+
+                rootLayout.resize();    // Because borders have changed
             })
     body
         #root
@@ -112,3 +112,4 @@ html
                     ul
                         li: a(href="/doc/basic") Basic usage
                         li: a(href="/doc/dev") Development
+        block extras
