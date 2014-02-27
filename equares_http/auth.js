@@ -2,6 +2,9 @@ var mongoose = require('mongoose')
 var crypto = require('crypto')
 var passport = require('passport')
 var LocalStrategy = require('passport-local').Strategy
+var express = require('express')
+var path = require('path')
+var fs = require('fs')
 
 // Based on this: https://github.com/visionmedia/node-pwd
 
@@ -127,6 +130,23 @@ function auth(app) {
     app.use(passport.initialize());
     app.use(passport.session());
 
+    // Serve per-user files; disallow one user to see other users' files
+    app.use(function(req, res, next) {
+        if (req.url.match('^/user/')) {
+            if(req.isAuthenticated())
+                req.url = req.url.replace('/user', '/users/' + req.user.username)
+            else
+                return res.send(403)
+        }
+        if (req.url.match('^/users/')) {
+            var username = req.isAuthenticated()? req.user.username: "-"
+            if (!req.url.match('^/users/' + username + '/'))
+                return res.send(403)
+        }
+        next()
+    })
+    fs.mkdir(path.join(__dirname, 'users'), function() {})
+    app.use('/users', express.static(path.join(__dirname, 'users')));
 
 
     // Serve authorization-specific routes
@@ -138,9 +158,16 @@ function auth(app) {
             res.render('loginform', {message: req.flash('error'), captcha: req.session.needsLoginCaptcha})
     })
 
+    function completeLogin(req) {
+        req.session.failedAuthAttempts = 0
+        req.session.needsLoginCaptcha = false
+        fs.mkdir(path.join(__dirname, 'users', req.user.username), function() {})
+    }
+
     app.post("/login", function(req, res, next) {
         if (req.session.needsLoginCaptcha && req.body.captcha !== req.session.captcha) {
             req.flash('error', 'Human test failed')
+            req.session.captcha = undefined
             return res.send(401)
         }
         passport.authenticate(
@@ -162,8 +189,7 @@ function auth(app) {
                 req.logIn(user, function(err) {
                     if (err)
                         return next(err)
-                    req.session.failedAuthAttempts = 0
-                    req.session.needsLoginCaptcha = false
+                    completeLogin(req)
                     return res.end()
                 })
             }
@@ -220,10 +246,10 @@ function auth(app) {
             if (err)
                 throw err
             if (user)
-                req.login(user, function(err) {
+                req.logIn(user, function(err) {
                     if (err)
                         return next(err)
-                    // res.redirect("/")
+                    completeLogin(req)
                     res.send(200)
                 })
             else {

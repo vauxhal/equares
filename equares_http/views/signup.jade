@@ -27,6 +27,5 @@ form(id="signup", method="POST", action="/signup")
     input#password(type='password', name='password2')
     label(for='captcha') Confirm you're a human: enter code shown in the picture below
     input#captcha(type='text', name='captcha')
-    img#captchaimg(src="/captcha.png")
+    img#captchaimg(src='/captcha.png#'+(new Date()).toString())
     input#newcaptcha(type="button", value="show new image")
-    //- input(type="submit", value="Sign up")
