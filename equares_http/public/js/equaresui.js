@@ -590,7 +590,7 @@ equaresui.setSceneSource = function() {
                                     fi = outFileInfo[i]
                                     switch(fi.type) {
                                     case "image":
-                                        fi.jq = $('<img src="' + "equares-cwd/" + i + '" alt="' + i + '"/>')
+                                        fi.jq = $('<img src="' + "user/" + i + '" alt="' + i + '"/>')
                                             .css("width", fi.size.width)
                                             .css("height", fi.size.height)
                                             .addClass("outputFile")
@@ -614,7 +614,7 @@ equaresui.setSceneSource = function() {
                         }
                         m = str.match("file: (.*)")
                         if (m && m.length > 1) {
-                            var name = m[1], svrname = "equares-cwd/" + name
+                            var name = m[1], svrname = "user/" + name
                             fi = outFileInfo[name]
                             switch(fi.type) {
                             case "image":

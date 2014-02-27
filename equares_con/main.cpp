@@ -1,6 +1,8 @@
 #include <QCoreApplication>
+#include <QVariantMap>
 #include "equares_core/equares_script.h"
 #include "equares_core/initBoxFactory.h"
+#include "equares_core/PerTypeStorage.h"
 #include "JsRunner.h"
 #include "EquaresPrintUtil.h"
 
@@ -116,9 +118,17 @@ int main(int argc, char **argv)
         QStringList args = app.arguments();
         args.removeFirst();
         QStringList describeSystemOptions;
+        QString cacheDir;
+        QString *flagArg = 0;
+        QVariantMap& globalSettings = PerTypeStorage::instance<QVariantMap>();
         foreach (QString arg, args) {
             if (arg.isEmpty())
                 continue;
+            if (flagArg) {
+                *flagArg = arg;
+                flagArg = 0;
+                continue;
+            }
             if (arg[0] == '-' && arg.size() == 2) {
                 switch (arg[1].toLatin1()) {
                 case 'd':
@@ -128,6 +138,12 @@ int main(int argc, char **argv)
                     mode = ServerMode;
                 case 'i':
                     forceInteractive = true;
+                    break;
+                case 'c':
+                    flagArg = &cacheDir;
+                    break;
+                case 'b':
+                    globalSettings["denyBuild"] = true;
                     break;
                 default:
                     throw EquaresException(QString("Unrecognized option '%1'").arg(arg));
@@ -140,6 +156,10 @@ int main(int argc, char **argv)
             else
                 nonFlagArgs << arg;
         }
+
+        // Stuff global settings
+        if (!cacheDir.isEmpty())
+            globalSettings["cacheDir"] = cacheDir;
 
         // Create script engine
         QScriptEngine engine;

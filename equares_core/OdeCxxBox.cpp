@@ -1,4 +1,5 @@
 #include "OdeCxxBox.h"
+#include "PerTypeStorage.h"
 #include <QFile>
 #include <QDir>
 #include <QFileInfo>
@@ -213,37 +214,62 @@ OdeCxxBox& OdeCxxBox::setSrc(const QString& src)
         }
     }
 
-    // Prepare work directory
-    QDir dir = QDir::current();
+    // Generate library subdir path
     QString subdirPath = "equares/" + className + "_" + hashString;
-    if (!dir.mkpath(subdirPath))
-        throwBoxException(QString("Failed to create directory %1").arg(dir.absoluteFilePath(subdirPath)));
-    if (!dir.cd(subdirPath))
-        throwBoxException(QString("Failed to switch to directory %1").arg(dir.absoluteFilePath(subdirPath)));
 
+    // Library file full path name will be stored here
+    QString libName;
+
+    // Library file base name
     QString baseName = "ode";
 
-    if (!libUpToDate(dir.absoluteFilePath(baseName), hashString)) {
-        // Generate source file
-        QFileInfo fi(dir.absoluteFilePath(baseName + ".cpp"));
-        {
-            QString srcFileContent =
-                readFile(":/cxx/OdeFileHeader.cpp", this) + "\n" +
-                src + "\n" +
-                readFile(":/cxx/OdeFileFooter.cpp", this).replace("<X>", className) + "\n" +
-                    "extern \"C\" ODE_EXPORT const char *hash() { return \"" + hashString + "\"; }\n";
-            QFile srcFile(fi.absoluteFilePath());
-            if (!srcFile.open(QIODevice::WriteOnly))
-                throwBoxException(QString("Failed to open file %1").arg(fi.absoluteFilePath()));
-            srcFile.write(srcFileContent.toUtf8());
-        }
+    // Obtain global settings instance
+    const QVariantMap& globalSettings = PerTypeStorage::instance<QVariantMap>();
 
-        // Build library
-        buildLib(dir, m_useQmake, this);
+    // At first, look up the library in the cache directory
+    QString cacheDir = globalSettings["cacheDir"].toString();
+    if (!cacheDir.isEmpty()) {
+        QDir dir(cacheDir);
+        EQUARES_CERR << QString("Looking up in ") << dir.absoluteFilePath(subdirPath) << endl;
+        if (dir.exists() && dir.cd(subdirPath) && libUpToDate(dir.absoluteFilePath(baseName), hashString))
+            libName = dir.absoluteFilePath(baseName);
+    }
+
+    if (libName.isEmpty()) {
+        // The library is missing in the cache, try looking up in the current dir; build if necessary and allowed
+        bool canBuild = !globalSettings["denyBuild"].toBool();
+
+        // Prepare work directory
+        QDir dir = QDir::current();
+        if (canBuild && !dir.mkpath(subdirPath))
+            throwBoxException(QString("Failed to create directory %1").arg(dir.absoluteFilePath(subdirPath)));
+        if (!dir.cd(subdirPath))
+            throwBoxException(QString("Failed to switch to directory %1").arg(dir.absoluteFilePath(subdirPath)));
+
+        if (!libUpToDate(dir.absoluteFilePath(baseName), hashString)) {
+            if (!canBuild)
+                throwBoxException("Failed to build library because build is denied");
+            // Generate source file
+            QFileInfo fi(dir.absoluteFilePath(baseName + ".cpp"));
+            {
+                QString srcFileContent =
+                    readFile(":/cxx/OdeFileHeader.cpp", this) + "\n" +
+                    src + "\n" +
+                    readFile(":/cxx/OdeFileFooter.cpp", this).replace("<X>", className) + "\n" +
+                        "extern \"C\" ODE_EXPORT const char *hash() { return \"" + hashString + "\"; }\n";
+                QFile srcFile(fi.absoluteFilePath());
+                if (!srcFile.open(QIODevice::WriteOnly))
+                    throwBoxException(QString("Failed to open file %1").arg(fi.absoluteFilePath()));
+                srcFile.write(srcFileContent.toUtf8());
+            }
+
+            // Build library
+            buildLib(dir, m_useQmake, this);
+        }
+        libName = dir.absoluteFilePath(baseName);
     }
 
     // Load library
-    QString libName = dir.absoluteFilePath(baseName);
     m_libProxy.clear();
     m_libProxy = OdeLibProxy::Ptr(new OdeLibProxy(libName, this));
 

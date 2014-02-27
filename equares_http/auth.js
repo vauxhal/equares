@@ -145,7 +145,7 @@ function auth(app) {
         }
         next()
     })
-    fs.mkdir(path.join(__dirname, 'users'), function() {})
+    fs.mkdir('users', function() {})
     app.use('/users', express.static(path.join(__dirname, 'users')));
 
 
