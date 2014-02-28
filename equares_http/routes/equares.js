@@ -2,7 +2,6 @@
 var child_process = require('child_process');
 var lins = require('line-input-stream');
 var stream = require('stream');
-var url = require("url");
 var fs = require('fs')
 var path = require('path')
 
@@ -142,6 +141,7 @@ User.prototype.toggle = function() {
 };
 
 var commands = exports.commands = {}
+var postCommands = exports.postCommands = {}
 
 commands["equaresToggle"] = function(req, res) {
     var user = equares.user(req)
@@ -227,7 +227,7 @@ commands["equaresOutputEvent"] = function(req, res) {
     })();
 };
 
-commands["equaresRunSimulation"] = function(req, res) {
+postCommands["equaresRunSimulation"] = function(req, res) {
     if (!req.isAuthenticated()) {
         res.send(403, "You are not logged in")
         return
@@ -238,8 +238,8 @@ commands["equaresRunSimulation"] = function(req, res) {
         user.start();
 
         // Feed input
-        var simulation = url.parse(req.url, true).query.simulation
-        var command = "===={\n" + "runSimulation(\n" + simulation + "\n)\n" + "====}"
+        var simulation = req.body
+        var command = "===={\n" + "runSimulation(\n" + JSON.stringify(simulation) + "\n)\n" + "====}"
         user.execCommand(command);
         res.send("Started simulation");
     }
@@ -255,7 +255,7 @@ commands["equaresRunSimulation"] = function(req, res) {
 
 commands["equaresExec"] = function(req, res) {
     var user = equares.user(req)
-    var command = url.parse(req.url, true).query.cmd;
+    var command = req.query.cmd;
     user.execCommand(command);
     res.send(user.isRunning(user)? "1": "0");
 };
@@ -292,14 +292,14 @@ commands["equaresExecSync"] = function(req, res) {
     }
     ls.on('line', processServerReply);
 
-    var command = url.parse(req.url, true).query.cmd;
+    var command = req.query.cmd;
     user.execCommand(command);
 };
 
 var equaresInfoCache = {};
 
 commands["equaresRequestInfo"] = function(req, res) {
-    var command = url.parse(req.url, true).query.cmd;
+    var command = req.query.cmd;
     if (equaresInfoCache[command]) {
         res.write(equaresInfoCache[command]);
         res.end();
@@ -319,11 +319,13 @@ commands["equaresRequestInfo"] = function(req, res) {
     }
 }
 
-commands["equaresRequestInfoEx"] = function(req, res) {
-    var query = url.parse(req.url, true).query
-    var describeOptions = query.options || "";
-    var command = query.cmd;
-    var rc = equares.user(req).runConfig(['-i', '-d'+describeOptions, command])
+postCommands["equaresRequestInfoEx"] = function(req, res) {
+    var query = req.body
+    var describeOptions = query.options || ""
+    var rc = equares.user(req).runConfig(['-i', '-d'+describeOptions, 'box'])
+    var stdin = 'box = new ' + query.type + '\n'
+    for (var prop in query.props)
+        stdin += 'box.' + prop + ' = ' + JSON.stringify(query.props[prop]) + '\n'
     var proc = child_process.spawn(equares.programPath, rc.args, {cwd: rc.cwd});
     var stdout = "", stderr = "", replied = false
     function reply(text) {
@@ -343,7 +345,7 @@ commands["equaresRequestInfoEx"] = function(req, res) {
     proc.stdin.on('error', function(){
         reply(JSON.stringify({error: -1, message: "Failed to start equares"}))
     })
-    proc.stdin.end(query.stdin)
+    proc.stdin.end(stdin)
     proc.on('close', function(code) {
         if (code === 0   &&   stderr.length === 0)
             reply(JSON.stringify(stdout))
@@ -363,4 +365,6 @@ commands["equaresRequestInfoEx"] = function(req, res) {
 exports.bind = function(app) {
     for (var cmd in commands)
         app.get("/" + cmd + ".cmd", commands[cmd])
+    for (cmd in postCommands)
+        app.post("/" + cmd + ".cmd", postCommands[cmd])
 }

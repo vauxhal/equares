@@ -422,7 +422,7 @@ equaresui.setSceneSource = function() {
                     getter: function() { return box.name },
                     setter: function(newName) {
                         box.rename(newName)
-                        hdr.html(box.name)
+                        propsDiv.children('h1').first().html(box.name)
                     }
                 },
                 type: {
@@ -517,10 +517,9 @@ equaresui.setSceneSource = function() {
     }
     equaresui.runScheme = function() {
         var simulation = schemeEditor.exportSimulation()
-        simulation = JSON.stringify(simulation)
         function dummyStopSim() {}
         equaresui.stopSimulation = dummyStopSim
-        $.ajax("equaresRunSimulation.cmd", {data: {simulation: simulation}, type: "GET", cache: false})
+        $.ajax("equaresRunSimulation.cmd", {data: simulation, type: "POST", cache: false})
             .done(function() {
                 var dlg = $("#running-simulation")
                 var stopButton = $(".ui-dialog-buttonpane button:contains('Stop')")
@@ -622,7 +621,7 @@ equaresui.setSceneSource = function() {
                                 break
                             case "text":
                                 // TODO: cut text, add download link
-                                $.ajax(svrname).done(function(text) {
+                                $.get(svrname).done(function(text) {
                                     text.replace("\r", "")
                                     var lines = text.split("\n")
                                         var table = wrap("table").appendTo(fi.jq.html(""))

@@ -230,7 +230,6 @@ OdeCxxBox& OdeCxxBox::setSrc(const QString& src)
     QString cacheDir = globalSettings["cacheDir"].toString();
     if (!cacheDir.isEmpty()) {
         QDir dir(cacheDir);
-        EQUARES_CERR << QString("Looking up in ") << dir.absoluteFilePath(subdirPath) << endl;
         if (dir.exists() && dir.cd(subdirPath) && libUpToDate(dir.absoluteFilePath(baseName), hashString))
             libName = dir.absoluteFilePath(baseName);
     }

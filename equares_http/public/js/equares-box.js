@@ -351,7 +351,7 @@ var equaresBox = {};
     }
 
     equaresBox.info = function(request, callback) {
-        $.ajax("equaresRequestInfo.cmd", {data: {cmd: request}, type: "GET"})
+        $.get("equaresRequestInfo.cmd", {cmd: request})
             .done(function(data) {
                 var reply = JSON.parse(data);
                 if (reply.error)
@@ -366,7 +366,7 @@ var equaresBox = {};
     }
 
     equaresBox.infoEx = function(request, callback, errorCallback) {
-        $.ajax("equaresRequestInfoEx.cmd", {data: request, type: "GET"})
+        $.post("equaresRequestInfoEx.cmd", request)
             .done(function(data) {
                 var reply = JSON.parse(data);
                 if (reply.error) {
@@ -382,7 +382,7 @@ var equaresBox = {};
                 if (errorCallback instanceof Function)
                     errorCallback("Ajax error")
                 else
-                    alert("equaresRequestInfo.cmd: Ajax error");
+                    alert("equaresRequestInfoEx.cmd: Ajax error");
             });
     }
 
@@ -789,9 +789,9 @@ $.extend(equaresBox.rules, {
                 box.status = { level: "waiting", text: "Compiling..." }
                 box.editor.update()
                 equaresBox.infoEx({
-                    cmd: "box",
                     options: "ports",
-                    stdin: "box = new CxxOde\nbox.src = '\n" + box.prop(name) + "'\n"
+                    type: "CxxOde",
+                    props: { src: box.prop(name) }
                 }, function(info) {
                     // Update port format
                     box.info.inputs = info.inputs
