@@ -351,29 +351,29 @@ var equaresBox = {};
     }
 
     equaresBox.info = function(request, callback) {
-        $.get("equaresRequestInfo.cmd", {cmd: request})
+        $.get("cmd/requestInfo", {cmd: request})
             .done(function(data) {
                 var reply = JSON.parse(data);
                 if (reply.error)
-                    alert("equaresRequestInfo.cmd error: \n" + reply.stderr);
+                    alert("requestInfo error: \n" + reply.stderr);
                 else
                     callback(eval("(function(){return " + reply.stdout + "})()"));
             })
             .fail(function() {
-                // equaresDebug.html("equaresExec.cmd: Ajax error");
-                alert("equaresRequestInfo.cmd: Ajax error");
+                // equaresDebug.html("requestInfo: Ajax error");
+                alert("requestInfo: Ajax error");
             });
     }
 
     equaresBox.infoEx = function(request, callback, errorCallback) {
-        $.post("equaresRequestInfoEx.cmd", request)
+        $.post("cmd/requestInfoEx", request)
             .done(function(data) {
                 var reply = JSON.parse(data);
                 if (reply.error) {
                     if (errorCallback instanceof Function)
                         errorCallback(reply)
                     else
-                        alert("equaresRequestInfoEx.cmd error: \n" + (reply.stderr || reply.message));
+                        alert("requestInfoEx error: \n" + (reply.stderr || reply.message));
                 }
                 else
                     callback(eval("(function(){return " + reply + "})()"));
@@ -382,7 +382,7 @@ var equaresBox = {};
                 if (errorCallback instanceof Function)
                     errorCallback("Ajax error")
                 else
-                    alert("equaresRequestInfoEx.cmd: Ajax error");
+                    alert("requestInfoEx: Ajax error");
             });
     }
 

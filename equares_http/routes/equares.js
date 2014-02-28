@@ -140,21 +140,35 @@ User.prototype.toggle = function() {
         this.start();
 };
 
-var commands = exports.commands = {}
-var postCommands = exports.postCommands = {}
+var commands = {}
 
-commands["equaresToggle"] = function(req, res) {
+function ensureAuth(req, res) {
+    if (!req.isAuthenticated()) {
+        res.send(403, "You are not logged in")
+        return false
+    }
+    return true
+}
+
+
+commands["toggle"] = function(req, res) {
+    if (!ensureAuth(req, res))
+        return
     var user = equares.user(req)
     user.toggle()
     res.end()
 };
 
-commands["equaresStat"] = function(req, res) {
+commands["stat"] = function(req, res) {
+    if (!ensureAuth(req, res))
+        return
     var user = equares.user(req)
     res.send(user.isRunning()? "1": "0")
 };
 
-commands["equaresStatEvent"] = function(req, res) {
+commands["statEvent"] = function(req, res) {
+    if (!ensureAuth(req, res))
+        return
     res.writeHead(200, {
         'Content-Type': 'text/event-stream',
         'Cache-Control': 'no-cache',
@@ -164,11 +178,11 @@ commands["equaresStatEvent"] = function(req, res) {
     var user = equares.user(req)
     var goon = true;
     res.on('error', function() {
-        // console.log("equaresStatEvent: stopping due to error");
+        // console.log("statEvent: stopping due to error");
         goon = false;
         });
     res.on('close', function() {
-        // console.log("equaresStatEvent: stopping due to close");
+        // console.log("statEvent: stopping due to close");
         goon = false;
         });
     var lastev;
@@ -178,13 +192,15 @@ commands["equaresStatEvent"] = function(req, res) {
         if( lastev !== user.lastev ) {
             lastev = user.lastev;
             res.write("data: " + lastev + "\n\n");
-            // console.log("equaresStatEvent: %s", lastev);
+            // console.log("statEvent: %s", lastev);
             }
         setTimeout( checkStatEvents, 200 );
     })();
 };
 
-commands["equaresOutputEvent"] = function(req, res) {
+commands["outputEvent"] = function(req, res) {
+    if (!ensureAuth(req, res))
+        return
     res.writeHead(200, {
         'Content-Type': 'text/event-stream',
         'Cache-Control': 'no-cache',
@@ -197,13 +213,13 @@ commands["equaresOutputEvent"] = function(req, res) {
     var lines = [];
     for( var i=0; i<nstreams; ++i )
         lines[i] = 0;
-    // console.log("=== equaresOutputEvent ===");
+    // console.log("=== outputEvent ===");
     res.on('error', function() {
-        // console.log("equaresOutputEvent: stopping due to error");
+        // console.log("outputEvent: stopping due to error");
         goon = false;
         });
     res.on('close', function() {
-        // console.log("equaresOutputEvent: stopping due to close");
+        // console.log("outputEvent: stopping due to close");
         goon = false;
         });
     (function checkOutputEvents() {
@@ -218,7 +234,7 @@ commands["equaresOutputEvent"] = function(req, res) {
             var a = user.stdio[i].history;
             if( lines[i] < a.length ) {
                 res.write("data: " + JSON.stringify({stream: i, text: a[lines[i]]}) + "\n\n");
-                // console.log("equaresOutputEvent[%d]: %s", i, a[lines[i]]);
+                // console.log("outputEvent[%d]: %s", i, a[lines[i]]);
                 ++lines[i];
                 haveEvent = true;
             }
@@ -227,11 +243,9 @@ commands["equaresOutputEvent"] = function(req, res) {
     })();
 };
 
-postCommands["equaresRunSimulation"] = function(req, res) {
-    if (!req.isAuthenticated()) {
-        res.send(403, "You are not logged in")
+commands["runSimulation"] = function(req, res) {
+    if (!ensureAuth(req, res))
         return
-    }
     var user = equares.user(req)
     function startSim() {
         // Start server
@@ -253,52 +267,22 @@ postCommands["equaresRunSimulation"] = function(req, res) {
         startSim();
 }
 
-commands["equaresExec"] = function(req, res) {
+commands["sync"] = function(req, res) {
+    if (!ensureAuth(req, res))
+        return
     var user = equares.user(req)
-    var command = req.query.cmd;
-    user.execCommand(command);
-    res.send(user.isRunning(user)? "1": "0");
-};
-
-commands["equaresExecSync"] = function(req, res) {
-    var user = equares.user(req)
-    if (!user.isRunning())
-    {
-        // Failed to execute command - server is not running
-        res.write(JSON.stringify({running: false, text: ""}));
-        res.end();
-        return;
+    var command = req.query.cmd
+    if (!command.match(/^==\d+==\<$/))
+        res.send(403)
+    else {
+        user.execCommand(command)
+        res.send(user.isRunning(user)? "1": "0")
     }
-
-    var ls = user.stdio[1].lstream; // Line-wise stdout of server process
-    var replyStarted = false;
-    var replyLines = [];
-    var processServerReply = function(line) {
-        line = line.trim(); // Remove trailing \r
-        if (!line.match(/==1==> /))
-            return;
-        line = line.substr(7);
-        if (!replyStarted) {
-            replyStarted = line === "===={";
-            return;
-        }
-        if (line === "====}") {
-            ls.removeListener('line', processServerReply);
-            res.write(JSON.stringify({running: true, text: replyLines.join('\n')}));
-            res.end();
-        }
-        else
-            replyLines.push(line);
-    }
-    ls.on('line', processServerReply);
-
-    var command = req.query.cmd;
-    user.execCommand(command);
 };
 
 var equaresInfoCache = {};
 
-commands["equaresRequestInfo"] = function(req, res) {
+commands["requestInfo"] = function(req, res) {
     var command = req.query.cmd;
     if (equaresInfoCache[command]) {
         res.write(equaresInfoCache[command]);
@@ -319,7 +303,7 @@ commands["equaresRequestInfo"] = function(req, res) {
     }
 }
 
-postCommands["equaresRequestInfoEx"] = function(req, res) {
+commands["requestInfoEx"] = function(req, res) {
     var query = req.body
     var describeOptions = query.options || ""
     var rc = equares.user(req).runConfig(['-i', '-d'+describeOptions, 'box'])
@@ -362,9 +346,13 @@ postCommands["equaresRequestInfoEx"] = function(req, res) {
     });
 }
 
-exports.bind = function(app) {
-    for (var cmd in commands)
-        app.get("/" + cmd + ".cmd", commands[cmd])
-    for (cmd in postCommands)
-        app.post("/" + cmd + ".cmd", postCommands[cmd])
+module.exports = function() {
+    return function(req, res, next) {
+        var name = req.path.substr(1)
+        var cmd = commands[name]
+        if (cmd)
+            cmd(req, res)
+        else
+            res.send(404, 'Command not found')
+    }
 }

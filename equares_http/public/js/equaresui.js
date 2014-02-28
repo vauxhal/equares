@@ -519,7 +519,7 @@ equaresui.setSceneSource = function() {
         var simulation = schemeEditor.exportSimulation()
         function dummyStopSim() {}
         equaresui.stopSimulation = dummyStopSim
-        $.ajax("equaresRunSimulation.cmd", {data: simulation, type: "POST", cache: false})
+        $.ajax("cmd/runSimulation", {data: simulation, type: "POST", cache: false})
             .done(function() {
                 var dlg = $("#running-simulation")
                 var stopButton = $(".ui-dialog-buttonpane button:contains('Stop')")
@@ -528,12 +528,12 @@ equaresui.setSceneSource = function() {
                 var status = dlg.find(".status").html("running")
                 var running = true
                 equaresui.stopSimulation = function() {
-                    $.ajax("equaresToggle.cmd", {type: "GET", cache: false})
+                    $.ajax("cmd/toggle", {type: "GET", cache: false})
                 }
 
                 var outfiles = $("#simulation-output-files").html("").css("text-align", "center")
 
-                var equaresStatEvent = new EventSource("equaresStatEvent.cmd");
+                var equaresStatEvent = new EventSource("cmd/statEvent");
                 equaresStatEvent.onmessage = function(event) {
                     if (+event.data === 0) {
                         // Simulation has finished
@@ -545,7 +545,7 @@ equaresui.setSceneSource = function() {
                         equaresOutputEvent.close()
                     }
                 }
-                var equaresOutputEvent = new EventSource("equaresOutputEvent.cmd");
+                var equaresOutputEvent = new EventSource("cmd/outputEvent");
                 var rxFile = /^==([0-9])+==\> file: (.*)/,
                     rxSync = /^==([0-9])+==\> sync/;
                 var outFileInfo = {}
@@ -637,7 +637,7 @@ equaresui.setSceneSource = function() {
                             return
                         }
                         if (str === "sync") {
-                            $.ajax("equaresExec.cmd", {data: {cmd: syncToken}, type: "GET", cache: false})
+                            $.ajax("cmd/sync", {data: {cmd: syncToken}, type: "GET", cache: false})
 
                             // deBUG, TODO: Remove
                             .done(function(reply) {

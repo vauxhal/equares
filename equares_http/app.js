@@ -42,6 +42,7 @@ require('./auth')(app)
 
 app.use(app.router);
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/cmd', equares())
 
 // development only
 if ('development' == env) {
@@ -51,8 +52,6 @@ if ('development' == env) {
 app.get('/', routes.index);
 app.get('/editor', routes.editor);
 app.get('/examples/*', routes.example);
-
-equares.bind(app)
 
 app.use(function(err, req, res, next){
   res.status(err.status || 500);
