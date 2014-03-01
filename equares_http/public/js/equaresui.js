@@ -385,7 +385,10 @@ equaresui.setSceneSource = function() {
     function loadProps(title, props, options) {
         options = options || {}
         var makeGetter = options.makeGetter || function(pname, props) { return function() { return props[pname] } },
-            makeSetter = options.makeSetter || function(pname, props) { return function(value) { props[pname] = value } }
+            makeSetter = options.makeSetter || function(pname, props) { return function(value) {
+                props[pname] = value
+                simModified = true
+            } }
         extrasDiv.html("")
         propsDiv.html("")
         var hdr = wrap("h1").html(title).appendTo(propsDiv)
@@ -423,19 +426,26 @@ equaresui.setSceneSource = function() {
                     setter: function(newName) {
                         box.rename(newName)
                         propsDiv.children('h1').first().html(box.name)
+                        simModified = true
                     }
                 },
                 type: {
                     userType: 'BoxType',
                     getter: function() { return box.type },
-                    setter: function(newType) { box.changeType(newType) }
+                    setter: function(newType) {
+                        box.changeType(newType)
+                        simModified = true
+                    }
                 }
             }
             for (var pname in box.props)
                 props[pname] = { userType: box.propType(pname) }
             loadProps(box.name, props, {
                 makeGetter: function(pname, props) { return function() { return box.prop(pname) } },
-                makeSetter: function(pname, props) { return function(value) { box.prop(pname, value) } }
+                makeSetter: function(pname, props) { return function(value) {
+                    box.prop(pname, value)
+                    simModified = true
+                } }
             })
         }
         else
@@ -447,6 +457,7 @@ equaresui.setSceneSource = function() {
         name: "",
         description: ""
     };
+    var simModified = false
     equaresui.selectBox(null)
 
     equaresui.loadExample = function(exampleName) {
@@ -677,6 +688,36 @@ equaresui.setSceneSource = function() {
                 alert(error.responseText || error.statusText || ("Ajax error: " + error.status));
             });
     }
+
+    function quickload() {
+        $.get('cmd/quickload')
+            .done(function(simulation) {
+                simulation = JSON.parse(simulation)
+                schemeEditor.import(simulation.definition, function() {
+                    simProps.name = simulation.name || ""
+                    simProps.description = simulation.description || ""
+                    simModified = false
+                    equaresui.selectBox(null)
+                })
+            })
+    }
+    var saving = false
+    function quicksave() {
+        if (saving)
+            return
+        if (simModified) {
+            saving = true
+            var simulation = JSON.stringify({name: simProps.name, description: simProps.description, definition: schemeEditor.export()})
+            $.post('cmd/quicksave', {simulation: simulation})
+                .done(function() {simModified = false})
+                .fail(function() {alert('quicksave failed')})
+                .always(function() {saving = false})
+        }
+    }
+
+    quickload()
+
+    setInterval(quicksave, 10000)
 }
 
 })();

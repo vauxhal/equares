@@ -13,6 +13,7 @@ var captcha = require('./mycaptcha');
 
 var mongoose = require('mongoose');
 var flash = require('connect-flash');
+var MongoStore = require('connect-mongo')(express);
 
 
 var env = process.env.NODE_ENV || 'development',
@@ -33,7 +34,12 @@ app.use(express.json());
 app.use(express.urlencoded());
 app.use(express.methodOverride());
 app.use(express.cookieParser('your secret here'));
-app.use(express.session({secret: "dde9796b-28ae-4b55-9d03-2cecc8d9ead3"}));
+app.use(express.session({
+    store: new MongoStore({
+        url: 'mongodb://localhost/equares-sessions'
+    }),
+    secret: 'dde9796b-28ae-4b55-9d03-2cecc8d9ead3'
+}));
 
 app.use(captcha({ url: '/captcha.png' })); // captcha params
 app.use(flash());

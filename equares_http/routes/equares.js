@@ -346,6 +346,17 @@ commands["requestInfoEx"] = function(req, res) {
     });
 }
 
+commands['quicksave'] = function(req, res) {
+    req.session.simulation = req.body.simulation
+    res.end()
+}
+
+commands['quickload'] = function(req, res) {
+    var simulation = req.session.simulation ||
+            JSON.stringify({name: '', description: '', definition: {boxes: [], links: []}})
+    res.send(simulation)
+}
+
 module.exports = function() {
     return function(req, res, next) {
         var name = req.path.substr(1)
