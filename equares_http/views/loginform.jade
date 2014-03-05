@@ -12,6 +12,7 @@ if captcha
     script.
         $('#loginlink').click(function(e) {
             e.preventDefault()
+            $('#before_login_action').click()
             $.get('/logindlg').done(function(text) {
                 $('<div id="logindlg" title="Log in"></div>')
                     .appendTo('body')
@@ -25,6 +26,7 @@ if captcha
                                     .done(function() {
                                         dlg.dialog('close')
                                         loadLoginForm($('#login'))
+                                        $('#after_login_action').click()
                                     })
                                     .fail(function() {
                                         $.get('/errormsg').done(function(text) {
@@ -55,8 +57,12 @@ script.
     (function() {
         var loginDiv = $('#login')
         loginDiv.find('input[type=submit]').click(function(e) {
+            $('#before_login_action').click()
             e.preventDefault()
             $.post("/login", loginDiv.children().serialize())
+                .done(function() {
+                    $('#after_login_action').click()
+                })
                 .always(function() { loadLoginForm(loginDiv) })
         })
         loginDiv.find('#newcaptcha').click(function() {
@@ -64,6 +70,7 @@ script.
         })
         $("a#signup").click(function(e) {
             e.preventDefault()
+            $('#before_login_action').click()
             $.get('/signup')
                 .done(function(text) {
                     $('<div id="signupdlg" title="Sign up"></div>')
@@ -78,6 +85,7 @@ script.
                                         .done(function() {
                                             dlg.dialog('close')
                                             loadLoginForm(loginDiv)
+                                            $('#after_login_action').click()
                                         })
                                         .fail(function() {
                                             $.get('/errormsg').done(function(text) {

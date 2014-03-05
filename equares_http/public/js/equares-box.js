@@ -255,6 +255,7 @@ var equaresBox = {};
         if (arguments.length == 2) {
             this.props[name].value = value
             this.stateChanged("prop", name)
+            this.editor.modify()
             return this
         }
         else

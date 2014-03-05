@@ -4,6 +4,7 @@ var lins = require('line-input-stream');
 var stream = require('stream');
 var fs = require('fs')
 var path = require('path')
+var simulation = require('../simulation')
 
 var equares = {};
 
@@ -252,8 +253,8 @@ commands["runSimulation"] = function(req, res) {
         user.start();
 
         // Feed input
-        var simulation = req.body
-        var command = "===={\n" + "runSimulation(\n" + JSON.stringify(simulation) + "\n)\n" + "====}"
+        var sim = req.body
+        var command = "===={\n" + "runSimulation(\n" + JSON.stringify(sim) + "\n)\n" + "====}"
         user.execCommand(command);
         res.send("Started simulation");
     }
@@ -348,13 +349,25 @@ commands["requestInfoEx"] = function(req, res) {
 
 commands['quicksave'] = function(req, res) {
     req.session.simulation = req.body.simulation
+    simulation.RecentSim.set(req)
     res.end()
 }
 
 commands['quickload'] = function(req, res) {
-    var simulation = req.session.simulation ||
+    function sessionRecentSim() {
+        return req.session.simulation   ||
             JSON.stringify({name: '', description: '', definition: {boxes: [], links: []}})
-    res.send(simulation)
+    }
+
+    if (req.isAuthenticated()) {
+        simulation.RecentSim.get(req, function(sim) {
+            if (typeof sim !== "string")
+                sim = sessionRecentSim()
+            res.send(sim)
+        })
+    }
+    else
+        res.send(sessionRecentSim())
 }
 
 module.exports = function() {

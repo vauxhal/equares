@@ -4,7 +4,11 @@ script.
     (function() {
         $('#logout').click(function(e) {
             e.preventDefault()
+            $('#before_logout_action').click()
             $.post('/logout')
-                .always(function() { loadLoginForm($('#login')) })
+                .always(function() {
+                    loadLoginForm($('#login'))
+                    $('#after_logout_action').click()
+                })
         })
     })()

@@ -57,6 +57,47 @@ function refreshExamples() {
 
 refreshExamples()
 
+
+
+var RecentSimSchema = mongoose.Schema({
+    simulation: String,
+    user:       {type: ObjectId, index: true}
+})
+
+RecentSimSchema.statics.get = function(req, done) {
+    var RecentSim = this
+    if (!(done instanceof Function))
+        done = function() {}
+    if (!req.isAuthenticated())
+        return done()
+    RecentSim.findOne({user: req.user.id}, function(err, s) {
+        if (err) {
+            console.log(err)
+            done()
+        }
+        else if (s)
+            done(s.simulation)
+        else
+            done()
+    })
+}
+
+RecentSimSchema.statics.set = function(req, done) {
+    var RecentSim = this
+    if (!(done instanceof Function))
+        done = function() {}
+    if (!req.isAuthenticated())
+        return done()
+    RecentSim.update({user: req.user.id}, {simulation: req.body.simulation}, {upsert: true}, function(err) {
+        if(err)
+            console.log(err)
+        done()
+    })
+}
+
+var RecentSim = mongoose.model('RecentSim', RecentSimSchema, 'recentSimulations')
+
 module.exports = {
-    Sim: Sim
+    Sim: Sim,
+    RecentSim: RecentSim
 }

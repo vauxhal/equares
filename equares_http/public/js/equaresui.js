@@ -387,7 +387,7 @@ equaresui.setSceneSource = function() {
         var makeGetter = options.makeGetter || function(pname, props) { return function() { return props[pname] } },
             makeSetter = options.makeSetter || function(pname, props) { return function(value) {
                 props[pname] = value
-                simModified = true
+                schemeEditor.modify()
             } }
         extrasDiv.html("")
         propsDiv.html("")
@@ -426,7 +426,6 @@ equaresui.setSceneSource = function() {
                     setter: function(newName) {
                         box.rename(newName)
                         propsDiv.children('h1').first().html(box.name)
-                        simModified = true
                     }
                 },
                 type: {
@@ -434,7 +433,6 @@ equaresui.setSceneSource = function() {
                     getter: function() { return box.type },
                     setter: function(newType) {
                         box.changeType(newType)
-                        simModified = true
                     }
                 }
             }
@@ -444,7 +442,6 @@ equaresui.setSceneSource = function() {
                 makeGetter: function(pname, props) { return function() { return box.prop(pname) } },
                 makeSetter: function(pname, props) { return function(value) {
                     box.prop(pname, value)
-                    simModified = true
                 } }
             })
         }
@@ -457,29 +454,40 @@ equaresui.setSceneSource = function() {
         name: "",
         description: ""
     };
-    var simModified = false
     equaresui.selectBox(null)
 
-    equaresui.loadExample = function(exampleName) {
+    function beforeLoadScheme()
+    {
         var loadingProgress = $("#loading-progress")
         loadingProgress.progressbar("value", 0)
         $("#loading-progress-overlay").show()
+    }
+    function loadScheme(obj, modified)
+    {
+        var loadingProgress = $("#loading-progress")
+        schemeEditor.import(obj,
+            function() {
+                loadingProgress.progressbar("value", 100)
+                simProps.name = obj.name || ""
+                simProps.description = obj.description || ""
+                equaresui.selectBox(null)
+                schemeEditor.modified = modified
+            },
+            function(percent) {
+                loadingProgress.progressbar("value", percent)
+            }
+        )
+    }
+
+    equaresui.loadExample = function(exampleName) {
+        beforeLoadScheme()
         $.get(exampleName)
             .done(function(obj) {
-                schemeEditor.import(obj,
-                    function() {
-                        loadingProgress.progressbar("value", 100)
-                        simProps.name = obj.name || ""
-                        simProps.description = obj.description || ""
-                        equaresui.selectBox(null)
-                    },
-                    function(percent) {
-                        loadingProgress.progressbar("value", percent)
-                    }
-                )
+                loadScheme(obj, true)
             })
             .fail(function() {
-                alert("Ajax error");
+                alert('Failed to load example')
+                $("#loading-progress-overlay").hide()
             })
     }
 
@@ -490,12 +498,9 @@ equaresui.setSceneSource = function() {
         {
             var textFromFileLoaded = fileLoadedEvent.target.result;
             var obj = JSON.parse(textFromFileLoaded)
-            schemeEditor.import(obj, function() {
-                simProps.name = obj.name || ""
-                simProps.description = obj.description || ""
-                equaresui.selectBox(null)
-            })
+            loadScheme(obj, true)
         };
+        beforeLoadScheme()
         fileReader.readAsText(fileToLoad, "UTF-8");
     }
 
@@ -690,27 +695,36 @@ equaresui.setSceneSource = function() {
     }
 
     function quickload() {
+        beforeLoadScheme()
         $.get('cmd/quickload')
             .done(function(simulation) {
                 simulation = JSON.parse(simulation)
-                schemeEditor.import(simulation.definition, function() {
-                    simProps.name = simulation.name || ""
-                    simProps.description = simulation.description || ""
-                    simModified = false
-                    equaresui.selectBox(null)
-                })
+                var obj = simulation.definition
+                obj.name = simulation.name
+                obj.description = simulation.description
+                loadScheme(obj, false)
+            })
+            .fail(function() {
+                alert('quickload failed')
+                $("#loading-progress-overlay").hide()
             })
     }
     var saving = false
     function quicksave() {
         if (saving)
             return
-        if (simModified) {
+        if (schemeEditor.modified) {
             saving = true
             var simulation = JSON.stringify({name: simProps.name, description: simProps.description, definition: schemeEditor.export()})
             $.post('cmd/quicksave', {simulation: simulation})
-                .done(function() {simModified = false})
-                .fail(function() {alert('quicksave failed')})
+                .done(function() {
+                    schemeEditor.modified = false
+                })
+                .fail(function(xhr) {
+                    // Note: xhr.readyState==0 means we're doing post on page unload
+                    if (xhr.readyState !== 0)
+                        alert('quicksave failed')}
+                )
                 .always(function() {saving = false})
         }
     }
@@ -718,6 +732,14 @@ equaresui.setSceneSource = function() {
     quickload()
 
     setInterval(quicksave, 10000)
+
+    $(window).unload(quicksave)
+
+    var body = $('body')
+    wrap('div').attr('id', 'before_login_action').hide().appendTo(body).click(quicksave)
+    wrap('div').attr('id', 'after_login_action').hide().appendTo(body).click(quickload)
+    wrap('div').attr('id', 'before_logout_action').hide().appendTo(body).click(quicksave)
+    wrap('div').attr('id', 'after_logout_action').hide().appendTo(body).click(quickload)
 }
 
 })();

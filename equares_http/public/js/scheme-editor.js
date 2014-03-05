@@ -39,7 +39,7 @@ var ctmEquaresSchemeEditor = {};
             removeBoxVisualizer(box)
             delete boxNames[box.name]
             boxNames[box.name = newName] = true
-            box.editor.visualize().update()
+            box.editor.visualize().update().modify()
         }
     })()
 
@@ -110,7 +110,7 @@ var ctmEquaresSchemeEditor = {};
                 newBox.prop(pname, this.prop(pname))
         }
 
-        e.visualize().update()
+        e.visualize().update().modify()
         if (this.selected)
             equaresui.selectBox(newBox)
         return newBox
@@ -313,6 +313,13 @@ var ctmEquaresSchemeEditor = {};
 
         // Enable scene panning
         this.mainrect.on("mousedown", function() { thisEditor.dragHelper.beginPan() })
+
+        // Clear modified flag
+        this.modified = false
+    }
+    Editor.prototype.modify = function() {
+        this.modified = true
+        return this
     }
     Editor.prototype.newBox = function(boxType, options) {
         var opt = options || {}
@@ -330,7 +337,7 @@ var ctmEquaresSchemeEditor = {};
         opt.index = this.boxes.length
         var result = new Box(boxType, opt)
         this.boxes.push(result)
-        this.visualize()
+        this.visualize().modify()
         return result
     }
 
@@ -353,6 +360,7 @@ var ctmEquaresSchemeEditor = {};
         }
         if (!dontVisualize)
             this.visualize()
+        this.modify()
     }
 
     Editor.prototype.newLink = function(port1, port2, dontVisualize) {
@@ -360,6 +368,7 @@ var ctmEquaresSchemeEditor = {};
         this.links.push({ source: port1, target: port2, iid: this.iid++, index: this.links.length })
         if (!dontVisualize)
             this.visualize().update()
+        this.modify()
     }
     Editor.prototype.findLink = function(port1, port2) {
         var links = this.links
@@ -377,6 +386,7 @@ var ctmEquaresSchemeEditor = {};
         updateArrayIndices(links, linkIndex)
         if (!dontVisualize)
             this.visualize().update()
+        this.modify()
     }
     Editor.prototype.dataKey = function(d) {
         return "k" + d.iid;
