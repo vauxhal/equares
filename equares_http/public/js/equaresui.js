@@ -477,13 +477,13 @@ equaresui.setSceneSource = function() {
     };
     equaresui.selectBox(null)
 
-    function beforeLoadScheme()
+    function beforeLoadSimulation()
     {
         var loadingProgress = $("#loading-progress")
         loadingProgress.progressbar("value", 0)
         $("#loading-progress-overlay").show()
     }
-    function loadScheme(obj, modified)
+    function loadSimulation(obj, modified)
     {
         var loadingProgress = $("#loading-progress")
         schemeEditor.import(obj.definition,
@@ -501,10 +501,10 @@ equaresui.setSceneSource = function() {
     }
 
     equaresui.loadExample = function(exampleName) {
-        beforeLoadScheme()
+        beforeLoadSimulation()
         $.get(exampleName)
             .done(function(obj) {
-                loadScheme(obj, true)
+                loadSimulation(obj, true)
             })
             .fail(function() {
                 alert('Failed to load example')
@@ -512,23 +512,34 @@ equaresui.setSceneSource = function() {
             })
     }
 
-    equaresui.openScheme = function(fileToLoad) {
-        var fileReader = new FileReader();
-        fileReader.onload = function(fileLoadedEvent) {
-            var simulation = fileLoadedEvent.target.result
-            loadScheme(JSON.parse(simulation), true)
+    ;(function() {
+        var fileUpload = $('#simulation-uploader')
+        fileUpload.change(function () {
+            if (fileUpload[0].files.length == 0)
+                return;
+            var fileReader = new FileReader();
+            fileReader.onload = function(fileLoadedEvent) {
+                var simulation = fileLoadedEvent.target.result
+                loadSimulation(JSON.parse(simulation), true)
+            }
+            beforeLoadSimulation()
+            fileReader.readAsText(fileUpload[0].files[0], "UTF-8")
+        })
+        equaresui.uploadSimulation = function() {
+            fileUpload.click();
         }
-        beforeLoadScheme()
-        fileReader.readAsText(fileToLoad, "UTF-8")
-    }
+    })()
 
     function simulationText() {
         return JSON.stringify($.extend({}, simProps, {definition: schemeEditor.export()}))
     }
 
-    equaresui.saveScheme = function(fileName) {
-        if (arguments.length < 1)
-            fileName = "equares-scheme.eqs"
+    equaresui.downloadSimulation = function() {
+        var fileName = simProps.name
+        if ((typeof fileName == 'string') && fileName.length > 0)
+            fileName += ".json"
+        else
+            fileName = "equares-scheme.json"
         var b = new Blob([simulationText()], {type: "text/plain"})
         var downloadLink = document.createElement("a");
         downloadLink.download = fileName;
@@ -713,10 +724,10 @@ equaresui.setSceneSource = function() {
     }
 
     function quickload() {
-        beforeLoadScheme()
+        beforeLoadSimulation()
         $.get('cmd/quickload')
             .done(function(simulation) {
-                loadScheme(JSON.parse(simulation), false)
+                loadSimulation(JSON.parse(simulation), false)
             })
             .fail(function() {
                 alert('quickload failed')
@@ -748,11 +759,10 @@ equaresui.setSceneSource = function() {
 
     $(window).unload(quicksave)
 
-    var body = $('body')
-    wrap('div').attr('id', 'before_login_action').hide().appendTo(body).click(quicksave)
-    wrap('div').attr('id', 'after_login_action').hide().appendTo(body).click(quickload)
-    wrap('div').attr('id', 'before_logout_action').hide().appendTo(body).click(quicksave)
-    wrap('div').attr('id', 'after_logout_action').hide().appendTo(body).click(quickload)
+    wrap('div').attr('id', 'before_login_action').hide().appendTo(document.body).click(quicksave)
+    wrap('div').attr('id', 'after_login_action').hide().appendTo(document.body).click(quickload)
+    wrap('div').attr('id', 'before_logout_action').hide().appendTo(document.body).click(quicksave)
+    wrap('div').attr('id', 'after_logout_action').hide().appendTo(document.body).click(quickload)
 }
 
 })();

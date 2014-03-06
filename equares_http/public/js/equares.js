@@ -7,45 +7,10 @@ ctm.initPage.push(function(c1, c2, c3) {
     }
     setMenuItemHandler($('.example-simulation'), function() { equaresui.loadExample(this.href) })
     setMenuItemHandler($('#run-simulation'), function() { equaresui.runScheme() })
-    setMenuItemHandler($('#upload-simulation'), function() { $("#open-scheme-file-dialog").dialog("open") })
-    setMenuItemHandler($('#download-simulation'), function() { $("#save-scheme-file-dialog").dialog("open") })
+    setMenuItemHandler($('#upload-simulation'), function() { equaresui.uploadSimulation() })
+    setMenuItemHandler($('#download-simulation'), function() { equaresui.downloadSimulation() })
 
-    // Create dialogs
-    function updateOpenState() {
-        var f = $("#open-scheme-file-dialog :file")[0]
-        var o = $(".ui-dialog-buttonpane button:contains('Open')")
-        o.button(f.files.length>0? "enable": "disable")
-    }
-    $("#open-scheme-file-dialog :file").change(updateOpenState)
-
-    $("#open-scheme-file-dialog").dialog({
-        autoOpen: false,
-        modal: true,
-        width: 400,
-        buttons: {
-            Open: function() {
-                equaresui.openScheme($("#open-scheme-file")[0].files[0])
-                $(this).dialog("close")
-            },
-            Cancel: function() { $(this).dialog("close") }
-        },
-        open: function() {
-                //$(this).children("form")[0].reset()
-                updateOpenState()
-            }
-    })
-    $("#save-scheme-file-dialog").dialog({
-        autoOpen: false,
-        modal: true,
-        buttons: {
-            Save: function() {
-                equaresui.saveScheme($("#save-scheme-file-name").val())
-                $(this).dialog("close")
-            },
-            Cancel: function() { $(this).dialog("close") }
-        }
-    })
-
+    // Create running simulation dialog
     $("#running-simulation").dialog({
         autoOpen: false,
         modal: true,

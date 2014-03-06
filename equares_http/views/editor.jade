@@ -16,17 +16,8 @@ block otherScripts
     script(type='text/javascript' src='js/scheme-editor.js')
 
 block extras
-    #open-scheme-file-dialog(title='Open scheme file')
-        form
-            fieldset
-                label(for='name') Name
-                input#open-scheme-file(type='file', name='name' class='text ui-widget-content ui-corner-all')
+    input#simulation-uploader(type='file' style='display: none;')
 
-    #save-scheme-file-dialog(title='Save scheme file')
-        form
-            fieldset
-                label(for='name') Name
-                input#save-scheme-file-name(type='text', name='name', class='text ui-widget-content ui-corner-all', value='equares-scheme.eqs')
     div
         #running-simulation(title='Running simulation')
             p Status: <span class="status"></span>
@@ -46,5 +37,5 @@ block menu-editor
                     li: a.example-simulation(href='/examples/' + x.name) #{x.description}
         li: a#run-simulation(href='#') Run
         li -
-        li: a#upload-simulation(href='#') Upload...
-        li: a#download-simulation(href='#') Download...
+        li: a#upload-simulation(href='#') Upload
+        li: a#download-simulation(href='#') Download
