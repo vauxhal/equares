@@ -23,9 +23,7 @@ module.exports = {
                 res.send(404)
             }
             if (s) {
-                var result = JSON.parse(s.definition)
-                result.name = s.name
-                result.description = s.description
+                var result = s.toObject()
                 res.send(result)
             }
             else

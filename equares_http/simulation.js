@@ -3,9 +3,11 @@ var mongoose = require('mongoose')
 var ObjectId = mongoose.Schema.Types.ObjectId
 
 var SimSchema = mongoose.Schema({
-    name:           {type: String, index: {unique: true}},
+    name:           {type: String, index: true},
     description:    String,
     definition:     String,
+    date:           Date,
+    info:           String,
     user:           {type: ObjectId, index: true}
 })
 
@@ -23,16 +25,13 @@ function refreshExamples() {
             .on('data', function(data) { text += data })
             .on('end', function() {
                 var obj = JSON.parse(text)
-                var name = obj.name, description = obj.description
-                delete obj.name
-                delete obj.description
-                console.log("  " + fileName + ": " + name + " (" + description + ")")
-                Sim.create({
-                    name: name,
-                    description: description,
-                    definition: JSON.stringify(obj),
-                    user: null
-                }, function(err, sim) {
+                if (!(obj.date instanceof Date))
+                    obj.date = new Date(2014, 3, 6)
+                obj.user = null
+                if (!obj.info)
+                    obj.info = "blah (TODO)"
+                console.log("  " + fileName + ": " + obj.name + " (" + obj.description + ")")
+                Sim.create(obj, function(err, sim) {
                     if (err)
                         console.log(err)
                     if (++nFilesLoaded == nDirs)

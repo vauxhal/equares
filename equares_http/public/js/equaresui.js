@@ -215,6 +215,31 @@ equaresui.setSceneSource = function() {
         setter(value, ok)
     }
 
+    function loadTextProp(prop) {
+        extrasDiv.html("")
+        var textarea
+        wrap("div").attr("id", "scheme-box-extras-hdr")
+            .append(wrap("h1").html(prop.name))
+            .append(
+                 $('<input type="button" class="scheme-box-extras-ok" value="Ok">')
+                    .click(function() {
+                        prop.setter(textarea[0].value)
+                        textarea.removeClass('modified')
+                    })
+            )
+            .appendTo(extrasDiv)
+        wrap("div").attr("id", "scheme-box-extras-text")
+            .append(textarea = wrap("textarea"))
+            .appendTo(extrasDiv)
+        if (prop.userType === 't')
+            textarea.linenum()
+        textarea[0].value = prop.getter()
+        textarea.keypress(function() {
+            $(this).addClass('modified')
+        })
+        return textarea
+    }
+
     function makeEditor(host, prop) {
         var t = prop.userType
         if (t === undefined)
@@ -290,30 +315,11 @@ equaresui.setSceneSource = function() {
                     .appendTo(host)
                 break
             case 't':
+            case 'T':
                 $('<input type="button">')
                     .attr("value", "...")
                     .click(function() {
-                        extrasDiv.html("")
-                        var textarea
-                        wrap("div").attr("id", "scheme-box-extras-hdr")
-                            .append(wrap("h1").html(prop.name))
-                            .append(
-                                 $('<input type="button" class="scheme-box-extras-ok" value="Ok">')
-                                    .click(function() {
-                                        prop.setter(textarea[0].value)
-                                        textarea.removeClass('modified')
-                                    })
-                            )
-                            .appendTo(extrasDiv)
-                        wrap("div").attr("id", "scheme-box-extras-text")
-                            .append(textarea = wrap("textarea"))
-                            .appendTo(extrasDiv)
-                        textarea.linenum()
-                        textarea[0].value = prop.getter()
-                        textarea.keypress(function() {
-                            $(this).addClass('modified')
-                        })
-                        textarea.focus()
+                        loadTextProp(prop).focus()
                     })
                     .appendTo(host)
                 break
@@ -405,21 +411,26 @@ equaresui.setSceneSource = function() {
                 case "number":   userType = 'd';   break
                 default:   userType = 's';   break
             }
-            makeEditor(
-                wrap("td").appendTo(row), {
-                    name: pname,
-                    userType: userType,
-                    getter: p.getter instanceof Function ?   p.getter :   makeGetter(pname, props),
-                    setter: p.setter instanceof Function ?   p.setter :   makeSetter(pname, props)
-                }
-            )
+            var prop = {
+                name: pname,
+                userType: userType,
+                getter: p.getter instanceof Function ?   p.getter :   makeGetter(pname, props),
+                setter: p.setter instanceof Function ?   p.setter :   makeSetter(pname, props)
+            }
+            makeEditor(wrap("td").appendTo(row), prop)
+            // If there's a property named 'info', and its type is 'T',
+            // load it to the extras div
+            if (pname === 'info' && userType === 'T')
+                loadTextProp(prop)
         }
         table.find("td:first").next().children().first().focus()
     }
 
     equaresui.selectBox = function(box) {
+        var pname
+        var props
         if (box) {
-            var props = {
+            props = {
                 name: {
                     userType: 's',
                     getter: function() { return box.name },
@@ -436,23 +447,33 @@ equaresui.setSceneSource = function() {
                     }
                 }
             }
-            for (var pname in box.props)
+            for (pname in box.props)
                 props[pname] = { userType: box.propType(pname) }
             loadProps(box.name, props, {
                 makeGetter: function(pname, props) { return function() { return box.prop(pname) } },
+                makeSetter: function(pname, props) { return function(value) { box.prop(pname, value) } }
+            })
+        }
+        else {
+            props = {}
+            for (pname in simPropFields)
+                props[pname] = {userType: simPropFields[pname]}
+            loadProps("Simulation properties", props, {
+                makeGetter: function(pname, props) { return function() { return simProps[pname] } },
                 makeSetter: function(pname, props) { return function(value) {
-                    box.prop(pname, value)
+                    simProps[pname] = value
+                    schemeEditor.modify()
                 } }
             })
         }
-        else
-            loadProps("Simulation properties", simProps)
     }
     
     // Load simulation properties
+    var simPropFields = {name: 's', description: 's', info: 'T'}
     var simProps = {
         name: "",
-        description: ""
+        description: "",
+        info: ""
     };
     equaresui.selectBox(null)
 
@@ -465,11 +486,11 @@ equaresui.setSceneSource = function() {
     function loadScheme(obj, modified)
     {
         var loadingProgress = $("#loading-progress")
-        schemeEditor.import(obj,
+        schemeEditor.import(obj.definition,
             function() {
                 loadingProgress.progressbar("value", 100)
-                simProps.name = obj.name || ""
-                simProps.description = obj.description || ""
+                for (var pname in simPropFields)
+                    simProps[pname] = obj[pname] || ""
                 equaresui.selectBox(null)
                 schemeEditor.modified = modified
             },
@@ -492,26 +513,23 @@ equaresui.setSceneSource = function() {
     }
 
     equaresui.openScheme = function(fileToLoad) {
-        // var fileToLoad = document.getElementById("fileToLoad").files[0];
         var fileReader = new FileReader();
-        fileReader.onload = function(fileLoadedEvent)
-        {
-            var textFromFileLoaded = fileLoadedEvent.target.result;
-            var obj = JSON.parse(textFromFileLoaded)
-            loadScheme(obj, true)
-        };
+        fileReader.onload = function(fileLoadedEvent) {
+            var simulation = fileLoadedEvent.target.result
+            loadScheme(JSON.parse(simulation), true)
+        }
         beforeLoadScheme()
-        fileReader.readAsText(fileToLoad, "UTF-8");
+        fileReader.readAsText(fileToLoad, "UTF-8")
+    }
+
+    function simulationText() {
+        return JSON.stringify($.extend({}, simProps, {definition: schemeEditor.export()}))
     }
 
     equaresui.saveScheme = function(fileName) {
         if (arguments.length < 1)
             fileName = "equares-scheme.eqs"
-        var obj = schemeEditor.export()
-        $.extend(obj, simProps)
-        var schemeText = JSON.stringify(obj)
-        var b = new Blob([schemeText], {type: "text/plain"})
-
+        var b = new Blob([simulationText()], {type: "text/plain"})
         var downloadLink = document.createElement("a");
         downloadLink.download = fileName;
         downloadLink.innerHTML = "Download File";
@@ -698,11 +716,7 @@ equaresui.setSceneSource = function() {
         beforeLoadScheme()
         $.get('cmd/quickload')
             .done(function(simulation) {
-                simulation = JSON.parse(simulation)
-                var obj = simulation.definition
-                obj.name = simulation.name
-                obj.description = simulation.description
-                loadScheme(obj, false)
+                loadScheme(JSON.parse(simulation), false)
             })
             .fail(function() {
                 alert('quickload failed')
@@ -715,8 +729,7 @@ equaresui.setSceneSource = function() {
             return
         if (schemeEditor.modified) {
             saving = true
-            var simulation = JSON.stringify({name: simProps.name, description: simProps.description, definition: schemeEditor.export()})
-            $.post('cmd/quicksave', {simulation: simulation})
+            $.post('cmd/quicksave', {simulation: simulationText()})
                 .done(function() {
                     schemeEditor.modified = false
                 })

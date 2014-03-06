@@ -646,7 +646,7 @@ var ctmEquaresSchemeEditor = {};
             lx.source = {box: l.source.box.name, port: l.source.info.name}
             lx.target = {box: l.target.box.name, port: l.target.info.name}
         }
-        return result
+        return JSON.stringify(result)
     }
     Editor.prototype.exportSimulation = function() {
         var simulation = { boxes: [], links: [] }
@@ -673,6 +673,7 @@ var ctmEquaresSchemeEditor = {};
     }
     Editor.prototype.import = function(data, callback, progressCallback) {
         try {
+            data = JSON.parse(data)
             var boxes = data.boxes, links = data.links, i, j, b, box
             if (!(boxes instanceof Array))
                 throw { message: "boxes is missing or is not an array" }

@@ -224,6 +224,9 @@ Using workaround with bbox instead.
 
 #scheme-box-extras textarea {
     padding-top: 0px;
+    resize: none;
+    width: 100%;
+    height: 100%;
 }
 #scheme-box-extras textarea.modified {
     background-color: #ffe;

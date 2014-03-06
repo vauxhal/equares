@@ -356,7 +356,7 @@ commands['quicksave'] = function(req, res) {
 commands['quickload'] = function(req, res) {
     function sessionRecentSim() {
         return req.session.simulation   ||
-            JSON.stringify({name: '', description: '', definition: {boxes: [], links: []}})
+            JSON.stringify({name: '', description: '', info: '', definition: {boxes: [], links: []}})
     }
 
     if (req.isAuthenticated()) {
