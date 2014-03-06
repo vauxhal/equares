@@ -249,7 +249,7 @@ var ctmEquaresSchemeEditor = {};
                     var d = currentElement.__data__
                     d.x += dx
                     d.y += dy
-                    this.editor.update()
+                    this.editor.update().modify()
                 }
                 else {
                     var t = this.editor.maingroup.myTransform
