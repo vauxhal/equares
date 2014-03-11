@@ -8,6 +8,7 @@ var SimSchema = mongoose.Schema({
     definition:     String,
     date:           Date,
     info:           String,
+    script:         String,
     user:           {type: ObjectId, index: true}
 })
 
@@ -27,9 +28,9 @@ function refreshExamples() {
                 var obj = JSON.parse(text)
                 if (!(obj.date instanceof Date))
                     obj.date = new Date(2014, 3, 6)
+                if (!(obj.script))
+                    obj.script = ''
                 obj.user = null
-                if (!obj.info)
-                    obj.info = "blah (TODO)"
                 console.log("  " + fileName + ": " + obj.name + " (" + obj.description + ")")
                 Sim.create(obj, function(err, sim) {
                     if (err)

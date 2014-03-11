@@ -207,9 +207,10 @@ equaresui.setSceneSource = function() {
             value = +s
             break
         case 'd':
+            // TODO: remove validation for doubles since we are going to allow expressions
             // Regexp is copied from here: http://regexlib.com/REDetails.aspx?regexp_id=185
-            ok = /^[+-]?([0-9]*\.?[0-9]+|[0-9]+\.?[0-9]*)([eE][+-]?[0-9]+)?$/.test(s)
-            value = +s
+            // ok = /^[+-]?([0-9]*\.?[0-9]+|[0-9]+\.?[0-9]*)([eE][+-]?[0-9]+)?$/.test(s)
+            // value = +s
             break
         }
         setter(value, ok)
@@ -469,11 +470,12 @@ equaresui.setSceneSource = function() {
     }
     
     // Load simulation properties
-    var simPropFields = {name: 's', description: 's', info: 'T'}
+    var simPropFields = {name: 's', description: 's', info: 'T', script: 't'}
     var simProps = {
-        name: "",
-        description: "",
-        info: ""
+        name: '',
+        description: '',
+        info: '',
+        script: ''
     };
     equaresui.selectBox(null)
 
@@ -564,7 +566,7 @@ equaresui.setSceneSource = function() {
         var simulation = schemeEditor.exportSimulation()
         function dummyStopSim() {}
         equaresui.stopSimulation = dummyStopSim
-        $.ajax("cmd/runSimulation", {data: simulation, type: "POST", cache: false})
+        $.ajax("cmd/runSimulation", {data: {script: simProps.script, simulation: simulation}, type: "POST", cache: false})
             .done(function() {
                 var dlg = $("#running-simulation")
                 var stopButton = $(".ui-dialog-buttonpane button:contains('Stop')")

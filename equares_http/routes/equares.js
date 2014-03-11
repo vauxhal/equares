@@ -253,8 +253,9 @@ commands["runSimulation"] = function(req, res) {
         user.start();
 
         // Feed input
-        var sim = req.body
-        var command = "===={\n" + "runSimulation(\n" + JSON.stringify(sim) + "\n)\n" + "====}"
+        var script = req.body.script,
+            simulation = req.body.simulation
+        var command = "===={\n" + script + "\nrunSimulation(\n" + JSON.stringify(simulation) + "\n)\n" + "====}"
         user.execCommand(command);
         res.send("Started simulation");
     }
@@ -356,7 +357,7 @@ commands['quicksave'] = function(req, res) {
 commands['quickload'] = function(req, res) {
     function sessionRecentSim() {
         return req.session.simulation   ||
-            JSON.stringify({name: '', description: '', info: '', definition: {boxes: [], links: []}})
+            JSON.stringify({name: '', description: '', info: '', script: '', definition: JSON.stringify({boxes: [], links: []})})
     }
 
     if (req.isAuthenticated()) {
