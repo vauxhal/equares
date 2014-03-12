@@ -1,0 +1,23 @@
+extends page
+block vars
+    - var title = 'Simulations'
+
+block otherScripts
+    script.
+        /*
+        ctm.initPage.push(function() {
+            function reload() { location.reload() }
+            $('#after_login_action').click(reload)
+            $('#after_logout_action').click(reload)
+        })
+        */
+
+block content
+    if req.isAuthenticated()
+        h1 Logged in
+    else
+        h1 Not logged in
+
+block extras
+    #after_login_action(display='none')
+    #after_logout_action(display='none')

@@ -1,19 +1,25 @@
 var Sim = require('../simulation').Sim
+var fs = require('fs')
+
+function readExamples(cb) {
+    var examples = []
+    Sim.find({$query: {user: null}, $orderby: {description: 1}}, {name: 1, description: 1}).stream()
+        .on('data', function (doc) {
+            examples.push(doc)
+        }).on('error', function (err) {
+            console.log(err)
+            cb(err, null)
+        }).on('close', function () {
+            cb(null, examples)
+        })
+}
 
 module.exports = {
     index: function(req, res){
-        res.render('index')
+        res.render('index', {req: req})
     },
     editor: function(req, res) {
-        var examples = []
-        Sim.find({$query: {user: null}, $orderby: {description: 1}}, {name: 1, description: 1}).stream()
-            .on('data', function (doc) {
-                examples.push(doc)
-            }).on('error', function (err) {
-                console.log(err)
-            }).on('close', function () {
-                res.render('editor', {examples: examples})
-            })
+        res.render('editor', {req: req})
     },
     example: function(req, res) {
         var name = req.url.match('^/examples/(.*)$')[1]
@@ -29,5 +35,39 @@ module.exports = {
             else
                 res.send(404)
         })
+    },
+    simulations: function(req, res){
+        res.render('simulations', {req: req})
+    },
+    menu: function(req, res, next) {
+        var match = req.path.match('^/menu-(.*)$'), name
+        if (!match || typeof (name = match[1]) !== 'string')
+            return next()
+
+        var param = {req: req}
+        function renderMenu() {
+            var menuName = name.length > 0? 'menu-' + name: 'menu'
+            fs.stat('views/' + menuName + '.jade', function(err, stats) {
+                if (err)
+                    menuName = 'menu'
+                res.render(menuName, param)
+            })
+        }
+
+        switch(name)
+        {
+        case 'editor':
+            readExamples(function(err, examples) {
+                if (err)
+                    res.send(err)
+                else {
+                    param.examples = examples
+                    renderMenu()
+                }
+            })
+            break
+        default:
+            renderMenu()
+        }
     }
 }

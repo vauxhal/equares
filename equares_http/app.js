@@ -55,9 +55,12 @@ if ('development' == env) {
   app.use(express.errorHandler());
 }
 
+app.use(routes.menu)
+
 app.get('/', routes.index);
 app.get('/editor', routes.editor);
 app.get('/examples/*', routes.example);
+app.get('/simulations', routes.simulations);
 
 app.use(function(err, req, res, next){
   res.status(err.status || 500);

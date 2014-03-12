@@ -1,7 +1,7 @@
 doctype html
 html
     - function link(href, name) {
-        a(href=href, class='external')= name
+        a(href=href)= name
     - }
     - function xlink(href, name) {
         a(href=href, class='external', target='_blank')
@@ -48,6 +48,36 @@ html
                 .error(function(err) { loginDiv.html("Ajax error: " + err.status + " " + err.statusText) })
             }
 
+            function loadMenu(done) {
+                $.ajax('/menu-' + location.pathname.substr(1), {cache: false})
+                .done(function(data) {
+                    var menu = $('#menu')
+                    menu.html(data)
+                    menu = menu.children()
+                    menu.attr("id", "mainmenu").menu()
+                    // Nested menu positioning does not work as expected, TODO
+                    /*
+                    mainMenu.menu("option", "position", { my:'left top', at:'left bottom' })
+                    mainMenu.find(".menu-depth-1").menu().menu("option", "position", { my:'left top', at:'right top' })
+                    */
+                    menu.menu("option", "position", { my:'left top', at:'left+30 bottom' })
+
+                    // Set menu-depth-# class on ul tags
+                    ;(function setDepth(root, depth) {
+                        root.children('ul').each(function() {
+                            $(this)
+                                .addClass('menu-depth-'+depth)
+                                .children().each(function() {
+                                    setDepth($(this), depth+1)
+                                })
+                        })
+                    })(menu.parent(), 0)
+                    if (done instanceof Function)
+                        done()
+                })
+                .error(function(err) { alert('Failed to load menu') })
+            }
+
             $(document).ready(function() {
                 var content = $("#root").html()
                 var rootLayout = ctmDock.makeRoot().setLayout( {
@@ -68,48 +98,17 @@ html
                     .addClass("mymain")
                 $(c3.dom).addClass("myfooter").html('<a target="_blank" href="http://ctmech.ru/">Computer Technologies in Engineering</a>');
 
-                var menu = $('#menu')
-                menu.remove().appendTo(header)
-                menu = menu.children()
-                menu.attr("id", "mainmenu").menu()
-                // Nested menu positioning does not work as expected, TODO
-                /*
-                mainMenu.menu("option", "position", { my:'left top', at:'left bottom' })
-                mainMenu.find(".menu-depth-1").menu().menu("option", "position", { my:'left top', at:'right top' })
-                */
-                menu.menu("option", "position", { my:'left top', at:'left+30 bottom' })
+                $('<div id="menu"></div>').appendTo(header)
+                loadMenu(function() {
+                    loadLoginForm($('<div id="login"></div>').appendTo(header))
 
-                // Set menu-depth-# class on ul tags
-                ;(function setDepth(root, depth) {
-                    root.children('ul').each(function() {
-                        $(this)
-                            .addClass('menu-depth-'+depth)
-                            .children().each(function() {
-                                setDepth($(this), depth+1)
-                            })
-                    })
-                })(menu.parent(), 0)
+                    for (var n=ctm.initPage.length, i=0; i<n; ++i)
+                        ctm.initPage[i](c1, c2, c3)
 
-                loadLoginForm($('<div id="login"></div>').appendTo(header))
-
-                for (var n=ctm.initPage.length, i=0; i<n; ++i)
-                    ctm.initPage[i](c1, c2, c3)
-
-                rootLayout.resize();    // Because borders have changed
+                    rootLayout.resize();    // Because borders have changed
+                })
             })
     body
         #root
             block content
-        #menu
-            ul
-                li: a(href="/") Home
-                li
-                    a#menu-editor(href="/editor") Editor
-                    block menu-editor
-                li: a(href="/about") About
-                li
-                    a(href="/doc") Docs
-                    ul
-                        li: a(href="/doc/basic") Basic usage
-                        li: a(href="/doc/dev") Development
         block extras

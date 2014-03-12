@@ -26,6 +26,7 @@ if captcha
                                     .done(function() {
                                         dlg.dialog('close')
                                         loadLoginForm($('#login'))
+                                        loadMenu()
                                         $('#after_login_action').click()
                                     })
                                     .fail(function() {
@@ -61,6 +62,7 @@ script.
             e.preventDefault()
             $.post("/login", loginDiv.children().serialize())
                 .done(function() {
+                    loadMenu()
                     $('#after_login_action').click()
                 })
                 .always(function() { loadLoginForm(loginDiv) })
@@ -85,6 +87,7 @@ script.
                                         .done(function() {
                                             dlg.dialog('close')
                                             loadLoginForm(loginDiv)
+                                            loadMenu()
                                             $('#after_login_action').click()
                                         })
                                         .fail(function() {

@@ -27,15 +27,3 @@ block extras
     #loading-progress-overlay
         #loading-progress
             #loading-progress-label Loading...
-
-block menu-editor
-    ul
-        li
-            a(href='#') Examples
-            ul
-                each x in examples
-                    li: a.example-simulation(href='/examples/' + x.name) #{x.description}
-        li: a#run-simulation(href='#') Run
-        li -
-        li: a#upload-simulation(href='#') Upload
-        li: a#download-simulation(href='#') Download
