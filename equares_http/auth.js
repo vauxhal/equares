@@ -60,6 +60,17 @@ UserSchema.statics.findUser = function(usernameOrEmail, done) {
     this.findOne(condition, done)
 }
 
+UserSchema.statics.username = function(userId, done) {
+    if (!userId)
+        return done(null)
+    this.findOne({_id: userId.toString()}, function(err, user) {
+        if(err || !user)
+            done(null)
+        else
+            done(user.username)
+    })
+}
+
 UserSchema.statics.signup = function(username, email, password, done) {
     var User = this;
     this.findOne({$or: [{username: username}, {email: email}]}, function(err, user) {

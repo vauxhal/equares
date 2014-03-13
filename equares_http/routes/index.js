@@ -1,5 +1,6 @@
-var Sim = require('../simulation').Sim
 var fs = require('fs')
+var Sim = require('../simulation').Sim
+var auth = require('../auth')
 
 function readExamples(cb) {
     var examples = []
@@ -36,7 +37,7 @@ module.exports = {
                 res.send(404)
         })
     },
-    simulations: function(req, res){
+    simulations: function(req, res) {
         res.render('simulations', {req: req})
     },
     menu: function(req, res, next) {
@@ -69,5 +70,45 @@ module.exports = {
         default:
             renderMenu()
         }
+    },
+    simheaders: function(req, res) {
+        res.send(JSON.stringify([
+            'user',
+            'date',
+            'name',
+            'description'
+        ]))
+    },
+    simtable: function(req, res) {
+        var sims = []
+        var sent = false
+        var count = 0
+        var finished = false
+        function proceed() {
+            if (!finished || sims.length < count || sent)
+                return
+            res.send(JSON.stringify(sims))
+            sent = true
+        }
+
+        Sim.find({$query: {}, $orderby: {date: 1}}, {user: 1, date: 1, name: 1, description: 1}).stream()
+            .on('data', function (doc) {
+                ++count
+                auth.User.username(doc.user, function(username) {
+                    var obj = doc.toObject()
+                    obj.user = username
+                    sims.push(obj)
+                    proceed()
+                })
+            }).on('error', function (err) {
+                console.log(err)
+                if (!sent) {
+                    res.send(500, 'Unable to read simulation table')
+                    sent = true
+                }
+            }).on('close', function () {
+                finished = true
+                proceed()
+            })
     }
 }

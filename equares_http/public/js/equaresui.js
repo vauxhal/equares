@@ -560,7 +560,10 @@ equaresui.setSceneSource = function() {
             document.body.appendChild(downloadLink);
         }
         downloadLink.click();
-
+    }
+    equaresui.saveSimulation = function() {
+        $.post('cmd/savesim', {simulation: simulationText()})
+            .fail(function() { alert('Save failed') })
     }
     equaresui.runScheme = function() {
         var simulation = schemeEditor.exportSimulation()

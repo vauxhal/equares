@@ -2,6 +2,12 @@ extends page
 block vars
     - var title = 'Simulations'
 
+block otherCss
+    style.
+        #simtable, #simtable td, #simtable th {
+            border: 1px solid #888;
+        }
+
 block otherScripts
     script.
         /*
@@ -11,12 +17,38 @@ block otherScripts
             $('#after_logout_action').click(reload)
         })
         */
+        var findSim
+        ;(function() {
+            function wrap(tag) { return $("<" + tag + "></" + tag + ">") }
+            function findSim() {
+                $.get('/simheaders')
+                    .done(function(data) {
+                        var headers = JSON.parse(data), tbl = $('#simtable')
+                        tbl.html('')
+                        var hdr = wrap('tr').appendTo(tbl)
+                        for (var i in headers)
+                            hdr.append(wrap('th').html(headers[i]))
+                        $.get('simtable')
+                            .done(function(data) {
+                                var sims = JSON.parse(data)
+                                for (var j in sims) {
+                                    var row = wrap('tr').appendTo(tbl)
+                                    for (var i in headers)
+                                    row.append(wrap('td').html(sims[j][headers[i]]))
+                                }
+                            })
+                    })
+            }
+            $(document).ready(findSim)
+        })()
 
 block content
-    if req.isAuthenticated()
-        h1 Logged in
-    else
-        h1 Not logged in
+    //-
+        if req.isAuthenticated()
+            h1 Logged in
+        else
+            h1 Not logged in
+    table#simtable
 
 block extras
     #after_login_action(display='none')

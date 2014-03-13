@@ -371,6 +371,22 @@ commands['quickload'] = function(req, res) {
         res.send(sessionRecentSim())
 }
 
+commands['savesim'] = function(req, res) {
+    if (!ensureAuth(req, res))
+        return
+    var sim = JSON.parse(req.body.simulation)
+    sim.date = new Date()
+    sim.user = req.user.id
+    simulation.Sim.create(sim, function(err, sim) {
+        if (err) {
+            console.log(err)
+            res.send(500, 'Failed to save simulation')
+        }
+        else
+            res.end()
+    })
+}
+
 module.exports = function() {
     return function(req, res, next) {
         var name = req.path.substr(1)

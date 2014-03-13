@@ -61,6 +61,8 @@ app.get('/', routes.index);
 app.get('/editor', routes.editor);
 app.get('/examples/*', routes.example);
 app.get('/simulations', routes.simulations);
+app.get('/simheaders', routes.simheaders);
+app.get('/simtable', routes.simtable);
 
 app.use(function(err, req, res, next){
   res.status(err.status || 500);
