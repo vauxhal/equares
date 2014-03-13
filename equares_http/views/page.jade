@@ -37,7 +37,7 @@ html
         script(type='text/javascript' src='js-3rd/jquery-ui-1.10.3.custom.js')
         script(type='text/javascript' src='js/my.docks.js')
         script.
-            ctm = {initPage: []}
+            ctm = {initPage: [], initMenu: []}
         block otherScripts
         script.
             function loadLoginForm(loginDiv) {
@@ -72,6 +72,8 @@ html
                                 })
                         })
                     })(menu.parent(), 0)
+                    for (var n=ctm.initMenu.length, i=0; i<n; ++i)
+                        ctm.initMenu[i]()
                     if (done instanceof Function)
                         done()
                 })

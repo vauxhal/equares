@@ -1,4 +1,4 @@
-ctm.initPage.push(function(c1, c2, c3) {
+ctm.initMenu.push(function() {
     function setMenuItemHandler(j, func) {
         j.click(function(e) {
             e.preventDefault()
@@ -9,7 +9,9 @@ ctm.initPage.push(function(c1, c2, c3) {
     setMenuItemHandler($('#run-simulation'), function() { equaresui.runScheme() })
     setMenuItemHandler($('#upload-simulation'), function() { equaresui.uploadSimulation() })
     setMenuItemHandler($('#download-simulation'), function() { equaresui.downloadSimulation() })
+})
 
+ctm.initPage.push(function(c1, c2, c3) {
     // Create running simulation dialog
     $("#running-simulation").dialog({
         autoOpen: false,
