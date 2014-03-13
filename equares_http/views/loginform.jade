@@ -1,13 +1,23 @@
+style.
+    #login label {
+        margin-left: 10px;
+        margin-right: 5px;
+        font-size: small;
+    }
+    #login input[type=text], #login input[type=password] {
+        border: 1px solid #ccc;
+        font-size: small;
+    }
+    #login input[type=submit] {
+        margin-left: 5px;
+    }
+    #login {
+        font-size: small;
+        margin-top: -3px;
+    }
 if message
     span(style='color: red;')= message
 if captcha
-    style.
-        form#login > * {
-            display: block;
-        }
-        form#login > label {
-            margin-top: 10px;
-        }
     a#loginlink(href="/login") Log in
     script.
         $('#loginlink').click(function(e) {

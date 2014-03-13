@@ -5,13 +5,15 @@ block menu
             a#menu-editor(href="/editor") Editor
             block menu-editor
         li
-            a(href="/doc") Docs
-            ul
-                li: a(href="/doc/basic") Basic usage
-                li: a(href="/doc/dev") Development
-        li
             a#menu-simulations(href="/simulations") Simulations
             if req.isAuthenticated()
                 ul
                     li: a(href='#') My
                     li: a(href='#') Public
+        if req.isAuthenticated()
+            li: a(href="/profile") Profile
+        li
+            a(href="/doc") Docs
+            ul
+                li: a(href="/doc/basic") Basic usage
+                li: a(href="/doc/dev") Development
