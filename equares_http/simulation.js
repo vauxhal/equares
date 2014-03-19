@@ -9,7 +9,8 @@ var SimSchema = mongoose.Schema({
     date:           Date,
     info:           String,
     script:         String,
-    user:           {type: ObjectId, index: true}
+    user:           {type: ObjectId, index: true},
+    pub:            Boolean
 })
 
 var Sim = mongoose.model('Sim', SimSchema, 'simulations')
@@ -27,10 +28,11 @@ function refreshExamples() {
             .on('end', function() {
                 var obj = JSON.parse(text)
                 if (!(obj.date instanceof Date))
-                    obj.date = new Date(2014, 3, 6)
+                    obj.date = new Date(2014, 2, 6)
                 if (!(obj.script))
                     obj.script = ''
                 obj.user = null
+                obj.pub = true
                 console.log("  " + fileName + ": " + obj.name + " (" + obj.description + ")")
                 Sim.create(obj, function(err, sim) {
                     if (err)

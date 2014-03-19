@@ -24,17 +24,35 @@ block otherScripts
                 $.get('/simheaders')
                     .done(function(data) {
                         var headers = JSON.parse(data), tbl = $('#simtable')
+                        function header(i, role) {
+                            var h = headers[i]
+                            var result = typeof h == 'object'? h[role]: h
+                            console.log(result, typeof result)
+                            return result
+                        }
+                        function hname(i) { return header(i, 'name') }
+                        function htitle(i) { return header(i, 'title') }
                         tbl.html('')
                         var hdr = wrap('tr').appendTo(tbl)
                         for (var i in headers)
-                            hdr.append(wrap('th').html(headers[i]))
+                            hdr.append(wrap('th').html(htitle(i)))
                         $.get('simtable')
                             .done(function(data) {
                                 var sims = JSON.parse(data)
                                 for (var j in sims) {
                                     var row = wrap('tr').appendTo(tbl)
-                                    for (var i in headers)
-                                    row.append(wrap('td').html(sims[j][headers[i]]))
+                                    for (var i in headers) {
+                                        var x = sims[j][hname(i)]
+                                        var s
+                                        switch (typeof x) {
+                                        case 'boolean':
+                                            s = x.toString()
+                                            break
+                                        default:
+                                            s = x
+                                        }
+                                        row.append(wrap('td').html(s))
+                                    }
                                 }
                             })
                     })

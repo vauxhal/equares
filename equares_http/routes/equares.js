@@ -377,6 +377,7 @@ commands['savesim'] = function(req, res) {
     var sim = JSON.parse(req.body.simulation)
     sim.date = new Date()
     sim.user = req.user.id
+    sim.pub = false
     simulation.Sim.create(sim, function(err, sim) {
         if (err) {
             console.log(err)

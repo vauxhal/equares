@@ -76,7 +76,8 @@ module.exports = {
             'user',
             'date',
             'name',
-            'description'
+            'description',
+            {name: 'pub', title: 'public'}
         ]))
     },
     simtable: function(req, res) {
@@ -85,19 +86,22 @@ module.exports = {
         var count = 0
         var finished = false
         function proceed() {
-            if (!finished || sims.length < count || sent)
+            if (!finished || count < sims.length || sent)
                 return
             res.send(JSON.stringify(sims))
             sent = true
         }
 
-        Sim.find({$query: {}, $orderby: {date: 1}}, {user: 1, date: 1, name: 1, description: 1}).stream()
+        var user = req.user? req.user.id.toString(): null
+        console.log(user)
+        //Sim.find({$query: { $or: [{pub: true}, {user: user}]}, $orderby: {date: 1}}, {user: 1, date: 1, name: 1, description: 1, pub: 1}).stream()
+        Sim.find({$query: {user: user}, $orderby: {date: 1}}, {user: 1, date: 1, name: 1, description: 1, pub: 1}).stream()
             .on('data', function (doc) {
-                ++count
+                var obj = doc.toObject()
+                sims.push(obj)
                 auth.User.username(doc.user, function(username) {
-                    var obj = doc.toObject()
+                    ++count
                     obj.user = username
-                    sims.push(obj)
                     proceed()
                 })
             }).on('error', function (err) {
