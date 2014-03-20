@@ -1,5 +1,7 @@
 var fs = require('fs')
-var Sim = require('../simulation').Sim
+var simulation = require('../simulation')
+var Sim = simulation.Sim
+var RecentSim = simulation.RecentSim
 var auth = require('../auth')
 var mongoose = require('mongoose')
 
@@ -21,16 +23,38 @@ module.exports = {
         res.render('index', {req: req})
     },
     editor: function(req, res) {
-        res.render('editor', {req: req})
+        if (req.query.sim) {
+            Sim.findOne({_id: req.query.sim}, function(err, s) {
+                if (err) {
+                    console.log(err)
+                    res.send(500)
+                }
+                else if (s) {
+                    var sim = s.toObject()
+                    for (var i in {__v: 1, _id: 1, user: 1, date: 1})
+                        delete sim[i]
+                    sim = JSON.stringify(sim)
+                    req.session.simulation = sim
+                    req.body.simulation = sim
+                    simulation.RecentSim.set(req, function() {
+                        res.redirect('/editor')
+                    })
+                }
+                else
+                    res.send(404)
+            })
+        }
+        else
+            res.render('editor', {req: req})
     },
     example: function(req, res) {
         var name = req.url.match('^/examples/(.*)$')[1]
         Sim.findOne({name: name, user: null}, function(err, s) {
             if (err) {
                 console.log(err)
-                res.send(404)
+                res.send(500)
             }
-            if (s) {
+            else if (s) {
                 var result = s.toObject()
                 res.send(result)
             }
@@ -78,7 +102,7 @@ module.exports = {
             'date',
             'name',
             'description',
-            {name: 'pub', title: 'public'}
+            'public'
         ]))
     },
     simtable: function(req, res) {
@@ -94,7 +118,8 @@ module.exports = {
         }
 
         var user = req.user? new mongoose.Types.ObjectId(req.user.id.toString()): null
-        Sim.find({$query: { $or: [{pub: true}, {user: user}]}, $orderby: {date: 1}}, {user: 1, date: 1, name: 1, description: 1, pub: 1}).stream()
+        Sim.find({$query: { $or: [{public: true}, {user: user}]}, $orderby: {date: 1}},
+            {user: 1, date: 1, name: 1, description: 1, public: 1}).stream()
             .on('data', function (doc) {
                 var obj = doc.toObject()
                 sims.push(obj)

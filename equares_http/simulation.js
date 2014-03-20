@@ -1,17 +1,23 @@
-var fs = require('fs')
+    var fs = require('fs')
 var mongoose = require('mongoose')
 var ObjectId = mongoose.Schema.Types.ObjectId
 
 var SimSchema = mongoose.Schema({
-    name:           {type: String, index: true},
+    name:           String,
     description:    String,
     definition:     String,
     date:           Date,
     info:           String,
     script:         String,
     user:           {type: ObjectId, index: true},
-    pub:            Boolean
+    public:         Boolean
 })
+
+SimSchema.index({name: 1, user: 1}, {unique: true})
+
+SimSchema.statics.upsert = function(sim, done) {
+    this.update({user: sim.user, name: sim.name}, sim, {upsert: true}, done)
+}
 
 var Sim = mongoose.model('Sim', SimSchema, 'simulations')
 
@@ -32,7 +38,7 @@ function refreshExamples() {
                 if (!(obj.script))
                     obj.script = ''
                 obj.user = null
-                obj.pub = true
+                obj.public = true
                 console.log("  " + fileName + ": " + obj.name + " (" + obj.description + ")")
                 Sim.create(obj, function(err, sim) {
                     if (err)

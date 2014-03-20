@@ -357,7 +357,7 @@ commands['quicksave'] = function(req, res) {
 commands['quickload'] = function(req, res) {
     function sessionRecentSim() {
         return req.session.simulation   ||
-            JSON.stringify({name: '', description: '', info: '', script: '', definition: JSON.stringify({boxes: [], links: []})})
+            JSON.stringify({name: '', description: '', info: '', script: '', public: false, definition: JSON.stringify({boxes: [], links: []})})
     }
 
     if (req.isAuthenticated()) {
@@ -377,8 +377,9 @@ commands['savesim'] = function(req, res) {
     var sim = JSON.parse(req.body.simulation)
     sim.date = new Date()
     sim.user = req.user.id
-    sim.pub = false
-    simulation.Sim.create(sim, function(err, sim) {
+    if (typeof sim.public != 'boolean')
+        sim.public = false
+    simulation.Sim.upsert(sim, function(err, sim) {
         if (err) {
             console.log(err)
             res.send(500, 'Failed to save simulation')

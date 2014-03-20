@@ -10,6 +10,7 @@ ctm.initMenu.push(function() {
     setMenuItemHandler($('#upload-simulation'), function() { equaresui.uploadSimulation() })
     setMenuItemHandler($('#download-simulation'), function() { equaresui.downloadSimulation() })
     setMenuItemHandler($('#save-simulation'), function() { equaresui.saveSimulation() })
+    setMenuItemHandler($('#clear-simulation'), function() { equaresui.clearSimulation() })
 })
 
 ctm.initPage.push(function(c1, c2, c3) {

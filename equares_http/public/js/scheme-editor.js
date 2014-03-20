@@ -763,6 +763,13 @@ var ctmEquaresSchemeEditor = {};
                 callback()
         }
     }
+    Editor.prototype.clearSimulation = function() {
+        this.boxes = []
+        this.links = []
+        this.modified = false
+        this.visualize()
+    }
+
     E.newEditor = function(root) {
         return new Editor(root)
     }

@@ -27,7 +27,6 @@ block otherScripts
                         function header(i, role) {
                             var h = headers[i]
                             var result = typeof h == 'object'? h[role]: h
-                            console.log(result, typeof result)
                             return result
                         }
                         function hname(i) { return header(i, 'name') }
@@ -40,10 +39,10 @@ block otherScripts
                             .done(function(data) {
                                 var sims = JSON.parse(data)
                                 for (var j in sims) {
+                                    var sim = sims[j]
                                     var row = wrap('tr').appendTo(tbl)
                                     for (var i in headers) {
-                                        var x = sims[j][hname(i)]
-                                        var s
+                                        var h = hname(i),   x = sim[h],   s
                                         switch (typeof x) {
                                         case 'boolean':
                                             s = x.toString()
@@ -51,6 +50,8 @@ block otherScripts
                                         default:
                                             s = x
                                         }
+                                        if (h == 'name')
+                                            s = '<a href="/editor?' + $.param({sim: sim._id}) + '">' + s + '</a>'
                                         row.append(wrap('td').html(s))
                                     }
                                 }

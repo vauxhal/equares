@@ -408,10 +408,6 @@ equaresui.setSceneSource = function() {
             row.addClass(odd? "odd": "even")
             row.append(wrap("td").html(pname))
             var userType = p.userType
-            if (!userType) switch(typeof p) {
-                case "number":   userType = 'd';   break
-                default:   userType = 's';   break
-            }
             var prop = {
                 name: pname,
                 userType: userType,
@@ -470,13 +466,17 @@ equaresui.setSceneSource = function() {
     }
     
     // Load simulation properties
-    var simPropFields = {name: 's', description: 's', info: 'T', script: 't'}
-    var simProps = {
-        name: '',
-        description: '',
-        info: '',
-        script: ''
-    };
+    var simPropFields = {name: 's', description: 's', info: 'T', script: 't', public: 'b'}
+    function defaultSimProps() {
+        return {
+            name: '',
+            description: '',
+            info: '',
+            script: '',
+            public: false
+        }
+    }
+    var simProps = defaultSimProps()
     equaresui.selectBox(null)
 
     function beforeLoadSimulation()
@@ -491,8 +491,24 @@ equaresui.setSceneSource = function() {
         schemeEditor.import(obj.definition,
             function() {
                 loadingProgress.progressbar("value", 100)
-                for (var pname in simPropFields)
-                    simProps[pname] = obj[pname] || ""
+                for (var pname in simPropFields) {
+                    var v = obj[pname]
+                    if (v === undefined) switch(simPropFields[pname]) {
+                    case 's': case 't': case 'T':
+                        v = ''
+                        break
+                    case 'b':
+                        v = false
+                        break
+                    case 'd': case 'i':
+                        v = 0
+                        break
+                    case 'i:*':
+                        v = []
+                        break
+                    }
+                    simProps[pname] = v
+                }
                 equaresui.selectBox(null)
                 schemeEditor.modified = modified
             },
@@ -565,6 +581,12 @@ equaresui.setSceneSource = function() {
         $.post('cmd/savesim', {simulation: simulationText()})
             .fail(function() { alert('Save failed') })
     }
+    equaresui.clearSimulation = function() {
+        schemeEditor.clearSimulation()
+        simProps = defaultSimProps()
+        equaresui.selectBox(null)
+    }
+
     equaresui.runScheme = function() {
         var simulation = schemeEditor.exportSimulation()
         function dummyStopSim() {}
