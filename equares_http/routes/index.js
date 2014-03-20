@@ -1,6 +1,7 @@
 var fs = require('fs')
 var Sim = require('../simulation').Sim
 var auth = require('../auth')
+var mongoose = require('mongoose')
 
 function readExamples(cb) {
     var examples = []
@@ -92,10 +93,8 @@ module.exports = {
             sent = true
         }
 
-        var user = req.user? req.user.id.toString(): null
-        console.log(user)
-        //Sim.find({$query: { $or: [{pub: true}, {user: user}]}, $orderby: {date: 1}}, {user: 1, date: 1, name: 1, description: 1, pub: 1}).stream()
-        Sim.find({$query: {user: user}, $orderby: {date: 1}}, {user: 1, date: 1, name: 1, description: 1, pub: 1}).stream()
+        var user = req.user? new mongoose.Types.ObjectId(req.user.id.toString()): null
+        Sim.find({$query: { $or: [{pub: true}, {user: user}]}, $orderby: {date: 1}}, {user: 1, date: 1, name: 1, description: 1, pub: 1}).stream()
             .on('data', function (doc) {
                 var obj = doc.toObject()
                 sims.push(obj)
