@@ -102,6 +102,7 @@ module.exports = {
             'date',
             'name',
             'description',
+            'keywords',
             'public'
         ]))
     },
@@ -119,7 +120,7 @@ module.exports = {
 
         var user = req.user? new mongoose.Types.ObjectId(req.user.id.toString()): null
         Sim.find({$query: { $or: [{public: true}, {user: user}]}, $orderby: {date: 1}},
-            {user: 1, date: 1, name: 1, description: 1, public: 1}).stream()
+            {user: 1, date: 1, name: 1, description: 1, keywords: 1, public: 1}).stream()
             .on('data', function (doc) {
                 var obj = doc.toObject()
                 sims.push(obj)

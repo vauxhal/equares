@@ -8,6 +8,7 @@ var SimSchema = mongoose.Schema({
     definition:     String,
     date:           Date,
     info:           String,
+    keywords:       [String],
     script:         String,
     user:           {type: ObjectId, index: true},
     public:         Boolean
@@ -38,6 +39,8 @@ function refreshExamples() {
                 var obj = JSON.parse(text)
                 if (!(obj.date instanceof Date))
                     obj.date = new Date(2014, 2, 6)
+                if (!obj.keywords)
+                    obj.keywords = []
                 if (!(obj.script))
                     obj.script = ''
                 obj.user = null

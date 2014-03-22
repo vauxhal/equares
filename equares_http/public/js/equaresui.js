@@ -306,6 +306,27 @@ equaresui.setSceneSource = function() {
                     })
                     .appendTo(host)
                 break
+            case 's:*':
+                $('<input type="text">')
+                    .attr("value", prop.getter().join(', '))
+                    .change(function() {
+                        var val = this.value.toLowerCase().split(',')
+                        for (var i=0; i<val.length; ++i) {
+                            var s = val[i].trim()
+                            if (s.length > 0)
+                                val[i] = s
+                            else
+                                val.splice(i, 1)
+                        }
+                        prop.setter(val)
+                        this.value = prop.getter().join(', ')
+                        $(this).removeClass('modified')
+                    })
+                    .keypress(function() {
+                        $(this).addClass('modified')
+                    })
+                    .appendTo(host)
+                break
             case 'b':
                 $('<input type="checkbox">')
                     .attr("checked", prop.getter())
@@ -468,12 +489,13 @@ equaresui.setSceneSource = function() {
     }
     
     // Load simulation properties
-    var simPropFields = {name: 's', description: 's', info: 'T', script: 't', public: 'b'}
+    var simPropFields = {name: 's', description: 's', info: 'T', keywords: 's:*', script: 't', public: 'b'}
     function defaultSimProps() {
         return {
             name: '',
             description: '',
             info: '',
+            keywords: [],
             script: '',
             public: false
         }
@@ -506,7 +528,7 @@ equaresui.setSceneSource = function() {
                     case 'd': case 'i':
                         v = 0
                         break
-                    case 'i:*':
+                    case 'i:*':   case 's:*':
                         v = []
                         break
                     }

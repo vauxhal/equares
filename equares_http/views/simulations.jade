@@ -48,7 +48,10 @@ block otherScripts
                                             s = x.toString()
                                             break
                                         default:
-                                            s = x
+                                            if (x instanceof Array)
+                                                s = x.join(', ')
+                                            else
+                                                s = x
                                         }
                                         if (h == 'name')
                                             s = '<a href="/editor?' + $.param({sim: sim._id}) + '">' + s + '</a>'
