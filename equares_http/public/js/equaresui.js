@@ -458,6 +458,8 @@ equaresui.setSceneSource = function() {
             loadProps("Simulation properties", props, {
                 makeGetter: function(pname, props) { return function() { return simProps[pname] } },
                 makeSetter: function(pname, props) { return function(value) {
+                    if (pname == 'name' && simProps[pname] != value)
+                        checkOverwrite = true
                     simProps[pname] = value
                     schemeEditor.modify()
                 } }
@@ -477,6 +479,7 @@ equaresui.setSceneSource = function() {
         }
     }
     var simProps = defaultSimProps()
+    var checkOverwrite = true
     equaresui.selectBox(null)
 
     function beforeLoadSimulation()
@@ -511,6 +514,7 @@ equaresui.setSceneSource = function() {
                 }
                 equaresui.selectBox(null)
                 schemeEditor.modified = modified
+                checkOverwrite = true
             },
             function(percent) {
                 loadingProgress.progressbar("value", percent)
@@ -525,7 +529,7 @@ equaresui.setSceneSource = function() {
                 loadSimulation(obj, true)
             })
             .fail(function() {
-                alert('Failed to load example')
+                errorMessage('Failed to load example')
                 $("#loading-progress-overlay").hide()
             })
     }
@@ -578,12 +582,41 @@ equaresui.setSceneSource = function() {
         downloadLink.click();
     }
     equaresui.saveSimulation = function() {
-        $.post('cmd/savesim', {simulation: simulationText()})
-            .fail(function() { alert('Save failed') })
+        $.post('cmd/savesim', {simulation: simulationText(), overwrite: !checkOverwrite})
+            .done(function() {
+                checkOverwrite = false
+                infoMessage('saved')
+            })
+            .fail(function(err) {
+                if (checkOverwrite && err.status == 403) {
+                    $("#confirm-overwrite").dialog({
+                        resizable: false,
+                        width: 600,
+                        modal: true,
+                        buttons: {
+                            Overwrite: function() {
+                                $(this).dialog("close")
+                                checkOverwrite = false
+                                equaresui.saveSimulation()
+                            },
+                            Cancel: function() {
+                                $(this).dialog("close")
+                            }
+                        }
+                    })
+                }
+                else {
+                    var msg = 'Save failed'
+                    if (err.responseText.length > 0)
+                        msg += ': ' + err.responseText
+                    errorMessage(msg)
+                }
+            })
     }
     equaresui.clearSimulation = function() {
         schemeEditor.clearSimulation()
         simProps = defaultSimProps()
+        checkOverwrite = true
         equaresui.selectBox(null)
     }
 
@@ -746,7 +779,7 @@ equaresui.setSceneSource = function() {
                 }
             })
             .fail(function(error){
-                alert(error.responseText || error.statusText || ("Ajax error: " + error.status));
+                errorMessage(error.responseText || error.statusText || ("Ajax error: " + error.status));
             });
     }
 
@@ -757,7 +790,7 @@ equaresui.setSceneSource = function() {
                 loadSimulation(JSON.parse(simulation), false)
             })
             .fail(function() {
-                alert('quickload failed')
+                errorMessage('quickload failed')
                 $("#loading-progress-overlay").hide()
             })
     }
@@ -770,12 +803,13 @@ equaresui.setSceneSource = function() {
             $.post('cmd/quicksave', {simulation: simulationText()})
                 .done(function() {
                     schemeEditor.modified = false
+                    infoMessage('quicksaved', 1000)
                 })
                 .fail(function(xhr) {
                     // Note: xhr.readyState==0 means we're doing post on page unload
                     if (xhr.readyState !== 0)
-                        alert('quicksave failed')}
-                )
+                        errorMessage('quicksave failed')
+                })
                 .always(function() {saving = false})
         }
     }

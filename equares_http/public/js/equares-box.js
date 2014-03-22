@@ -356,13 +356,13 @@ var equaresBox = {};
             .done(function(data) {
                 var reply = JSON.parse(data);
                 if (reply.error)
-                    alert("requestInfo error: \n" + reply.stderr);
+                    errorMessage("requestInfo error: \n" + reply.stderr);
                 else
                     callback(eval("(function(){return " + reply.stdout + "})()"));
             })
             .fail(function() {
                 // equaresDebug.html("requestInfo: Ajax error");
-                alert("requestInfo: Ajax error");
+                errorMessage("requestInfo: Ajax error");
             });
     }
 
@@ -374,7 +374,7 @@ var equaresBox = {};
                     if (errorCallback instanceof Function)
                         errorCallback(reply)
                     else
-                        alert("requestInfoEx error: \n" + (reply.stderr || reply.message));
+                        errorMessage("requestInfoEx error: \n" + (reply.stderr || reply.message));
                 }
                 else
                     callback(eval("(function(){return " + reply + "})()"));
@@ -383,7 +383,7 @@ var equaresBox = {};
                 if (errorCallback instanceof Function)
                     errorCallback("Ajax error")
                 else
-                    alert("requestInfoEx: Ajax error");
+                    errorMessage("requestInfoEx: Ajax error");
             });
     }
 

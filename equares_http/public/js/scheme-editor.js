@@ -758,7 +758,7 @@ var ctmEquaresSchemeEditor = {};
                 continueLoading()
         }
         catch(e) {
-            alert(e.message)
+            errorMessage(e.message)
             if (callback instanceof Function)
                 callback()
         }

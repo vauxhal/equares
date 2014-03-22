@@ -18,6 +18,9 @@ SimSchema.index({name: 1, user: 1}, {unique: true})
 SimSchema.statics.upsert = function(sim, done) {
     this.update({user: sim.user, name: sim.name}, sim, {upsert: true}, done)
 }
+SimSchema.statics.have = function(sim, done) {
+    this.count({user: sim.user, name: sim.name}, done)
+}
 
 var Sim = mongoose.model('Sim', SimSchema, 'simulations')
 

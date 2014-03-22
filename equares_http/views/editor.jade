@@ -27,3 +27,7 @@ block extras
     #loading-progress-overlay
         #loading-progress
             #loading-progress-label Loading...
+    #confirm-overwrite(title='Overwrite existing simulation?' style='display: none;')
+        p
+            span.ui-icon.ui-icon-alert(style='float:left; margin:0 7px 20px 0;')
+            | There is an existing simulation with the name specified. Saving under this name will overwrite the existing simulation. Continue?

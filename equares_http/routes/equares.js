@@ -145,7 +145,7 @@ var commands = {}
 
 function ensureAuth(req, res) {
     if (!req.isAuthenticated()) {
-        res.send(403, "You are not logged in")
+        res.send(401, "You are not logged in")
         return false
     }
     return true
@@ -379,14 +379,30 @@ commands['savesim'] = function(req, res) {
     sim.user = req.user.id
     if (typeof sim.public != 'boolean')
         sim.public = false
-    simulation.Sim.upsert(sim, function(err, sim) {
-        if (err) {
-            console.log(err)
-            res.send(500, 'Failed to save simulation')
-        }
-        else
-            res.end()
-    })
+
+    function save() {
+        simulation.Sim.upsert(sim, function(err, sim) {
+            if (err) {
+                console.log(err)
+                res.send(500, 'Failed to save simulation')
+            }
+            else
+                res.end()
+        })
+    }
+
+    var overwrite = JSON.parse(req.body.overwrite)
+    if (overwrite)
+        save()
+    else
+        simulation.Sim.have(sim, function(err, count) {
+            if (err)
+                res.send(500)
+            else if (count > 0)
+                res.send(403)
+            else
+                save()
+        })
 }
 
 module.exports = function() {
