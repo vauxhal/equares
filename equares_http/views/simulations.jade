@@ -4,23 +4,67 @@ block vars
 
 block otherCss
     style.
-        #simtable, #simtable td, #simtable th {
+        #simtable, #simtable td, #simtable th, #filter td {
             border: 1px solid #888;
+        }
+        #filter {
+            margin: 10px 20px 20px 20px;
+        }
+        #simulations {
+            margin: 0px 20px;
+        }
+        #filter input[type='text'] {
+            border: 1px solid #ccc;
+        }
+        #filter input[type='text'],
+        #filter input[type='submit'] {
+            margin-left: 5px;
+            margin-right: 15px;
+        }
+        #filter input[type='checkbox'] {
+            margin-left: 5px;
+            margin-right: 5px;
+        }
+        #filter input[type='checkbox'] + * {
+            margin-right: 15px;
+        }
+        #filter a {
+            font-size: small;
+        }
+        #advanced-search {
+            display: inline;
+        }
+        .page-numbers {
+            text-align: center;
         }
 
 block otherScripts
     script.
-        /*
-        ctm.initPage.push(function() {
-            function reload() { location.reload() }
-            $('#after_login_action').click(reload)
-            $('#after_logout_action').click(reload)
-        })
-        */
         var findSim
         ;(function() {
             function wrap(tag) { return $("<" + tag + "></" + tag + ">") }
-            function findSim() {
+            function searchQuery() {
+                var f = $('#filter > form')[0].elements
+                var result = {}
+                for (var i=0, n=f.length; i<n; ++i) {
+                    var e = $(f[i])
+                    if (!e.is(':visible'))
+                        continue
+                    var name = e.attr('name')
+                    switch (e.attr('type')) {
+                    case 'text':
+                        result[name] = e[0].value
+                        break
+                    case 'checkbox':
+                        result[name] = e[0].value == 'on'
+                        break
+                    }
+                }
+                return result
+            }
+            var pagenum = 0,   pagecount = 0
+            findSim = function() {
+                $('#apply-filter').attr('disabled', true)
                 $.get('/simheaders')
                     .done(function(data) {
                         var headers = JSON.parse(data), tbl = $('#simtable')
@@ -57,11 +101,28 @@ block otherScripts
                                             s = '<a href="/editor?' + $.param({sim: sim._id}) + '">' + s + '</a>'
                                         row.append(wrap('td').html(s))
                                     }
+                                $('.page-numbers').text('page numbers')
+                                $('#apply-filter').attr('disabled', false)
                                 }
                             })
                     })
             }
-            $(document).ready(findSim)
+            ctm.initPage.push(function() {
+                $('#after_login_action').click(findSim)
+                $('#after_logout_action').click(findSim)
+                $('#advanced-search').hide()
+                $('#toggle-advanced').click(function(e) {
+                    e.preventDefault()
+                    var adv = $('#advanced-search')
+                    $(this).html(adv.is(':visible')? 'Advanced': 'Basic')
+                    $('#advanced-search').fadeToggle('fast')
+                })
+                $('#apply-filter').click(function(e) {
+                    e.preventDefault()
+                    warningMessage(searchQuery())
+                })
+                findSim()
+            })
         })()
 
 block content
@@ -70,7 +131,24 @@ block content
             h1 Logged in
         else
             h1 Not logged in
-    table#simtable
+    #filter
+        | Filter<br/>
+        form
+            label Text
+            input(type='text' name='text')
+            #advanced-search
+                label Username
+                input(type='text' name='user')
+                label Keywords
+                input(type='text' name='keywords')
+                input(type='checkbox' name='public')
+                span Public
+            input#apply-filter(type='submit' value='Apply filter')
+            a#toggle-advanced(href='#') Advanced
+    #simulations
+        .page-numbers
+        table#simtable
+        .page-numbers
 
 block extras
     #after_login_action(display='none')

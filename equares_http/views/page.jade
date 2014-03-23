@@ -74,15 +74,19 @@ html
                 .done(function(data) {
                     loginDiv.html(data)
                 })
-                .error(function(err) { loginDiv.html("Ajax error: " + err.status + " " + err.statusText) })
+                .error(function(xhr) {
+                    // Note: xhr.readyState==0 means we're doing get on page unload
+                    if (xhr.readyState !== 0)
+                        loginDiv.html("Ajax error: " + xhr.status + " " + xhr.statusText)
+                })
             }
             function message(content, status, duration) {
-            if (typeof duration != 'number')
-                duration = 3000
-                var msg = $('<div class="message ' + status + '">' + content + '</div>').appendTo($('#messages')).show('fast')
-                setTimeout(function() {
-                    msg.hide('fast', function() { msg.remove() })
-                }, duration)
+                if (typeof duration != 'number')
+                    duration = 3000
+                    var msg = $('<div class="message ' + status + '">' + content + '</div>').appendTo($('#messages')).slideDown('fast')
+                    setTimeout(function() {
+                        msg.slideUp('fast', function() { msg.remove() })
+                    }, duration)
             }
             function infoMessage(content, duration) { message(content, 'info', duration) }
             function warningMessage(content, duration) { message(content, 'warning', duration) }
@@ -117,7 +121,11 @@ html
                     if (done instanceof Function)
                         done()
                 })
-                .error(function(err) { errorMessage('Failed to load menu') })
+                .error(function(xhr) {
+                    // Note: xhr.readyState==0 means we're doing get on page unload
+                    if (xhr.readyState !== 0)
+                        errorMessage('Failed to load menu')
+                })
             }
 
             $(document).ready(function() {
