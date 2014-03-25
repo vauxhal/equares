@@ -111,33 +111,87 @@ module.exports = {
         var sent = false
         var count = 0
         var finished = false
+        var total
         function proceed() {
             if (!finished || count < sims.length || sent)
                 return
-            res.send(JSON.stringify(sims))
+            res.send(JSON.stringify({pages: Math.ceil(total/pageSize), sims: sims}))
             sent = true
         }
 
+        var pageSize = 25
+        var page = req.query.page === undefined?  0:   +req.query.page
+
         var user = req.user? new mongoose.Types.ObjectId(req.user.id.toString()): null
-        Sim.find({$query: { $or: [{public: true}, {user: user}]}, $orderby: {date: 1}},
-            {user: 1, date: 1, name: 1, description: 1, keywords: 1, public: 1}).stream()
-            .on('data', function (doc) {
-                var obj = doc.toObject()
-                sims.push(obj)
-                auth.User.username(doc.user, function(username) {
-                    ++count
-                    obj.user = username
+        var query
+        if (req.query.public == 'true')
+            query = {public: true}
+        else
+            query = {$or: [{public: true}, {user: user}]}
+        if (req.query.text) {
+            Sim.textSearch(req.query.text,
+                {
+                    filter: query,
+                    project: {user: 1, date: 1, name: 1, description: 1, keywords: 1, public: 1}
+                },
+                function(err, output) {
+                    if (err) {
+                        console.log(err)
+                        return res.send(500)
+                    }
+                    total = output.results.length
+                    var n1 = page*pageSize, n2 = (page+1)*pageSize
+                    if (n2 > total)
+                        n2 = total
+                    for (var i=n1; i<n2; ++i) {
+                        (function() {
+                            var doc = output.results[i].obj, obj = doc.toObject()
+                            sims.push(obj)
+                            auth.User.username(doc.user, function(username) {
+                                ++count
+                                obj.user = username
+                                proceed()
+                            })
+                        })()
+                    }
+                    finished = true
                     proceed()
                 })
-            }).on('error', function (err) {
-                console.log(err)
-                if (!sent) {
-                    res.send(500, 'Unable to read simulation table')
-                    sent = true
+        }
+        else {
+            Sim.count(query, function(err, n) {
+                if (err) {
+                    console.log(err)
+                    return res.send(500)
                 }
-            }).on('close', function () {
-                finished = true
-                proceed()
+                total = n
+                var n1 = page*pageSize, n2 = (page+1)*pageSize
+                if (n2 > total)
+                    n2 = total
+                if (n1 > n2)
+                    n1 = n2
+                Sim.find({$query: query, $orderby: {date: 1}},
+                    {user: 1, date: 1, name: 1, description: 1, keywords: 1, public: 1},
+                    {skip: n1, limit: n2-n1}).stream()
+                    .on('data', function (doc) {
+                        var obj = doc.toObject()
+                        sims.push(obj)
+                        auth.User.username(doc.user, function(username) {
+                            ++count
+                            obj.user = username
+                            proceed()
+                        })
+                    }).on('error', function (err) {
+                        console.log(err)
+                        if (!sent) {
+                            res.send(500, 'Unable to read simulation table')
+                            sent = true
+                        }
+                    }).on('close', function () {
+                        finished = true
+                        proceed()
+                    })
             })
+        }
     }
 }

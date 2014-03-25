@@ -35,7 +35,21 @@ block otherCss
             display: inline;
         }
         .page-numbers {
-            text-align: center;
+            //text-align: center;
+            padding-bottom: 10px;
+            padding-top: 10px;
+        }
+        .page-numbers > a, .page-numbers > span {
+            margin: 7px;
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+        .page-numbers > a {
+            background-color: #fd8;
+        }
+        .page-numbers > span {
+            background-color: #ddb;
+            font-weight: bold;
         }
 
 block otherScripts
@@ -53,19 +67,60 @@ block otherScripts
                     var name = e.attr('name')
                     switch (e.attr('type')) {
                     case 'text':
-                        result[name] = e[0].value
+                        if (e[0].value.length > 0)
+                            result[name] = e[0].value
                         break
                     case 'checkbox':
-                        result[name] = e[0].value == 'on'
+                        result[name] = e[0].checked
                         break
                     }
                 }
                 return result
             }
-            var pagenum = 0,   pagecount = 0
-            findSim = function() {
+            var pagecount = 0,   pagenum = 0
+
+            function addPage(j, page) {
+                if (page == pagenum)
+                    j.append(wrap('span').text(page+1))
+                else
+                    j.append(wrap('a').text(page+1).attr('href', '#'))
+            }
+            function addPages(j, center, cache) {
+                var borderPages = 4,
+                    n1 = Math.max(0, center-borderPages),
+                    n2 = Math.min(pagecount-1, center+borderPages)
+                for (var i=n1; i<=n2; ++i) {
+                    if (!cache[i]) {
+                        if (i>0 && !cache[i-1])
+                            j.append(wrap('span').text('...'))
+                        addPage(j, i)
+                        cache[i] = 1
+                    }
+                }
+            }
+            function makePages(pages, page) {
+                pagecount = pages
+                pagenum = page
+                var j = $('.page-numbers')
+                j.html('')
+                if (pages == 1)
+                    return
+                var cache = {}
+                addPages(j, 0, cache)
+                addPages(j, page, cache)
+                addPages(j, pages-1, cache)
+                j.children('a').click(function(e) {
+                    e.preventDefault()
+                    findSim($(this).text()-1)
+                })
+            }
+
+            findSim = function(page) {
                 $('#apply-filter').attr('disabled', true)
-                $.get('/simheaders')
+                var rq = searchQuery()
+                if (typeof page == 'number')
+                    rq.page = page
+                $.get('/simheaders', rq)
                     .done(function(data) {
                         var headers = JSON.parse(data), tbl = $('#simtable')
                         function header(i, role) {
@@ -76,34 +131,39 @@ block otherScripts
                         function hname(i) { return header(i, 'name') }
                         function htitle(i) { return header(i, 'title') }
                         tbl.html('')
-                        var hdr = wrap('tr').appendTo(tbl)
-                        for (var i in headers)
-                            hdr.append(wrap('th').html(htitle(i)))
-                        $.get('simtable')
+                        $.get('simtable', rq)
                             .done(function(data) {
-                                var sims = JSON.parse(data)
-                                for (var j in sims) {
-                                    var sim = sims[j]
-                                    var row = wrap('tr').appendTo(tbl)
-                                    for (var i in headers) {
-                                        var h = hname(i),   x = sim[h],   s
-                                        switch (typeof x) {
-                                        case 'boolean':
-                                            s = x.toString()
-                                            break
-                                        default:
-                                            if (x instanceof Array)
-                                                s = x.join(', ')
-                                            else
-                                                s = x
+                                data = JSON.parse(data)
+                                var sims = data.sims
+                                if (sims.length > 0) {
+                                    var hdr = wrap('tr').appendTo(tbl)
+                                    for (var i in headers)
+                                        hdr.append(wrap('th').html(htitle(i)))
+                                    for (var j in sims) {
+                                        var sim = sims[j]
+                                        var row = wrap('tr').appendTo(tbl)
+                                        for (var i in headers) {
+                                            var h = hname(i),   x = sim[h],   s
+                                            switch (typeof x) {
+                                            case 'boolean':
+                                                s = x.toString()
+                                                break
+                                            default:
+                                                if (x instanceof Array)
+                                                    s = x.join(', ')
+                                                else
+                                                    s = x
+                                            }
+                                            if (h == 'name')
+                                                s = '<a href="/editor?' + $.param({sim: sim._id}) + '">' + s + '</a>'
+                                            row.append(wrap('td').html(s))
                                         }
-                                        if (h == 'name')
-                                            s = '<a href="/editor?' + $.param({sim: sim._id}) + '">' + s + '</a>'
-                                        row.append(wrap('td').html(s))
                                     }
-                                $('.page-numbers').text('page numbers')
-                                $('#apply-filter').attr('disabled', false)
                                 }
+                                else
+                                    tbl.append(wrap('tr').append(wrap('td').text('No results are found')))
+                                makePages(data.pages, rq.page || 0)
+                                $('#apply-filter').attr('disabled', false)
                             })
                     })
             }
@@ -119,7 +179,7 @@ block otherScripts
                 })
                 $('#apply-filter').click(function(e) {
                     e.preventDefault()
-                    warningMessage(searchQuery())
+                    findSim()
                 })
                 findSim()
             })

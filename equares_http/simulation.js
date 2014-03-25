@@ -1,5 +1,7 @@
-    var fs = require('fs')
+var fs = require('fs')
 var mongoose = require('mongoose')
+var textSearch = require('mongoose-text-search');
+
 var ObjectId = mongoose.Schema.Types.ObjectId
 
 var SimSchema = mongoose.Schema({
@@ -14,7 +16,11 @@ var SimSchema = mongoose.Schema({
     public:         Boolean
 })
 
+// give our schema text search capabilities
+SimSchema.plugin(textSearch);
+
 SimSchema.index({name: 1, user: 1}, {unique: true})
+SimSchema.index({name: 'text', description: 'text', info: 'text', keywords: 'text'})
 
 SimSchema.statics.upsert = function(sim, done) {
     this.update({user: sim.user, name: sim.name}, sim, {upsert: true}, done)
