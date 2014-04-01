@@ -8,10 +8,19 @@ block otherCss
             border: 1px solid #888;
         }
         #filter {
-            margin: 10px 20px 20px 20px;
+            padding: 10px 20px 10px 20px;
         }
         #simulations {
-            margin: 0px 20px;
+            padding: 0px 20px 0px 20px;
+            border-top: 1px solid #ccc;
+            overflow: auto;
+            /*
+            position: absolute;
+            bottom: 0;
+            top: 65px;
+            left: 0;
+            right: 0;
+            */
         }
         #filter input[type='text'] {
             border: 1px solid #ccc;
@@ -50,6 +59,10 @@ block otherCss
         .page-numbers > span {
             background-color: #ddb;
             font-weight: bold;
+        }
+        .error {
+            font-weight: bold;
+            color: #c00;
         }
 
 block otherScripts
@@ -163,34 +176,69 @@ block otherScripts
                                 else
                                     tbl.append(wrap('tr').append(wrap('td').text('No results are found')))
                                 makePages(data.pages, rq.page || 0)
+                            })
+                            .fail(function(xhr) {
+                                tbl.append(wrap('tr').append(wrap('td').addClass('error').text('Error: ' + (xhr.responseText || xhr.statusText || xhr.status))))
+                                makePages(0, 0)
+                            })
+                            .always(function() {
                                 $('#apply-filter').attr('disabled', false)
                             })
                     })
             }
-            ctm.initPage.push(function() {
+            ctm.initPage.push(function(c1, c2, c3) {
                 $('#after_login_action').click(findSim)
                 $('#after_logout_action').click(findSim)
                 $('#advanced-search').hide()
                 $('#toggle-advanced').click(function(e) {
                     e.preventDefault()
-                    var adv = $('#advanced-search')
-                    $(this).html(adv.is(':visible')? 'Advanced': 'Basic')
-                    $('#advanced-search').fadeToggle('fast')
+                    var adv = $('#advanced-search'), wasadv = adv.is(':visible')
+                    $(this).html(wasadv? 'Advanced': 'Basic')
+                    $('#advanced-search').fadeToggle('fast', findSim)
                 })
                 $('#apply-filter').click(function(e) {
                     e.preventDefault()
                     findSim()
                 })
-                findSim()
+                c2.addResizeHandler(function() {
+                    $('#simulations').height($(this.dom).height()-$('#filter').outerHeight())
+                })
             })
         })()
+    case req.query.mode
+        when 'my'
+            script.
+                ctm.initPage.push(function() {
+                    var f = $('#filter > form')[0].elements
+                    for (var i=0, n=f.length; i<n; ++i) {
+                        var e = $(f[i])
+                        var name = e.attr('name')
+                        if (name == 'user') {
+                            e[0].value = '#{req.user.username}'
+                            break
+                        }
+                    }
+                    $('#toggle-advanced').click()
+                })
+        when 'public'
+            script.
+                ctm.initPage.push(function() {
+                    var f = $('#filter > form')[0].elements
+                    for (var i=0, n=f.length; i<n; ++i) {
+                        var e = $(f[i])
+                        var name = e.attr('name')
+                        if (name == 'public') {
+                            e[0].checked = true
+                            break
+                        }
+                    }
+                    $('#toggle-advanced').click()
+                })
+        default
+            script.
+                ctm.initPage.push(findSim)
 
 block content
-    //-
-        if req.isAuthenticated()
-            h1 Logged in
-        else
-            h1 Not logged in
     #filter
         | Filter<br/>
         form
@@ -202,7 +250,7 @@ block content
                 label Keywords
                 input(type='text' name='keywords')
                 input(type='checkbox' name='public')
-                span Public
+                span Public only
             input#apply-filter(type='submit' value='Apply filter')
             a#toggle-advanced(href='#') Advanced
     #simulations

@@ -8,8 +8,8 @@ block menu
             a#menu-simulations(href="/simulations") Simulations
             if req.isAuthenticated()
                 ul
-                    li: a(href='#') My
-                    li: a(href='#') Public
+                    li: a(href='/simulations?mode=my') My
+                    li: a(href='/simulations?mode=public') Public
         if req.isAuthenticated()
             li: a(href="/profile") Profile
         li

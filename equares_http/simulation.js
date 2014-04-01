@@ -10,7 +10,7 @@ var SimSchema = mongoose.Schema({
     definition:     String,
     date:           Date,
     info:           String,
-    keywords:       [String],
+    keywords:       {type: [String], index: true},
     script:         String,
     user:           {type: ObjectId, index: true},
     public:         Boolean

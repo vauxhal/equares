@@ -691,6 +691,7 @@ Container.prototype.wvisibleSplitter = function( dir ) {
         return $();
 }
 Container.prototype.init = function( options ) {
+    Container.call(this)
     this.attach( newDiv( "container" ) );
     this.width = new Range( options.width );
     this.height = new Range( options.height );
