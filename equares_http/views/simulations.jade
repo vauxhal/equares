@@ -4,8 +4,25 @@ block vars
 
 block otherCss
     style.
-        #simtable, #simtable td, #simtable th, #filter td {
-            border: 1px solid #888;
+        #simtable {
+            border-spacing: 10px 5px;
+        }
+        #simtable td, #simtable th {
+            border-radius: 5px;
+            text-align: center;
+            padding: 3px 5px;
+        }
+        #simtable th {
+            background-color: #ddc;
+        }
+        #simtable tr.odd {
+            background-color: #ffe;
+        }
+        #simtable tr.odd td {
+            border: 1px solid #f4f4e4;
+        }
+        #simtable tr.even {
+            background-color: #eed;
         }
         #filter {
             padding: 10px 20px 10px 20px;
@@ -14,13 +31,6 @@ block otherCss
             padding: 0px 20px 0px 20px;
             border-top: 1px solid #ccc;
             overflow: auto;
-            /*
-            position: absolute;
-            bottom: 0;
-            top: 65px;
-            left: 0;
-            right: 0;
-            */
         }
         #filter input[type='text'] {
             border: 1px solid #ccc;
@@ -44,25 +54,44 @@ block otherCss
             display: inline;
         }
         .page-numbers {
-            //text-align: center;
             padding-bottom: 10px;
             padding-top: 10px;
         }
         .page-numbers > a, .page-numbers > span {
             margin: 7px;
             padding: 2px 5px;
-            border-radius: 3px;
+            border-radius: 5px;
         }
         .page-numbers > a {
             background-color: #fd8;
         }
         .page-numbers > span {
-            background-color: #ddb;
+            background-color: #ddc;
             font-weight: bold;
         }
         .error {
             font-weight: bold;
             color: #c00;
+        }
+        #simtable a {
+            text-decoration: none;
+            color: #2a6;
+        }
+        #simtable a:link {
+        }
+        #simtable a:visited {
+            color: #172;
+        }
+        #simtable a:hover {
+            text-decoration: underline;
+        }
+
+        .page-numbers a {
+            text-decoration: none;
+            color: #55b;
+        }
+        .page-numbers a:hover {
+            text-decoration: underline;
         }
 
 block otherScripts
@@ -154,7 +183,7 @@ block otherScripts
                                         hdr.append(wrap('th').html(htitle(i)))
                                     for (var j in sims) {
                                         var sim = sims[j]
-                                        var row = wrap('tr').appendTo(tbl)
+                                        var row = wrap('tr').appendTo(tbl).addClass((+j+1)&1? 'odd': 'even')
                                         for (var i in headers) {
                                             var h = hname(i),   x = sim[h],   s
                                             switch (typeof x) {
@@ -164,6 +193,8 @@ block otherScripts
                                             default:
                                                 if (x instanceof Array)
                                                     s = x.join(', ')
+                                                else if (h == 'date')
+                                                    s = new Date(x).toLocaleString()
                                                 else
                                                     s = x
                                             }
