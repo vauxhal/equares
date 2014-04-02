@@ -16,3 +16,6 @@ TEMPLATE = app
 
 
 SOURCES += main.cpp
+
+RESOURCES += \
+    captchagen.qrc

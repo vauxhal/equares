@@ -13,6 +13,8 @@
 #include <QPainterPath>
 #include <QDateTime>
 #include <QBuffer>
+#include <QFontDatabase>
+#include <QDir>
 #include <iostream>
 #include <algorithm>
 #include <cstdlib>
@@ -41,7 +43,7 @@ QFont randomFont(int maxHeight)
 
 QColor randomColor()
 {
-    return QColor::fromHsv(rnd(0,359), rnd(128,255), rnd(0,255));
+    return QColor::fromHsv(rnd(0,359), rnd(128,255), rnd(0,192));
 }
 
 QPainterPath deformedPath(const QPainterPath& path, double dx)
@@ -120,6 +122,32 @@ void renderCaptcha(QImage *img, const QRect& rect, const QString& text)
     addPixelNoise(img);
 }
 
+void loadFonts()
+{
+    static const char *fontNames[] = {
+        "AverageMono.ttf",
+        "AverageMonoBold.ttf",
+        "AverageMonoItalic.ttf",
+        "AverageMonoBoldItalic.ttf",
+        "Pfennig.ttf",
+        "PfennigBold.ttf",
+        "PfennigItalic.ttf",
+        "PfennigBoldItalic.ttf",
+        "GenBasR.ttf",
+        "GenBasB.ttf",
+        "GenBasI.ttf",
+        "GenBasBI.ttf",
+        0
+    };
+    QDir dir(":/fonts");
+    for (int i=0; fontNames[i]; ++i)
+        if (QFontDatabase::addApplicationFont(dir.absoluteFilePath(fontNames[i])) == -1)
+        {
+            cerr << "Failed to load font '" << fontNames[i] << "'" << endl;
+            exit(-1);
+        }
+}
+
 int main(int argc, char *argv[])
 {
     QApp a(argc, argv, false);
@@ -129,15 +157,14 @@ int main(int argc, char *argv[])
         cerr << "Usage: captchagen <text>" << endl;
         return -1;
     }
+    loadFonts();
+
     QString text = args[1];
 
     QImage img(QSize(150, 35), QImage::Format_ARGB32);
     int seed = static_cast<int>(QDateTime::currentMSecsSinceEpoch());
     srand(seed);
     renderCaptcha(&img, img.rect(), text);
-
-    // deBUG, TODO: Remove
-    // img.save("captcha.png");
 
     QBuffer f;
     f.open(QIODevice::WriteOnly);

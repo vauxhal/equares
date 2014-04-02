@@ -1,0 +1,16 @@
+<RCC>
+    <qresource prefix="/fonts">
+        <file alias="AverageMonoItalic.ttf">res/AverageMonoItalic.ttf</file>
+        <file alias="AverageMono.ttf">res/AverageMono.ttf</file>
+        <file alias="AverageMonoBold.ttf">res/AverageMonoBold.ttf</file>
+        <file alias="AverageMonoBoldItalic.ttf">res/AverageMonoBoldItalic.ttf</file>
+        <file alias="PfennigItalic.ttf">res/PfennigItalic.ttf</file>
+        <file alias="Pfennig.ttf">res/Pfennig.ttf</file>
+        <file alias="PfennigBold.ttf">res/PfennigBold.ttf</file>
+        <file alias="PfennigBoldItalic.ttf">res/PfennigBoldItalic.ttf</file>
+        <file alias="GenBasR.ttf">res/GenBasR.ttf</file>
+        <file alias="GenBasB.ttf">res/GenBasB.ttf</file>
+        <file alias="GenBasBI.ttf">res/GenBasBI.ttf</file>
+        <file alias="GenBasI.ttf">res/GenBasI.ttf</file>
+    </qresource>
+</RCC>

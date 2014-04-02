@@ -25,7 +25,7 @@ module.exports = function(options) {
         var text = ('' + Math.random()).substr(3, 6);
 
         // Generate captcha image
-        child_process.exec(programPath + " " + text, function (error, stdout, stderr) {
+        child_process.exec(programPath + " -platform offscreen " + text, function (error, stdout, stderr) {
             if (error)
                 throw error
             stdout = new Buffer(stdout, 'base64').toString('binary')
