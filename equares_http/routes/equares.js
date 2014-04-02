@@ -298,7 +298,7 @@ commands["requestInfo"] = function(req, res) {
                 stderr: stderr
             }
             if (error)
-                result.error = error + '(cwd: ' + rc.cwd + ')';
+                result.error = error;
             res.write(equaresInfoCache[command] = JSON.stringify(result));
             res.end();
         });
@@ -411,6 +411,66 @@ commands['savesim'] = function(req, res) {
             else
                 save()
         })
+}
+
+commands['editsim'] = function(req, res) {
+    if (!ensureAuth(req, res))
+        return
+    simulation.Sim.findOne({_id: req.query.sim}, function(err, s) {
+        if (err) {
+            console.log(err)
+            res.send(500, err)
+        }
+        else if (s) {
+            var sim = s.toObject()
+            if (!s.user || s.user.toString() != req.user._id.toString())
+                return res.send(403, 'Permission denied')
+            var upd = {}
+            if (req.query.name)
+                upd.name = req.query.name
+            if (req.query.public)
+                upd.public = req.query.public
+            simulation.Sim.update({user: sim.user, name: sim.name}, {$set: upd}, function(err, sim) {
+                if (err) {
+                    if (err.code == 11001)
+                        res.send(403, 'New name is already in use')
+                    else {
+                        console.log(err)
+                        res.send(403, err)
+                    }
+                }
+                else
+                    res.send('Simulation has been modified')
+            })
+        }
+        else
+            res.send(404, 'No such simulation')
+    })
+}
+
+commands['delsim'] = function(req, res) {
+    if (!ensureAuth(req, res))
+        return
+    simulation.Sim.findOne({_id: req.query.sim}, function(err, s) {
+        if (err) {
+            console.log(err)
+            res.send(500, err)
+        }
+        else if (s) {
+            if (!s.user || s.user.toString() != req.user._id.toString())
+                return res.send(403, 'Permission denied')
+            s.remove(function(err) {
+                if (err) {
+                    console.log(err)
+                    res.send(500, err)
+                }
+                else
+                    res.end()
+            })
+        }
+        else
+            res.send(404, 'No such simulation')
+    })
 }
 
 module.exports = function() {

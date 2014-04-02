@@ -93,8 +93,17 @@ block otherCss
         .page-numbers a:hover {
             text-decoration: underline;
         }
-        #dlg_edit_sim > form * {
+        #edit_sim_fields > * {
             display: block;
+        }
+        #edit_sim_fields > input[type=text] {
+            width: 100%;
+        }
+        .edittools img {
+            padding: 0 5px;
+        }
+        td .ui-icon {
+            display: inline-block;
         }
 
 block otherScripts
@@ -185,13 +194,17 @@ block otherScripts
                                     for (var i in headers)
                                         hdr.append(wrap('th').html(htitle(i)))
                                     for (var j in sims) {
-                                        var sim = sims[j]
-                                        var row = wrap('tr').appendTo(tbl).addClass((+j+1)&1? 'odd': 'even')
+                                        var sim = sims[j],
+                                            simid = $.param({sim: sim._id})
+                                            row = wrap('tr').appendTo(tbl).addClass((+j+1)&1? 'odd': 'even')
                                         for (var i in headers) {
                                             var h = hname(i),   x = sim[h],   s
                                             switch (typeof x) {
                                             case 'boolean':
-                                                s = x.toString()
+                                                if (x)
+                                                    s = '<span class="ui-icon ui-icon-check"></span>'
+                                                else
+                                                    s = ''
                                                 break
                                             default:
                                                 if (x instanceof Array)
@@ -202,10 +215,13 @@ block otherScripts
                                                     s = x
                                             }
                                             if (h == 'name')
-                                                s = '<a href="/editor?' + $.param({sim: sim._id}) + '">' + s + '</a>'
+                                                s = '<a href="/editor?' + simid + '">' + s + '</a>'
                                             else if (h == 'edit') {
                                                 if (x)
-                                                    s = '<a href="#" class="editsim"><img src="images/edit.png"/></a>'
+                                                    s = '<span class="edittools">' +
+                                                        '<a href="/cmd/editsim?' + simid + '" class="editsim"><img src="images/edit.png" title="Edit" alt="edit"/></a>' +
+                                                        '<a href="/cmd/delsim?' + simid + '" class="deletesim"><img src="images/trash.png" title="Delete" alt="delete"/></a>' +
+                                                        '</span>'
                                                 else
                                                     s = ''
                                             }
@@ -214,21 +230,64 @@ block otherScripts
                                     }
                                     $('.editsim').click(function(e) {
                                         e.preventDefault()
-                                        $('#dlg_edit_sim').dialog({
+                                        var a = this,
+                                            dlg = $('#dlg_edit_sim'),
+                                            editName = $('#edit_sim_name')[0],
+                                            editPublic = $('#edit_sim_public')[0],
+                                            td = $(this).parents('td').first()
+                                        editName.value = td.prev().prev().prev().prev().text()
+                                        editPublic.checked = td.prev().children().length > 0
+                                        dlg.dialog({
                                             resizable: false,
-                                            width: 600,
+                                            width: 400,
+                                            modal: true,
+                                            buttons: [ {
+                                                text: 'Save',
+                                                icons: {primary: 'ui-icon-disk'},
+                                                click:
+                                                    function() {
+                                                        $.get(a.href + '&' + $.param({name: editName.value, public: editPublic.checked}))
+                                                            .done(function(text) {
+                                                                dlg.dialog("close")
+                                                                infoMessage(text)
+                                                                findSim()
+                                                            })
+                                                            .fail(function(xhr) {
+                                                                errorMessage(xhr.responseText || xhr.statusText || xhr.status)
+                                                            })
+                                                    }
+                                                }, {
+                                                text: 'Cancel',
+                                                icons: {primary: 'ui-icon-closethick'},
+                                                click:
+                                                    function() {
+                                                        $(this).dialog("close")
+                                                    }
+                                                }
+                                            ]
+                                        })
+                                    })
+                                    $('.deletesim').click(function(e) {
+                                        e.preventDefault()
+                                        var a = this,   dlg = $('#dlg_delete_sim')
+                                        dlg.dialog({
+                                            resizable: false,
                                             modal: true,
                                             buttons: {
-                                                Save: function() {
-                                                    $(this).dialog("close")
-                                                    // TODO: save changes
-                                                },
                                                 Delete: function() {
-                                                    $(this).dialog("close")
-                                                    // TODO: Delete simulation
+                                                    $.get(a.href)
+                                                        .done(function() {
+                                                            infoMessage('Simulation has been deleted')
+                                                            dlg.dialog("close")
+                                                            findSim()
+                                                        })
+                                                        .fail(function(xhr) {
+                                                            errorMessage(xhr.responseText || xhr.statusText || xhr.status)
+                                                            dlg.dialog("close")
+                                                        })
                                                 },
                                                 Cancel: function() {
-                                                    $(this).dialog("close")
+                                                    dlg.dialog("close")
                                                 }
                                             }
                                         })
@@ -322,9 +381,14 @@ block content
 block extras
     #after_login_action(display='none')
     #after_logout_action(display='none')
-    #dlg_edit_sim(title='edit simulation' style='display: none;')
-        form
+    #dlg_edit_sim(title='Edit simulation' style='display: none;')
+        #edit_sim_fields
             label(for='name') Name
-            input(type='text' name='name')
-            label(for='public') Public
-            input(type='checkbox' name='public')
+            input#edit_sim_name(type='text' name='name')
+            span
+                input#edit_sim_public(type='checkbox' name='public')
+                label(for='public') Public
+    #dlg_delete_sim(title='Delete simulation' style='display: none;')
+        p
+            span.ui-icon.ui-icon-alert(style='float:left; margin:0 7px 20px 0;')
+            | Really delete simulation?
