@@ -103,7 +103,8 @@ module.exports = {
             'name',
             'description',
             'keywords',
-            'public'
+            'public',
+            'edit'
         ]))
     },
     simtable: function(req, res) {
@@ -145,6 +146,7 @@ module.exports = {
                                 auth.User.username(doc.user, function(username) {
                                     ++count
                                     obj.user = username
+                                    obj.edit = username == req.user.username
                                     proceed()
                                 })
                             })()
@@ -174,6 +176,7 @@ module.exports = {
                             auth.User.username(doc.user, function(username) {
                                 ++count
                                 obj.user = username
+                                obj.edit = username == req.user.username
                                 proceed()
                             })
                         }).on('error', function (err) {

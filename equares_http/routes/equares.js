@@ -298,7 +298,7 @@ commands["requestInfo"] = function(req, res) {
                 stderr: stderr
             }
             if (error)
-                result.error = error;
+                result.error = error + '(cwd: ' + rc.cwd + ')';
             res.write(equaresInfoCache[command] = JSON.stringify(result));
             res.end();
         });

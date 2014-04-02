@@ -93,6 +93,9 @@ block otherCss
         .page-numbers a:hover {
             text-decoration: underline;
         }
+        #dlg_edit_sim > form * {
+            display: block;
+        }
 
 block otherScripts
     script.
@@ -200,9 +203,36 @@ block otherScripts
                                             }
                                             if (h == 'name')
                                                 s = '<a href="/editor?' + $.param({sim: sim._id}) + '">' + s + '</a>'
+                                            else if (h == 'edit') {
+                                                if (x)
+                                                    s = '<a href="#" class="editsim"><img src="images/edit.png"/></a>'
+                                                else
+                                                    s = ''
+                                            }
                                             row.append(wrap('td').html(s))
                                         }
                                     }
+                                    $('.editsim').click(function(e) {
+                                        e.preventDefault()
+                                        $('#dlg_edit_sim').dialog({
+                                            resizable: false,
+                                            width: 600,
+                                            modal: true,
+                                            buttons: {
+                                                Save: function() {
+                                                    $(this).dialog("close")
+                                                    // TODO: save changes
+                                                },
+                                                Delete: function() {
+                                                    $(this).dialog("close")
+                                                    // TODO: Delete simulation
+                                                },
+                                                Cancel: function() {
+                                                    $(this).dialog("close")
+                                                }
+                                            }
+                                        })
+                                    })
                                 }
                                 else
                                     tbl.append(wrap('tr').append(wrap('td').text('No results are found')))
@@ -292,3 +322,9 @@ block content
 block extras
     #after_login_action(display='none')
     #after_logout_action(display='none')
+    #dlg_edit_sim(title='edit simulation' style='display: none;')
+        form
+            label(for='name') Name
+            input(type='text' name='name')
+            label(for='public') Public
+            input(type='checkbox' name='public')
