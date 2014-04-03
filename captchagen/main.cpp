@@ -152,14 +152,17 @@ int main(int argc, char *argv[])
 {
     QApp a(argc, argv, false);
     QStringList args = a.arguments();
-    if (args.length() != 2)
+    int nSkippedArgs = 0;
+    if (args.length() > 1   &&   args[1] == "-platform")
+        nSkippedArgs += 2;
+    if (args.length() - nSkippedArgs != 2)
     {
         cerr << "Usage: captchagen <text>" << endl;
         return -1;
     }
     loadFonts();
 
-    QString text = args[1];
+    QString text = args[nSkippedArgs + 1];
 
     QImage img(QSize(150, 35), QImage::Format_ARGB32);
     int seed = static_cast<int>(QDateTime::currentMSecsSinceEpoch());
