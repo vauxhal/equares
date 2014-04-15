@@ -8,11 +8,13 @@ var simulation = require('../simulation')
 
 var equares = {};
 
-var equaresCachePath = path.normalize(__dirname + "/../equares-cache")
-fs.mkdir(equaresCachePath, function() {})
+var equaresCachePath = path.normalize(__dirname + '/../equares-cache')
+fs.mkdir(equaresCachePath, function() {
+    fs.mkdir(path.join(equaresCachePath, 'equares'), function() {})
+})
 
 equares.programPath = (function() {
-    var path = process.env["EQUARES_BIN"];
+    var path = process.env['EQUARES_BIN'];
     if( path == undefined ) {
         err = 'EQUARES_BIN environment variable is missing';
         console.log( err );
@@ -39,7 +41,7 @@ function User(name, auth) {
 equares.users = {};
 equares.user = function(req) {
     var auth = req.isAuthenticated()
-    var name = auth? req.user.username: ""  // TODO: session id
+    var name = auth? req.user.username: ''  // TODO: session id
     return equares.users[name] || (equares.users[name] = new User(name, auth))
 }
 
@@ -74,18 +76,18 @@ User.prototype.addStreamLine = function(code, line) {
 }
 
 User.prototype.initStream = function(code, str, optConsumer) {
-    //console.log("initStream: consumer=", optConsumer);
+    //console.log('initStream: consumer=', optConsumer);
     var user = this;
     var ls = lins(str);
     user.stdio[code] = new StreamLineHistory(str, ls);
-    ls.setEncoding("utf8");
-    ls.setDelimiter("\n");
+    ls.setEncoding('utf8');
+    ls.setDelimiter('\n');
     ls.on('error', function(err) {
-        console.log(err + ", user " + user.name);
+        console.log(err + ', user ' + user.name);
     });
     ls.on('line', function(line) {
-        var ch = code == 0 ?   "=>" :   code == 1 ?   "<=" :   "):";
-        console.log("%s@equares %s %s", user.name, ch, line);
+        var ch = code == 0 ?   '=>' :   code == 1 ?   '<=' :   '):';
+        console.log('%s@equares %s %s', user.name, ch, line);
         user.addStreamLine(code, line);
         if(optConsumer !== undefined)
             optConsumer.write(line+'\n');
@@ -112,7 +114,7 @@ User.prototype.start = function() {
         console.log( 'equares for user %s terminated unexpectedly', user.name );
         user.stopped();
     });
-    // console.log("start: user.proc.stdin = ", user.proc.stdin);
+    // console.log('start: user.proc.stdin = ', user.proc.stdin);
     user.initStream(0, new stream.PassThrough(), user.proc.stdin);
     user.initStream(1, user.proc.stdout);
     user.initStream(2, user.proc.stderr);
@@ -120,7 +122,7 @@ User.prototype.start = function() {
 
 User.prototype.execCommand = function(command) {
     if( this.proc )
-        this.stdio[0].stream.write(command + "\n");
+        this.stdio[0].stream.write(command + '\n');
 }
 
 User.prototype.stop = function() {
@@ -145,14 +147,14 @@ var commands = {}
 
 function ensureAuth(req, res) {
     if (!req.isAuthenticated()) {
-        res.send(401, "You are not logged in")
+        res.send(401, 'You are not logged in')
         return false
     }
     return true
 }
 
 
-commands["toggle"] = function(req, res) {
+commands['toggle'] = function(req, res) {
     if (!ensureAuth(req, res))
         return
     var user = equares.user(req)
@@ -160,14 +162,14 @@ commands["toggle"] = function(req, res) {
     res.end()
 };
 
-commands["stat"] = function(req, res) {
+commands['stat'] = function(req, res) {
     if (!ensureAuth(req, res))
         return
     var user = equares.user(req)
-    res.send(user.isRunning()? "1": "0")
+    res.send(user.isRunning()? '1': '0')
 };
 
-commands["statEvent"] = function(req, res) {
+commands['statEvent'] = function(req, res) {
     if (!ensureAuth(req, res))
         return
     res.writeHead(200, {
@@ -179,11 +181,11 @@ commands["statEvent"] = function(req, res) {
     var user = equares.user(req)
     var goon = true;
     res.on('error', function() {
-        // console.log("statEvent: stopping due to error");
+        // console.log('statEvent: stopping due to error');
         goon = false;
         });
     res.on('close', function() {
-        // console.log("statEvent: stopping due to close");
+        // console.log('statEvent: stopping due to close');
         goon = false;
         });
     var lastev;
@@ -192,14 +194,14 @@ commands["statEvent"] = function(req, res) {
             return;
         if( lastev !== user.lastev ) {
             lastev = user.lastev;
-            res.write("data: " + lastev + "\n\n");
-            // console.log("statEvent: %s", lastev);
+            res.write('data: ' + lastev + '\n\n');
+            // console.log('statEvent: %s', lastev);
             }
         setTimeout( checkStatEvents, 200 );
     })();
 };
 
-commands["outputEvent"] = function(req, res) {
+commands['outputEvent'] = function(req, res) {
     if (!ensureAuth(req, res))
         return
     res.writeHead(200, {
@@ -214,13 +216,13 @@ commands["outputEvent"] = function(req, res) {
     var lines = [];
     for( var i=0; i<nstreams; ++i )
         lines[i] = 0;
-    // console.log("=== outputEvent ===");
+    // console.log('=== outputEvent ===');
     res.on('error', function() {
-        // console.log("outputEvent: stopping due to error");
+        // console.log('outputEvent: stopping due to error');
         goon = false;
         });
     res.on('close', function() {
-        // console.log("outputEvent: stopping due to close");
+        // console.log('outputEvent: stopping due to close');
         goon = false;
         });
     (function checkOutputEvents() {
@@ -234,8 +236,8 @@ commands["outputEvent"] = function(req, res) {
             }
             var a = user.stdio[i].history;
             if( lines[i] < a.length ) {
-                res.write("data: " + JSON.stringify({stream: i, text: a[lines[i]]}) + "\n\n");
-                // console.log("outputEvent[%d]: %s", i, a[lines[i]]);
+                res.write('data: ' + JSON.stringify({stream: i, text: a[lines[i]]}) + '\n\n');
+                // console.log('outputEvent[%d]: %s', i, a[lines[i]]);
                 ++lines[i];
                 haveEvent = true;
             }
@@ -244,7 +246,7 @@ commands["outputEvent"] = function(req, res) {
     })();
 };
 
-commands["runSimulation"] = function(req, res) {
+commands['runSimulation'] = function(req, res) {
     if (!ensureAuth(req, res))
         return
     var user = equares.user(req)
@@ -255,9 +257,9 @@ commands["runSimulation"] = function(req, res) {
         // Feed input
         var script = req.body.script,
             simulation = req.body.simulation
-        var command = "===={\n" + script + "\nrunSimulation(\n" + JSON.stringify(simulation) + "\n)\n" + "====}"
+        var command = '===={\n' + script + '\nrunSimulation(\n' + JSON.stringify(simulation) + '\n)\n' + '====}'
         user.execCommand(command);
-        res.send("Started simulation");
+        res.send('Started simulation');
     }
 
     if (user.isRunning()) {
@@ -269,7 +271,7 @@ commands["runSimulation"] = function(req, res) {
         startSim();
 }
 
-commands["sync"] = function(req, res) {
+commands['sync'] = function(req, res) {
     if (!ensureAuth(req, res))
         return
     var user = equares.user(req)
@@ -278,13 +280,13 @@ commands["sync"] = function(req, res) {
         res.send(403)
     else {
         user.execCommand(command)
-        res.send(user.isRunning(user)? "1": "0")
+        res.send(user.isRunning(user)? '1': '0')
     }
 };
 
 var equaresInfoCache = {};
 
-commands["requestInfo"] = function(req, res) {
+commands['requestInfo'] = function(req, res) {
     var command = req.query.cmd;
     if (equaresInfoCache[command]) {
         res.write(equaresInfoCache[command]);
@@ -305,15 +307,15 @@ commands["requestInfo"] = function(req, res) {
     }
 }
 
-commands["requestInfoEx"] = function(req, res) {
+commands['requestInfoEx'] = function(req, res) {
     var query = req.body
-    var describeOptions = query.options || ""
+    var describeOptions = query.options || ''
     var rc = equares.user(req).runConfig(['-i', '-d'+describeOptions, 'box'])
     var stdin = 'box = new ' + query.type + '\n'
     for (var prop in query.props)
         stdin += 'box.' + prop + ' = ' + JSON.stringify(query.props[prop]) + '\n'
     var proc = child_process.spawn(equares.programPath, rc.args, {cwd: rc.cwd});
-    var stdout = "", stderr = "", replied = false
+    var stdout = '', stderr = '', replied = false
     function reply(text) {
         if (!replied) {
             replied = true
@@ -322,14 +324,14 @@ commands["requestInfoEx"] = function(req, res) {
         }
     }
 
-    proc.stdout.on("data", function(chunk) {
+    proc.stdout.on('data', function(chunk) {
         stdout += chunk.toString()
     })
-    proc.stderr.on("data", function(chunk) {
+    proc.stderr.on('data', function(chunk) {
         stderr += chunk.toString()
     })
     proc.stdin.on('error', function(){
-        reply(JSON.stringify({error: -1, message: "Failed to start equares"}))
+        reply(JSON.stringify({error: -1, message: 'Failed to start equares'}))
     })
     proc.stdin.end(stdin)
     proc.on('close', function(code) {
@@ -344,7 +346,7 @@ commands["requestInfoEx"] = function(req, res) {
             // This means that 'close' will follow - we will reply there.
             // Note: Could not deduce reason for error from args, they are empty :(
             return;
-        reply(JSON.stringify({error: -1, message: "Failed to start equares"}))
+        reply(JSON.stringify({error: -1, message: 'Failed to start equares'}))
     });
 }
 
@@ -370,7 +372,7 @@ commands['quickload'] = function(req, res) {
 
     if (req.isAuthenticated()) {
         simulation.RecentSim.get(req, function(sim) {
-            if (typeof sim !== "string")
+            if (typeof sim !== 'string')
                 sim = sessionRecentSim()
             res.send(sim)
         })
