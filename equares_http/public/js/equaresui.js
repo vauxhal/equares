@@ -4,6 +4,27 @@ var equaresui = {};
 
 function wrap(tag) { return $("<" + tag + "></" + tag + ">") }
 
+MathJax.Hub.Config({
+    elements: ['simInfo'],
+    TeX: {
+        equationNumbers: { autoNumber: "AMS", useLabelIds: true},
+    },
+    tex2jax: {
+        inlineMath: [['$','$']]
+    }
+})
+
+MathJax.Hub.Register.MessageHook("End Process", function (message) {
+    var simInfo = $('#simInfo')
+    simInfo.html(marked(simInfo.html()))
+})
+
+function LatexEquationNumbersReset() {
+    var ams = MathJax.Extension["TeX/AMSmath"]
+    ams.startNumber = 0
+    ams.labels = {}
+}
+
 equaresui.setSceneSource = function() {
     this.clear();
     var layoutOptions = {
@@ -14,10 +35,19 @@ equaresui.setSceneSource = function() {
     this.setTitle( "Simulation editor" );
     var layout = this.setLayout( layoutOptions );
     
+    var docCell = layout.add( { title: "Simulation info", width: {min: 50, max: 500} } );
     var boxCell = layout.add( { title: "Boxes", width: {min: 50, max: 300} } );
-    var docCell = layout.add( { title: "Quick reference", width: {min: 50, max: 500} } );
-    $(docCell.dom).append(wrap("h1").html("Quick reference")).append("TODO")
-    docCell.header().minimize(docCell);
+    docCell.dom.id = 'simInfoContainer'
+    var docDiv = $(docCell.dom)
+    var simInfo = wrap('div').attr('id', 'simInfo').appendTo(docDiv)
+    $('<input type="button" value="Ok, show boxes"/>').appendTo(
+        wrap('div').addClass('leftPaneTools').append('<hr/>').appendTo(docDiv)
+    ).click(function() {
+        docCell.header().minimize(docCell);
+        boxCell.header().restore(boxCell);
+    })
+
+    boxCell.header().minimize(boxCell);
     var boxDiv = $(boxCell.dom);
     var boxHelp = $("body").append('<div id="scheme-boxhelp"></div>').children("#scheme-boxhelp").hide();
     boxDiv.addClass('scheme-boxlist');
@@ -132,6 +162,15 @@ equaresui.setSceneSource = function() {
                 stop: function() { draggingBox = false; },
                 scope: "newBox"
             });
+
+        $('<input type="button" value="Show simulation info"/>').appendTo(
+            wrap('div').attr('class', 'leftPaneTools').append('<hr/>').appendTo(boxDiv)
+        ).click(function() {
+            boxCell.header().minimize(boxCell);
+            docCell.header().restore(docCell);
+        })
+
+
     })()
 
     var schemeCell = layout.add( { title: "Scheme" } );
@@ -216,13 +255,19 @@ equaresui.setSceneSource = function() {
         setter(value, ok)
     }
 
+    var lastEditedTextPropName = ''
     function loadTextProp(prop) {
-        extrasDiv.html("")
-        var textarea
+        extrasDiv.html('')
+        if (lastEditedTextPropName == 'info')
+            loadSimInfo() // In the case we haven't saved edited info text
+        if (arguments.length == 0)
+            return lastEditedTextPropName = ''
+        lastEditedTextPropName = prop.name
+        var textarea, okbtn
         wrap("div").attr("id", "scheme-box-extras-hdr")
             .append(wrap("h1").html(prop.name))
             .append(
-                 $('<input type="button" class="scheme-box-extras-ok" value="Ok">')
+                 (okbtn = $('<input type="button" class="scheme-box-extras-ok" value="Ok">'))
                     .click(function() {
                         prop.setter(textarea[0].value)
                         textarea.removeClass('modified')
@@ -235,9 +280,19 @@ equaresui.setSceneSource = function() {
         if (prop.userType === 't')
             textarea.linenum()
         textarea[0].value = prop.getter()
-        textarea.keypress(function() {
+        textarea.on('input', function() {
             $(this).addClass('modified')
+            if (prop.name == 'info') {
+                loadSimInfo(this.value)
+            }
         })
+
+        // Warn user that it's necessary to press Ok
+        warningMessage('press Ok to save!')
+        var c = okbtn.css('backgroundColor')
+        okbtn.css({backgroundColor: '#c00'})
+        okbtn.animate({backgroundColor: c})
+
         return textarea
     }
 
@@ -417,7 +472,7 @@ equaresui.setSceneSource = function() {
                 props[pname] = value
                 schemeEditor.modify()
             } }
-        extrasDiv.html("")
+        loadTextProp() // Clears extrasDiv when called without args
         propsDiv.html("")
         var hdr = wrap("h1").html(title).appendTo(propsDiv)
         var table = wrap("table").appendTo(propsDiv)
@@ -436,10 +491,6 @@ equaresui.setSceneSource = function() {
                 setter: p.setter instanceof Function ?   p.setter :   makeSetter(pname, props)
             }
             makeEditor(wrap("td").appendTo(row), prop)
-            // If there's a property named 'info', and its type is 'T',
-            // load it to the extras div
-            if (pname === 'info' && userType === 'T')
-                loadTextProp(prop)
         }
         table.find("td:first").next().children().first().focus()
     }
@@ -481,8 +532,11 @@ equaresui.setSceneSource = function() {
                 makeSetter: function(pname, props) { return function(value) {
                     if (pname == 'name' && simProps[pname] != value)
                         checkOverwrite = true
+                    var simInfoChanged = pname == 'info' && simProps[pname] != value
                     simProps[pname] = value
                     schemeEditor.modify()
+                    if (simInfoChanged)
+                        loadSimInfo()
                 } }
             })
         }
@@ -503,6 +557,13 @@ equaresui.setSceneSource = function() {
     var simProps = defaultSimProps()
     var checkOverwrite = true
     equaresui.selectBox(null)
+
+    function loadSimInfo(info) {
+        if (arguments.length < 1)
+            info = simProps.info
+        simInfo.html(info)
+        MathJax.Hub.Queue(LatexEquationNumbersReset, ["Typeset", MathJax.Hub, simInfo[0]])
+    }
 
     function beforeLoadSimulation()
     {
@@ -537,6 +598,7 @@ equaresui.setSceneSource = function() {
                 equaresui.selectBox(null)
                 schemeEditor.modified = modified
                 checkOverwrite = true
+                loadSimInfo()
             },
             function(percent) {
                 loadingProgress.progressbar("value", percent)
@@ -765,13 +827,8 @@ equaresui.setSceneSource = function() {
                         }
                         if (str === "sync") {
                             $.ajax("cmd/sync", {data: {cmd: syncToken}, type: "GET", cache: false})
-
-                            // deBUG, TODO: Remove
-                            .done(function(reply) {
-                                var x = 1
-                            })
                             .fail(function(error) {
-                                var x = 1
+                                errorMessage(error.responseText || error.statusText || ("Ajax error: " + error.status))
                             })
                             return
                         }
