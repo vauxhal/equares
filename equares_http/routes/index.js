@@ -109,9 +109,7 @@ module.exports = {
     },
     simtable: function(req, res) {
         var sims = []
-        var sent = false
-        var count = 0
-        var finished = false
+        var sent = false, count = 0, finished = false
         var total
         function proceed() {
             if (!finished || count < sims.length || sent)

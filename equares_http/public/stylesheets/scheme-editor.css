@@ -204,14 +204,25 @@ Using workaround with bbox instead.
     border-bottom: 1px solid #eee;
 }
 
-.scheme-box-extras-ok {
+.scheme-box-extras-tools {
     position: absolute;
     right: 20px;
     top: 15px;
     height: 20px;
+}
+.scheme-box-extras-tools > input[type=button] {
+    height: 20px;
     border: 1px solid #bbb;
     border-radius: 3px;
     background-color: #eee;
+}
+.icon-button {
+    background-image: url(ui-lightness/images/ui-icons_222222_256x240.png);
+    background-repeat: no-repeat;
+    width: 19px;
+    height: 16px;
+    margin-left: 2px;
+    margin-right: 2px;
 }
 
 #scheme-box-extras-text {

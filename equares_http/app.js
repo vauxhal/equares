@@ -64,6 +64,8 @@ app.get('/simulations', routes.simulations);
 app.get('/simheaders', routes.simheaders);
 app.get('/simtable', routes.simtable);
 
+require('./images')(app)
+
 app.use(function(err, req, res, next){
   res.status(err.status || 500);
   res.render('500', { error: err });

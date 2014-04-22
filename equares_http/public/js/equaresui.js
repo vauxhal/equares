@@ -255,6 +255,19 @@ equaresui.setSceneSource = function() {
         setter(value, ok)
     }
 
+    function replaceSel(textarea, replacement) {
+        var selStart = textarea.prop('selectionStart'),
+            selEnd = textarea.prop('selectionEnd'),
+            v = textarea.val(),
+            textBefore = v.substring(0, selStart),
+            textAfter  = v.substring(selEnd)
+        textarea
+            .val(textBefore + replacement + textAfter)
+            .prop('selectionStart', selStart+=replacement.length)
+            .prop('selectionEnd', selStart)
+            .trigger('input')
+    }
+
     var lastEditedTextPropName = ''
     function loadTextProp(prop) {
         extrasDiv.html('')
@@ -263,35 +276,53 @@ equaresui.setSceneSource = function() {
         if (arguments.length == 0)
             return lastEditedTextPropName = ''
         lastEditedTextPropName = prop.name
-        var textarea, okbtn
+        var textarea, tools, okbtn
         wrap("div").attr("id", "scheme-box-extras-hdr")
             .append(wrap("h1").html(prop.name))
+            .append(tools = wrap('div').addClass('scheme-box-extras-tools'))
+            .appendTo(extrasDiv)
+        tools
             .append(
-                 (okbtn = $('<input type="button" class="scheme-box-extras-ok" value="Ok">'))
+                 (okbtn = $('<input type="button" value="Ok">'))
                     .click(function() {
                         prop.setter(textarea[0].value)
                         textarea.removeClass('modified')
                     })
             )
-            .appendTo(extrasDiv)
         wrap("div").attr("id", "scheme-box-extras-text")
             .append(textarea = wrap("textarea"))
             .appendTo(extrasDiv)
         if (prop.userType === 't')
             textarea.linenum()
+        else if (prop.userType === 'M') {
+            // Add 'image' button
+            $('.scheme-box-extras-tools').prepend(
+                $('<input type="button" title="Image" value=" ">').addClass('icon-button ui-icon-image')
+                    .click(function() {
+                        imageView.pick(function(url) {
+                            replaceSel(textarea, '![](' + url + ')')
+                        })
+                    })
+            )
+        }
+
         textarea[0].value = prop.getter()
+        var firstInput = true
         textarea.on('input', function() {
             $(this).addClass('modified')
             if (prop.name == 'info') {
                 loadSimInfo(this.value)
             }
-        })
+            if (firstInput) {
+                firstInput = false
 
-        // Warn user that it's necessary to press Ok
-        warningMessage('press Ok to save!')
-        var c = okbtn.css('backgroundColor')
-        okbtn.css({backgroundColor: '#c00'})
-        okbtn.animate({backgroundColor: c})
+                // Warn user that it's necessary to press Ok
+                warningMessage('press Ok to save!')
+                var c = okbtn.css('backgroundColor')
+                okbtn.css({backgroundColor: '#c00'})
+                okbtn.animate({backgroundColor: c})
+            }
+        })
 
         return textarea
     }
@@ -393,6 +424,7 @@ equaresui.setSceneSource = function() {
                 break
             case 't':
             case 'T':
+            case 'M':
                 $('<input type="button">')
                     .attr("value", "...")
                     .click(function() {
@@ -543,7 +575,7 @@ equaresui.setSceneSource = function() {
     }
     
     // Load simulation properties
-    var simPropFields = {name: 's', description: 's', info: 'T', keywords: 's:*', script: 't', public: 'b'}
+    var simPropFields = {name: 's', description: 's', info: 'M', keywords: 's:*', script: 't', public: 'b'}
     function defaultSimProps() {
         return {
             name: '',
@@ -580,7 +612,7 @@ equaresui.setSceneSource = function() {
                 for (var pname in simPropFields) {
                     var v = obj[pname]
                     if (v === undefined) switch(simPropFields[pname]) {
-                    case 's': case 't': case 'T':
+                    case 's': case 't': case 'T': case 'M':
                         v = ''
                         break
                     case 'b':

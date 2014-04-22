@@ -1,0 +1,36 @@
+#pick-image(title='Pick an image' style='display: none;')
+    p Select an image
+    #image-thumbnails
+        span TODO
+    if req.isAuthenticated()
+        p Or upload your own image
+        div
+            input#image-uploader(type='file' accept='image/*')
+            input#image-upload(type='button' value='Upload' disabled)
+script.
+    (function() {
+
+    var imgUploader = $('#image-uploader'),
+        uploadBtn = $('#image-upload')
+
+    imgUploader.change(function () {
+        uploadBtn.attr('disabled', imgUploader[0].files.length == 0)
+    })
+
+    uploadBtn.click(function() {
+        var fileReader = new FileReader
+        var file = imgUploader[0].files[0]
+        fileReader.onload = function(fileLoadedEvent) {
+            var data = fileLoadedEvent.target.result
+            $.post('/upload-image', {img: JSON.stringify({name: file.name, data: data, contentType: file.type })})
+                .done(function() {
+                    infoMessage('File uploaded')
+                })
+                .fail(function(xhr) {
+                    errorMessage(xhr.responseText || xhr.statusText || ("Failed to upload image: " + xhr.status));
+                })
+        }
+        fileReader.readAsBinaryString(file)
+    })
+
+    })()
