@@ -99,7 +99,7 @@ function getImage(req, res) {
             }
             else if (img) {
                 res.contentType(img.contentType)
-                res.send(img.data)
+                res.end(img.data, 'binary')
             }
             else {
                 res.send(404, 'Image is not found')
