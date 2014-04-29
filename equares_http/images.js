@@ -1,6 +1,7 @@
 var mongoose = require('mongoose')
 //var textSearch = require('mongoose-text-search');
 var auth = require('./auth')
+var cp = require('child_process')
 
 var ObjectId = mongoose.Schema.Types.ObjectId
 
@@ -54,9 +55,12 @@ function imageThumbnails (req, res) {
             // res.send(JSON.stringify({pages: Math.ceil(total/pageSize), images: images}))
 
             for (var i=0; i<count; ++i) {
-                var img = images[i]
-                var name = '/' + ['img', img.user? img.user: '-', img.name].join('/')
-                res.write('<a href="' + name + '"><img alt="' + img.name + '" title="' + img.title + '" src="' + name + '"/></a>')
+                var img = images[i],
+                    a = ['', 'img', img.user? img.user: '-', 'preview', img.name],
+                    previewName  = a.join('/')
+                a.splice(3, 1)
+                var name = a.join('/')
+                res.write('<a href="' + name + '"><img alt="' + img.name + '" title="' + img.title + '" src="' + previewName + '"/></a>')
             }
             res.end()
             sent = true
@@ -88,8 +92,14 @@ function imageThumbnails (req, res) {
 }
 
 function getImage(req, res) {
-    var a = req.path.split('/'),
-        user = a[1], name = a[2]
+    var a = req.path.split('/'), preview
+    if(a.length == 3)
+        preview = false
+    else if (a.length == 4 && a[2] == 'preview')
+        preview = true
+    else
+        return res.send(404, 'Image is not found')
+    var user = a[1], name = a[preview? 3: 2]
 
     function serve() {
         Img.findOne({name: name, user: user}, function(err, img) {
@@ -98,12 +108,17 @@ function getImage(req, res) {
                 res.send(500)
             }
             else if (img) {
-                res.contentType(img.contentType)
-                res.end(img.data, 'binary')
+                if (preview) {
+                    res.contentType('image/png')
+                    res.end(img.preview, 'binary')
+                }
+                else {
+                    res.contentType(img.contentType)
+                    res.end(img.data, 'binary')
+                }
             }
-            else {
+            else
                 res.send(404, 'Image is not found')
-            }
         })
     }
 
@@ -130,15 +145,51 @@ function uploadImage(req, res) {
     var img = JSON.parse(req.body.img)
     img.date = new Date()
     img.user = req.user.id
-    function save() {
-        delete img.overwrite
-        Img.upsert(img, function(err, doc) {
-            if (err) {
-                console.log(err)
-                res.send(500, 'Failed to upload image')
+
+    function imgresize(param, cb)
+    {
+        var dir = '/home/stepan/build-equares-release/bin'
+        var imgresize = cp.spawn(dir + '/imgresize', param, {cwd: dir})
+        var resized = '', stderr = ''
+        imgresize.stdin.end(img.data, 'binary')
+        imgresize.stdout.setEncoding('binary')
+        imgresize.stdout.on('data', function(data) {
+            resized += new Buffer(data, 'base64').toString('binary')
+        })
+        imgresize.on('close', function(code) {
+            // console.log('Image has been resized, code=' + code)
+            if (code || stderr) {
+                var s = 'Image resize error (code ' + code + ')'
+                if (stderr)
+                    s += ': ' + stderr
+                console.log(s)
+                cb(s)
             }
             else
-                res.end()
+                cb(null, resized)
+
+        })
+        imgresize.stderr.on('data', function(data) {
+            stderr += data
+        })
+    }
+
+    function save() {
+        delete img.overwrite
+        imgresize([100, 100], function(err, resized) {
+            if (err)
+                res.send(500, 'Failed to generate image preview')
+            else {
+                img.preview = resized
+                Img.upsert(img, function(err, doc) {
+                    if (err) {
+                        console.log(err)
+                        res.send(500, 'Failed to upload image')
+                    }
+                    else
+                        res.send(['', 'img', req.user.username, img.name].join('/'))
+                })
+            }
         })
     }
 

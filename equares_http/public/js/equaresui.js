@@ -301,6 +301,7 @@ equaresui.setSceneSource = function() {
                     .click(function() {
                         imageView.pick(function(url) {
                             replaceSel(textarea, '![](' + url + ')')
+                            textarea.focus()
                         })
                     })
             )

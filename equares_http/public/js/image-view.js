@@ -30,13 +30,56 @@ function loadImageThumbnails(cbks) {
         })
 }
 
+function bindUpload(cbks) {
+    var imgUploader = $('#image-uploader'),
+        uploadBtn = $('#image-upload')
+
+    imgUploader.change(function () {
+        uploadBtn.attr('disabled', imgUploader[0].files.length == 0)
+    })
+
+    uploadBtn.click(function() {
+        var fileReader = new FileReader
+        var file = imgUploader[0].files[0]
+        fileReader.onload = function(fileLoadedEvent) {
+            var data = fileLoadedEvent.target.result
+            $.post('/upload-image', {img: JSON.stringify({
+                name: file.name,
+                data: data,
+                contentType: file.type,
+                title: $('#image-upload-title').val(),
+                keywords: (function(val) {
+                    val = val.toLowerCase().split(',')
+                    for (var i=0; i<val.length; ++i) {
+                        var s = val[i].trim()
+                        if (s.length > 0)
+                            val[i] = s
+                        else
+                            val.splice(i, 1)
+                    }
+                })($('#image-upload-keywords').val())
+            })})
+                .done(function(url) {
+                    infoMessage('File uploaded')
+                    callback.call({href: url}, 'pick', cbks)
+                })
+                .fail(function(xhr) {
+                    errorMessage(xhr.responseText || xhr.statusText || ("Failed to upload image: " + xhr.status));
+                })
+        }
+        fileReader.readAsBinaryString(file)
+    })
+}
+
 function show(cbks) {
     if (pickImage) {
         pickImage.dialog({
             // resizable: false,
-            width: 600,
+            width: 800,
+            height: 600,
             modal: true,
             open: function() {
+                $('.accordion').accordion({ heightStyle: "fill" })
                 loadImageThumbnails(cbks)
                 callback('open', cbks)
             },
@@ -52,6 +95,22 @@ function show(cbks) {
         $.ajax('/pick-image', {cache: false})
             .done(function(data) {
                 pickImage = $(data).appendTo($('body')).filter('#pick-image')
+                function rm() {
+                    if (pickImage) {
+                        pickImage.remove()
+                        pickImage = undefined
+                    }
+                }
+                ;(function(ids){
+                    for (var i=0; i<ids.length; ++i) {
+                        var id = ids[i]
+                        var e = $('#' + id)
+                        if (e.length == 0)
+                            e = $('<div id="'+id+'"></div>').hide().appendTo(pickImage)
+                        e.click(rm)
+                    }
+                })(['after_login_action', 'after_logout_action'])
+                bindUpload(cbks)
                 show(cbks)
             })
             .fail(function(xhr) {
@@ -64,8 +123,9 @@ function show(cbks) {
 imageView.pick = function(callback) {
     show({
         pick: function() {
-            callback(this.href)
+            var url = this.href.replace(window.location.origin, '')
             pickImage.dialog('close')
+            callback(url)
         }
     })
 }
