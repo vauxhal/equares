@@ -1,3 +1,4 @@
+var fs = require('fs')
 var mongoose = require('mongoose')
 //var textSearch = require('mongoose-text-search');
 var auth = require('./auth')
@@ -139,6 +140,34 @@ function getImage(req, res) {
         })
 }
 
+function imgresize(img, param, cb)
+{
+    var dir = '/home/stepan/build-equares-release/bin'
+    var imgresize = cp.spawn(dir + '/imgresize', param, {cwd: dir})
+    var resized = '', stderr = ''
+    imgresize.stdin.end(img.data, 'binary')
+    imgresize.stdout.setEncoding('binary')
+    imgresize.stdout.on('data', function(data) {
+        resized += new Buffer(data, 'base64').toString('binary')
+    })
+    imgresize.on('close', function(code) {
+        // console.log('Image has been resized, code=' + code)
+        if (code || stderr) {
+            var s = 'Image resize error (code ' + code + ')'
+            if (stderr)
+                s += ': ' + stderr
+            console.log(s)
+            cb(s)
+        }
+        else
+            cb(null, resized)
+
+    })
+    imgresize.stderr.on('data', function(data) {
+        stderr += data
+    })
+}
+
 function uploadImage(req, res) {
     if (!req.isAuthenticated())
         return res.send(401, 'You are not logged in')
@@ -146,37 +175,9 @@ function uploadImage(req, res) {
     img.date = new Date()
     img.user = req.user.id
 
-    function imgresize(param, cb)
-    {
-        var dir = '/home/stepan/build-equares-release/bin'
-        var imgresize = cp.spawn(dir + '/imgresize', param, {cwd: dir})
-        var resized = '', stderr = ''
-        imgresize.stdin.end(img.data, 'binary')
-        imgresize.stdout.setEncoding('binary')
-        imgresize.stdout.on('data', function(data) {
-            resized += new Buffer(data, 'base64').toString('binary')
-        })
-        imgresize.on('close', function(code) {
-            // console.log('Image has been resized, code=' + code)
-            if (code || stderr) {
-                var s = 'Image resize error (code ' + code + ')'
-                if (stderr)
-                    s += ': ' + stderr
-                console.log(s)
-                cb(s)
-            }
-            else
-                cb(null, resized)
-
-        })
-        imgresize.stderr.on('data', function(data) {
-            stderr += data
-        })
-    }
-
     function save() {
         delete img.overwrite
-        imgresize([100, 100], function(err, resized) {
+        imgresize(img, [100, 100], function(err, resized) {
             if (err)
                 res.send(500, 'Failed to generate image preview')
             else {
@@ -205,6 +206,32 @@ function uploadImage(req, res) {
                 save()
         })
 }
+
+function refreshImages() {
+    var dir = 'public/meta/'
+    var imginfo = fs.readFileSync(dir + 'images.json', {encoding: 'utf8'})
+    var date = new Date(2014, 3, 29)
+    imginfo = JSON.parse(imginfo)
+    for (var i=0; i<imginfo.length; ++i) {
+        var img = imginfo[i]
+        img.date = date
+        img.user = null
+        img.data = fs.readFileSync(dir + img.name).toString('binary')
+        imgresize(img, [100, 100], function(err, resized) {
+            if (err)
+                console.log('ERROR: Failed to generate image preview')
+            else {
+                img.preview = resized
+                Img.upsert(img, function(err, doc) {
+                    if (err)
+                        console.log(err)
+                })
+            }
+        })
+    }
+}
+
+refreshImages()
 
 module.exports = function(app) {
     app.get('/pick-image', pickImage)

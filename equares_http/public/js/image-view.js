@@ -57,6 +57,7 @@ function bindUpload(cbks) {
                         else
                             val.splice(i, 1)
                     }
+                    return val
                 })($('#image-upload-keywords').val())
             })})
                 .done(function(url) {
