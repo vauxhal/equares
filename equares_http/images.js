@@ -142,9 +142,13 @@ function getImage(req, res) {
 
 function imgresize(img, param, cb)
 {
-    var dir = '/home/stepan/build-equares-release/bin'
+    var dir = process.env["EQUARES_BIN"];
     var imgresize = cp.spawn(dir + '/imgresize', param, {cwd: dir})
     var resized = '', stderr = ''
+    imgresize.stdin.on('error', function(err) {
+        console.log('imgresize input error')
+        console.log(err)
+    })
     imgresize.stdin.end(img.data, 'binary')
     imgresize.stdout.setEncoding('binary')
     imgresize.stdout.on('data', function(data) {
@@ -162,6 +166,11 @@ function imgresize(img, param, cb)
         else
             cb(null, resized)
 
+    })
+    imgresize.on('error', function(err) {
+        console.log('Unable to run imgresize')
+        console.log(err)
+        throw err
     })
     imgresize.stderr.on('data', function(data) {
         stderr += data
