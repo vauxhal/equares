@@ -61,7 +61,16 @@ function imageThumbnails (req, res) {
                     previewName  = a.join('/')
                 a.splice(3, 1)
                 var name = a.join('/')
-                res.write('<a href="' + name + '"><img alt="' + img.name + '" title="' + img.title + '" src="' + previewName + '"/></a>')
+                res.write('<div class="img-container">')
+                res.write('<a href="' + name + '"><img alt="' + img.name + '" title="' + img.title + '" src="' + previewName + '" width="100" height="100"/></a>')
+                if (img.edit)
+                    res.write(
+                        '<div class="img-control">' +
+                            '<div class="img-tool img-edit"></div><div class="img-tool img-remove"></div>' +
+                            '<div class="img-kw">' + img.keywords.join(', ') + '</div>' +
+                        '</div>'
+                    )
+                res.write('</div>')
             }
             res.end()
             sent = true
@@ -216,6 +225,79 @@ function uploadImage(req, res) {
         })
 }
 
+function copyProps(dst, src) {
+    for (var i in src)
+        dst[i] = src[i]
+    return dst
+}
+
+function editImage(req, res) {
+    if (!req.isAuthenticated())
+        return res.send(401, 'You are not logged in')
+    var img = JSON.parse(req.body.img)
+    if (typeof img.name != 'string')
+        return res.send(400, 'Invalid query')
+    Img.findOne({name: img.name, user: req.user.id}, function(err, s) {
+        if (err) {
+            console.log(err)
+            res.send(500, err)
+        }
+        if (s) {
+            function save() {
+                delete img.name
+                copyProps(s, img)
+                s.save(function(err) {
+                    if (err) {
+                        console.log(err)
+                        res.send(500, 'Failed to modify image')
+                    }
+                    else
+                        res.send(['', 'img', req.user.username, img.name].join('/'))
+                })
+            }
+            if (img.data) {
+                imgresize(img, [100, 100], function(err, resized) {
+                    if (err)
+                        res.send(500, 'Failed to generate image preview')
+                    else {
+                        img.preview = resized
+                        save()
+                    }
+                })
+            }
+            else
+                save()
+        }
+        else
+            res.send(404, 'No such image')
+    })
+}
+
+function removeImage(req, res) {
+    if (!req.isAuthenticated())
+        return res.send(401, 'You are not logged in')
+    var name = req.query.name
+    if (typeof name != 'string')
+        return res.send(400, 'Invalid query')
+    Img.findOne({name: name, user: req.user.id}, function(err, s) {
+        if (err) {
+            console.log(err)
+            res.send(500, err)
+        }
+        if (s)
+            s.remove(function(err) {
+                if (err) {
+                    console.log(err)
+                    res.send(500, err)
+                }
+                else
+                    res.end()
+            })
+        else
+            res.send(404, 'No such image')
+    })
+}
+
 function refreshImages() {
     var dir = 'public/meta/'
     var imginfo = fs.readFileSync(dir + 'images.json', {encoding: 'utf8'})
@@ -247,4 +329,6 @@ module.exports = function(app) {
     app.get('/image-thumbnails', imageThumbnails)
     app.use('/img', getImage)
     app.post('/upload-image', uploadImage)
+    app.post('/edit-image', editImage)
+    app.get('/remove-image', removeImage)
 }

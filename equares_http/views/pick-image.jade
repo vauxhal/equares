@@ -1,4 +1,36 @@
 #pick-image(title='Pick an image' style='display: none;')
+    style.
+        .img-container {
+            display: inline-block;
+            margin: 10px;
+            height: 100px;
+            // background-color: #ffc;
+        }
+        .img-control {
+            display: inline-block;
+            height: 100%;
+            width: 20px;
+            // background-color: #cfc;
+        }
+        .img-tool {
+            height: 20px;
+            background-image: url('/images/edit.png');
+            background-repeat: no-repeat;
+            background-position: center;
+            cursor: pointer;
+        }
+        .img-edit {
+            //background-color: #ccf;
+            background-image: url('/images/edit.png');
+        }
+        .img-remove {
+            //background-color: #fcc;
+            background-image: url('/images/trash.png');
+        }
+        .img-kw {
+            display: none;
+        }
+
     if req.isAuthenticated()
         .accordion
             h3 Select an image
@@ -23,3 +55,22 @@
     else
         p Select an image
         #image-thumbnails
+#confirm-img-remove(title='Remove image' style='display: none;')
+    span(class='ui-icon ui-icon-alert' style='float:left; margin:0 7px 20px 0;')
+    span.dlgmsg
+#img-edit(title='Edit image' style='display: none;')
+    span Choose a new file to replace the old one (optional)
+    br
+    input#img-edit-uploader(type='file' accept='image/*')
+    br
+    table
+        tr
+            td
+                label(for='title') Title
+            td
+                input#img-edit-title(type='text' name='title')
+        tr
+            td
+                label(for='keywords') Keywords
+            td
+                input#img-edit-keywords(type='text' name='keywords')

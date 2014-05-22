@@ -40,12 +40,17 @@ equaresui.setSceneSource = function() {
     docCell.dom.id = 'simInfoContainer'
     var docDiv = $(docCell.dom)
     var simInfo = wrap('div').attr('id', 'simInfo').appendTo(docDiv)
-    $('<input type="button" value="Ok, show boxes"/>').appendTo(
-        wrap('div').addClass('leftPaneTools').append('<hr/>').appendTo(docDiv)
-    ).click(function() {
+    function showBoxes() {
         docCell.header().minimize(docCell);
         boxCell.header().restore(boxCell);
-    })
+    }
+    function showSimInfo() {
+        boxCell.header().minimize(boxCell);
+        docCell.header().restore(docCell);
+    }
+    $('<input type="button" value="Ok, show boxes"/>').appendTo(
+        wrap('div').addClass('leftPaneTools').append('<hr/>').appendTo(docDiv)
+    ).click(showBoxes)
 
     boxCell.header().minimize(boxCell);
     var boxDiv = $(boxCell.dom);
@@ -165,10 +170,7 @@ equaresui.setSceneSource = function() {
 
         $('<input type="button" value="Show simulation info"/>').appendTo(
             wrap('div').attr('class', 'leftPaneTools').append('<hr/>').appendTo(boxDiv)
-        ).click(function() {
-            boxCell.header().minimize(boxCell);
-            docCell.header().restore(docCell);
-        })
+        ).click(showSimInfo)
 
 
     })()
@@ -632,6 +634,7 @@ equaresui.setSceneSource = function() {
                 schemeEditor.modified = modified
                 checkOverwrite = true
                 loadSimInfo()
+                showSimInfo()
             },
             function(percent) {
                 loadingProgress.progressbar("value", percent)
@@ -733,8 +736,10 @@ equaresui.setSceneSource = function() {
     equaresui.clearSimulation = function() {
         schemeEditor.clearSimulation()
         simProps = defaultSimProps()
+        loadSimInfo()
         checkOverwrite = true
         equaresui.selectBox(null)
+        showBoxes()
     }
 
     equaresui.runScheme = function() {

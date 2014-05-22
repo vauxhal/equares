@@ -75,9 +75,9 @@
      showgrid="false"
      showguides="true"
      inkscape:guide-bbox="true"
-     inkscape:window-width="1871"
+     inkscape:window-width="1855"
      inkscape:window-height="1056"
-     inkscape:window-x="49"
+     inkscape:window-x="65"
      inkscape:window-y="24"
      inkscape:window-maximized="1">
     <sodipodi:guide
@@ -145,7 +145,7 @@
        inkscape:connector-curvature="0" />
     <text
        xml:space="preserve"
-       style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Symbol;-inkscape-font-specification:Symbol"
+       style="font-size:40px;font-style:normal;font-variant:normal;font-weight:500;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Computer Modern;-inkscape-font-specification:Computer Modern Medium"
        x="335.6232"
        y="338.18433"
        id="text4993"
@@ -154,19 +154,7 @@
          id="tspan4995"
          x="335.6232"
          y="338.18433"
-         style="font-style:italic;-inkscape-font-specification:Symbol Italic">ϕ</tspan></text>
-    <text
-       xml:space="preserve"
-       style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Symbol;-inkscape-font-specification:Symbol"
-       x="376.02927"
-       y="319.74905"
-       id="text4997"
-       sodipodi:linespacing="125%"><tspan
-         sodipodi:role="line"
-         id="tspan4999"
-         x="376.02927"
-         y="319.74905"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:cmmi10;-inkscape-font-specification:cmmi10">l</tspan></text>
+         style="font-style:normal;-inkscape-font-specification:Computer Modern Medium;font-family:Computer Modern;font-weight:500;font-stretch:normal;font-variant:normal">ϕ</tspan></text>
     <path
        style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        d="m 316.17775,260.93361 24.74873,0"
@@ -192,5 +180,16 @@
        id="path5009"
        d="m 324.20866,260.93361 5.56881,-5.56881"
        style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+    <text
+       xml:space="preserve"
+       style="font-size:40px;font-style:oblique;font-variant:normal;font-weight:500;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Computer Modern;-inkscape-font-specification:Computer Modern Bold"
+       x="383.4017"
+       y="324.72928"
+       id="text3179"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3181"
+         x="383.4017"
+         y="324.72928">l</tspan></text>
   </g>
 </svg>
