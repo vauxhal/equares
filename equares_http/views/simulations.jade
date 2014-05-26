@@ -108,6 +108,11 @@ block otherCss
         #dlg_delete_sim .simname {
             font-weight: bold;
         }
+        #sim-filter-icon {
+            margin-right: 10px;
+            position: relative;
+            top: 5px;
+        }
 
 block otherScripts
     script.
@@ -335,9 +340,8 @@ block otherScripts
 
 block content
     #filter
-        | Filter<br/>
         form
-            label Text
+            img#sim-filter-icon(src='images/search.png' alt='Filter')
             input(type='text' name='text')
             #advanced-search
                 label Username
