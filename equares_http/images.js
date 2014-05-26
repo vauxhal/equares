@@ -1,8 +1,9 @@
 var fs = require('fs')
 var mongoose = require('mongoose')
-//var textSearch = require('mongoose-text-search');
+var textSearch = require('mongoose-text-search');
 var auth = require('./auth')
 var cp = require('child_process')
+var dbsearch = require('./dbsearch')
 
 var ObjectId = mongoose.Schema.Types.ObjectId
 
@@ -17,7 +18,11 @@ var ImgSchema = mongoose.Schema({
     user:           {type: ObjectId, index: true}
 })
 
+// give our schema text search capabilities
+ImgSchema.plugin(textSearch);
+
 ImgSchema.index({name: 1, user: 1}, {unique: true})
+ImgSchema.index({name: 'text', title: 'text', keywords: 'text'})
 
 ImgSchema.statics.upsert = function(img, done) {
     this.update({user: img.user, name: img.name}, img, {upsert: true}, done)
@@ -33,71 +38,32 @@ function pickImage(req, res) {
 }
 
 function imageThumbnails (req, res) {
-    // res.send('<a href="/images/logo.png"><img alt="logo" title="logo" src="/images/logo.png"/></a>')
-
-    var pageSize = 100
-    var page = req.query.page === undefined?  0:   +req.query.page
-    Img.count({}, function(err, n) {
-        if (err) {
-            console.log(err)
-            return res.send(500)
+    dbsearch(req, {
+        model: Img,
+        project: {name: 1, user: 1, keywords: 1, title: 1},
+        pageSize: 100
+    }, function(result) {
+        if (result.err)
+            return res.send(result.err.code || 500, result.err.message || result.err.data)
+        var count = result.records.length
+        for (var i=0; i<count; ++i) {
+            var img = result.records[i],
+                a = ['', 'img', img.user? img.user: '-', 'preview', img.name],
+                previewName  = a.join('/')
+            a.splice(3, 1)
+            var name = a.join('/')
+            res.write('<div class="img-container">')
+            res.write('<a href="' + name + '"><img alt="' + img.name + '" title="' + img.title + '" src="' + previewName + '" width="100" height="100"/></a>')
+            if (img.edit)
+                res.write(
+                    '<div class="img-control">' +
+                        '<div class="img-tool img-edit"></div><div class="img-tool img-remove"></div>' +
+                        '<div class="img-kw">' + img.keywords.join(', ') + '</div>' +
+                    '</div>'
+                )
+            res.write('</div>')
         }
-        var total = n, n1 = page*pageSize, n2 = (page+1)*pageSize
-        var sent = false, count = 0, finished = false
-        if (n2 > total)
-            n2 = total
-        if (n1 > n2)
-            n1 = n2
-        var images = []
-
-        function proceed() {
-            if (!finished || count < images.length || sent)
-                return
-            // res.send(JSON.stringify({pages: Math.ceil(total/pageSize), images: images}))
-
-            for (var i=0; i<count; ++i) {
-                var img = images[i],
-                    a = ['', 'img', img.user? img.user: '-', 'preview', img.name],
-                    previewName  = a.join('/')
-                a.splice(3, 1)
-                var name = a.join('/')
-                res.write('<div class="img-container">')
-                res.write('<a href="' + name + '"><img alt="' + img.name + '" title="' + img.title + '" src="' + previewName + '" width="100" height="100"/></a>')
-                if (img.edit)
-                    res.write(
-                        '<div class="img-control">' +
-                            '<div class="img-tool img-edit"></div><div class="img-tool img-remove"></div>' +
-                            '<div class="img-kw">' + img.keywords.join(', ') + '</div>' +
-                        '</div>'
-                    )
-                res.write('</div>')
-            }
-            res.end()
-            sent = true
-        }
-
-        Img.find({$query: {}, $orderby: {date: 1}},
-            {name: 1, user: 1, keywords: 1, title: 1},
-            {skip: n1, limit: n2-n1}).stream()
-            .on('data', function (doc) {
-                var obj = doc.toObject()
-                images.push(obj)
-                auth.User.username(doc.user, function(username) {
-                    ++count
-                    obj.user = username
-                    obj.edit = req.user && username == req.user.username
-                    proceed()
-                })
-            }).on('error', function (err) {
-                console.log(err)
-                if (!sent) {
-                    res.send(500, 'Unable to read image list')
-                    sent = true
-                }
-            }).on('close', function () {
-                finished = true
-                proceed()
-            })
+        res.end()
     })
 }
 

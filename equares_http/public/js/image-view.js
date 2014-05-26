@@ -28,8 +28,25 @@ function makeKeywords(str) {
     return val
 }
 
+function searchQuery() {
+    var f = $('#img-filter > form')[0].elements
+    var result = {}
+    for (var i=0, n=f.length; i<n; ++i) {
+        var e = $(f[i])
+        if (e.is(':visible'))
+            result[e.attr('name')] = e.val()
+    }
+    return result
+}
+
+var page
+
 function loadImageThumbnails(cbks) {
-    $.get('/image-thumbnails')
+    $('#img-apply-filter').attr('disabled', true)
+    var rq = searchQuery()
+    if (typeof page == 'number')
+        rq.page = page
+    $.get('/image-thumbnails', rq)
         .done(function(data) {
             var tn = $('#image-thumbnails')
             tn.html(data).find('a').click(function(e) {
@@ -123,6 +140,9 @@ function loadImageThumbnails(cbks) {
         .fail(function(xhr) {
             errorMessage(xhr.responseText || xhr.statusText || ("Failed to load image thumbnails: " + xhr.status));
         })
+        .always(function() {
+            $('#img-apply-filter').attr('disabled', false)
+        })
 }
 
 function bindUpload(cbks) {
@@ -186,6 +206,17 @@ function show(cbks) {
         $.ajax('/pick-image', {cache: false})
             .done(function(data) {
                 pickImage = $(data).appendTo($('body')).filter('#pick-image')
+                var findImg = loadImageThumbnails.bind(null, cbks)
+                $('#img-toggle-advanced').click(function(e) {
+                    e.preventDefault()
+                    var adv = $('#img-advanced-search'), wasadv = adv.is(':visible')
+                    $(this).html(wasadv? 'Advanced': 'Basic')
+                    $('#img-advanced-search').fadeToggle('fast', findImg)
+                })
+                $('#img-apply-filter').click(function(e) {
+                    e.preventDefault()
+                    findImg()
+                })
                 function rm() {
                     if (pickImage) {
                         pickImage.remove()

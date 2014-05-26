@@ -30,11 +30,50 @@
         .img-kw {
             display: none;
         }
+        #img-filter > * {
+            font-size: smaller;
+        }
+        #img-filter input[type='text'] {
+            border: 1px solid #ccc;
+        }
+        #img-filter input[type='text'],
+        #img-filter input[type='submit'] {
+            margin-left: 5px;
+            margin-right: 15px;
+        }
+        #img-filter input[type='checkbox'] {
+            margin-left: 5px;
+            margin-right: 5px;
+        }
+        #img-filter input[type='checkbox'] + * {
+            margin-right: 15px;
+        }
+        #img-filter a {
+            font-size: small;
+        }
+        #img-advanced-search {
+            display: inline;
+        }
+        #img-filter-icon {
+            margin-right: 10px;
+        }
 
     if req.isAuthenticated()
         .accordion
             h3 Select an image
-            #image-thumbnails
+            #image-thumbnail-container
+                #img-filter
+                    form
+                        img#img-filter-icon(src='images/search.png' alt='Filter')
+                        input(type='text' name='text')
+                        #img-advanced-search(style='display: none;')
+                            label Username
+                            input(type='text' name='user')
+                            label Keywords
+                            input(type='text' name='keywords')
+                        input#img-apply-filter(type='submit' value='Apply filter')
+                        a#img-toggle-advanced(href='#') Advanced
+                #image-thumbnails
             h3 Or upload your own image
             div
                 input#image-uploader(type='file' accept='image/*')
