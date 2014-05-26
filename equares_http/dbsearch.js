@@ -1,19 +1,62 @@
 var mongoose = require('mongoose')
 var auth = require('./auth')
 
+function pageNumbers(page, pages) {
+    function wrap(tag, options) {
+        options = options || {}
+        var result = '<' + tag
+        if (options.attr)
+            for (var i in options.attr) {
+                var a = options.attr[i]
+                if (typeof a == 'string')
+                    a = JSON.stringify(a)
+                else
+                    a = '"' + a.toString() + '"'
+                result += ' ' + i + '=' + a
+            }
+        result += '>'
+        if (options.body)
+            result += options.body
+        result += '</' + tag + '>'
+        return result
+    }
+    function formatPage(p) {
+        return p === page ?   wrap('span', {body: p+1}) :   wrap('a', {attr: {href: '#'}, body: p+1})
+    }
+    function formatPages(center, cache) {
+        var borderPages = 4,
+            n1 = Math.max(0, center-borderPages),
+            n2 = Math.min(pages-1, center+borderPages),
+            result = ''
+        for (var i=n1; i<=n2; ++i) {
+            if (!cache[i]) {
+                if (i>0 && !cache[i-1])
+                    result += wrap('span', {body: '...'})
+                result += formatPage(i)
+                cache[i] = 1
+            }
+        }
+        return result
+    }
+
+    var cache = {}
+    return pages === 1 ?   '' :   formatPages(0, cache) + formatPages(page, cache) + formatPages(pages-1, cache)
+}
+
 function dbsearch(req, options, cb) {
     var records = []
     var processed = false, count = 0, finished = false
     var total
     var pageSize = options.pageSize || 25
+    var page = req.query.page === undefined?  0:   +req.query.page
+
     function proceed() {
         if (!finished || count < records.length || processed)
             return
-        cb({pages: Math.ceil(total/pageSize), records: records})
+        var pages = Math.ceil(total/pageSize)
+        cb({pages: pages, records: records, pagenum: pageNumbers(page, pages)})
         processed = true
     }
-
-    var page = req.query.page === undefined?  0:   +req.query.page
 
     var user = req.user? new mongoose.Types.ObjectId(req.user.id.toString()): null
     var query, andClause

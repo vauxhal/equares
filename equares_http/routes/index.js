@@ -117,7 +117,7 @@ module.exports = {
             if (result.err)
                 res.send(result.err.code || 500, result.err.message || result.err.data)
             else
-                res.send(JSON.stringify({pages: result.pages, sims: result.records}))
+                res.send(JSON.stringify({pages: result.pages, sims: result.records, pagenum: result.pagenum}))
         })
     }
 }

@@ -46,6 +46,9 @@ function imageThumbnails (req, res) {
         if (result.err)
             return res.send(result.err.code || 500, result.err.message || result.err.data)
         var count = result.records.length
+        if (result.pagenum)
+            res.write('<div class="img-pagenum">' + result.pagenum + '</div>')
+        res.write('<div class="img-previews">')
         for (var i=0; i<count; ++i) {
             var img = result.records[i],
                 a = ['', 'img', img.user? img.user: '-', 'preview', img.name],
@@ -63,7 +66,7 @@ function imageThumbnails (req, res) {
                 )
             res.write('</div>')
         }
-        res.end()
+        res.end('</div>')
     })
 }
 

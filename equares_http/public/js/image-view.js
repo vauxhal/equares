@@ -39,17 +39,19 @@ function searchQuery() {
     return result
 }
 
-var page
-
-function loadImageThumbnails(cbks) {
+function loadImageThumbnails(cbks, page) {
     $('#img-apply-filter').attr('disabled', true)
     var rq = searchQuery()
     if (typeof page == 'number')
         rq.page = page
     $.get('/image-thumbnails', rq)
         .done(function(data) {
-            var tn = $('#image-thumbnails')
-            tn.html(data).find('a').click(function(e) {
+            var tn = $('#image-thumbnails').html(data)
+            var pagenum = tn.children('.img-pagenum'), previews = tn.children('.img-previews')
+            pagenum.find('a').click(function(e) {
+                loadImageThumbnails(cbks, $(this).text()-1)
+            })
+            previews.find('a').click(function(e) {
                 e.preventDefault()
                 callback.call(this, 'pick', cbks)
             })
@@ -90,7 +92,7 @@ function loadImageThumbnails(cbks) {
                                 $.post('/edit-image', {img: JSON.stringify(args)})
                                     .done(function(url) {
                                         infoMessage('File modified')
-                                        loadImageThumbnails(cbks)
+                                        loadImageThumbnails(cbks, page)
                                     })
                                     .fail(function(xhr) {
                                         errorMessage(xhr.responseText || xhr.statusText || ("Failed to modify image: " + xhr.status));
@@ -124,7 +126,7 @@ function loadImageThumbnails(cbks) {
                     buttons: {
                         "Remove": function() {
                             $.get('remove-image', {name: name})
-                                .done(function() {loadImageThumbnails(cbks)})
+                                .done(function() {loadImageThumbnails(cbks, page)})
                                 .fail(function(xhr) {
                                     errorMessage(xhr.responseText || xhr.statusText || ("Failed to remove image: " + xhr.status));
                                 })
@@ -138,6 +140,7 @@ function loadImageThumbnails(cbks) {
             })
         })
         .fail(function(xhr) {
+            $('#image-thumbnails').html('ERROR')
             errorMessage(xhr.responseText || xhr.statusText || ("Failed to load image thumbnails: " + xhr.status));
         })
         .always(function() {

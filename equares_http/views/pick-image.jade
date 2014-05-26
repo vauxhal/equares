@@ -1,5 +1,8 @@
 #pick-image(title='Pick an image' style='display: none;')
     style.
+        #pick-image {
+            overflow: hidden;
+        }
         .img-container {
             display: inline-block;
             margin: 10px;
@@ -56,6 +59,29 @@
         }
         #img-filter-icon {
             margin-right: 10px;
+        }
+        .img-pagenum {
+            padding-bottom: 10px;
+            padding-top: 10px;
+        }
+        .img-pagenum > a, .img-pagenum > span {
+            margin: 7px;
+            padding: 2px 5px;
+            border-radius: 5px;
+        }
+        .img-pagenum > a {
+            background-color: #fd8;
+        }
+        .img-pagenum > span {
+            background-color: #ddc;
+            font-weight: bold;
+        }
+        .img-pagenum a {
+            text-decoration: none;
+            color: #55b;
+        }
+        .img-pagenum a:hover {
+            text-decoration: underline;
         }
 
     if req.isAuthenticated()
