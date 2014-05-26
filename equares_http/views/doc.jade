@@ -1,0 +1,24 @@
+extends page
+block vars
+    - var title = 'Equares documentation'
+block otherScripts
+    script.
+        ctm.initPage.push(function(c1, c2, c3) {
+            function wrap(tag) { return $("<" + tag + "></" + tag + ">") }
+
+            var layoutOptions = {
+                type: "horizontal",
+                fixed: true,
+                toolhandle: false
+            }
+            var content = $(c2.dom).html()
+            c2.setTitle( "Documentation" )
+            var layout = c2.setLayout( layoutOptions )
+            var menuCell = layout.add( { title: "Docs menu", width: {min: 50, max: 350} } )
+            var pageCell = layout.add( { title: "Docs content" } )
+            var docPageContainer = wrap('div').appendTo($(pageCell.dom))
+            docPageContainer.html(content)
+        })
+block content
+    h1 Docs heading
+    | Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
