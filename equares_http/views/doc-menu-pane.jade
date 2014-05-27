@@ -1,0 +1,72 @@
+style.
+    #doc-menu-pane {
+        height: 100%;
+        background-color: #f6faf1;
+    }
+    #doc-menu-pane ul {
+        list-style-type: none;
+    }
+script.
+    $('#doc-menu-pane').accordion({ heightStyle: "content" })
+    //$('#doc-menu-pane').accordion({ heightStyle: "fill" })
+#doc-menu-pane
+    h3 General
+    div#doc-menu-general
+        ul
+            li: a(href='/doc/page/general-overview') Overview
+    h3 Editor panes
+    div#doc-menu-editorpane
+        ul
+            li: a(href='/doc/page/editorpane-box') Box list
+            li: a(href='/doc/page/editorpane-info') Info pane
+            li: a(href='/doc/page/editorpane-scheme') Simulation scheme
+            li: a(href='/doc/page/editorpane-prop') Object parameters
+            li: a(href='/doc/page/editorpane-text') Text editor
+    h3#doc-menu-editor Using editor
+    div
+        ul
+            li: a(href='/doc/page/editor-usage-createbox') Creating boxes
+            li: a(href='/doc/page/editor-usage-connect') Making connections
+            li: a(href='/doc/page/editor-usage-boxprop') Editing parameters
+            li: a(href='/doc/page/editor-usage-text-script') Editing source code
+            li: a(href='/doc/page/editor-usage-text-info') Editing info text
+            li: a(href='/doc/page/editor-usage-images') Adding images
+    h3#doc-menu-simfile Simulation files
+    div
+        ul
+            li: a(href='/doc/page/simfile-quick') Quicksave feature
+            li: a(href='/doc/page/simfile-save') Saving simulations
+            li: a(href='/doc/page/simfile-open') Loading simulations
+            li: a(href='/doc/page/simfile-table') Table of simulations
+    h3#doc-menu-simrun Running simulation
+    div
+        ul
+            li: a(href='/doc/page/simrun-start') Running simulation
+            li: a(href='/doc/page/simrun-output') Simulation output
+            li: a(href='/doc/page/simrun-terminate') Terminating simulation
+    h3#doc-menu-box Boxes
+    div
+        ul
+            li: a(href='/doc/box/Bitmap') Bitmap
+            li: a(href='/doc/box/Canvas') Canvas
+            li: a(href='/doc/box/CountedFilter') CountedFilter
+            li: a(href='/doc/box/CrossSection') CrossSection
+            li: a(href='/doc/box/CxxOde') CxxOde
+            li: a(href='/doc/box/DoublePendulum') DoublePendulum
+            li: a(href='/doc/box/Dump') Dump
+            li: a(href='/doc/box/IntervalFilter') IntervalFilter
+            li: a(href='/doc/box/JsOde') JsOde
+            li: a(href='/doc/box/Mathieu') Mathieu
+            li: a(href='/doc/box/Param') Param
+            li: a(href='/doc/box/Pendulum') Pendulum
+            li: a(href='/doc/box/Projection') Projection
+            li: a(href='/doc/box/Rk4') Rk4
+            li: a(href='/doc/box/Rk4ParamAdjust') Rk4ParamAdjust
+            li: a(href='/doc/box/Valve') Valve
+            li: a(href='/doc/box/VibratingPendulum') VibratingPendulum
+    h3#doc-menu-dev Development
+    div
+        ul
+            li: a(href='/doc/page/dev-source') Source code
+            li: a(href='/doc/page/dev-roadmap') Roadmap
+            li: a(href='/doc/page/dev-newbox') Developing new box

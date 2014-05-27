@@ -1,8 +1,26 @@
 extends page
 block vars
     - var title = 'Equares documentation'
+block otherCss
+    style.
+        .doc-page {
+            background-color: #ffd;
+            padding: 5px 10px;
+            height: 100%;
+            overflow: auto;
+        }
+        .normal_container h1 {
+            margin-top: 0px;
+            margin-bottom: 5px;
+        }
 block otherScripts
+    script(type='text/javascript' src='https://c328740.ssl.cf1.rackcdn.com/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML')
+    script(type='text/javascript' src='js-3rd/marked.min.js')
+    script(type='text/javascript' src='js/format-info.js')
     script.
+
+        formatInfo.init('doc-page')
+
         ctm.initPage.push(function(c1, c2, c3) {
             function wrap(tag) { return $("<" + tag + "></" + tag + ">") }
 
@@ -14,11 +32,47 @@ block otherScripts
             var content = $(c2.dom).html()
             c2.setTitle( "Documentation" )
             var layout = c2.setLayout( layoutOptions )
+            var docMenuContainer, docPageContainer
+
+            function loadDocPage(url) {
+                $.get(url)
+                    .done(function(data) {
+                        formatInfo.update(data)
+                        var path = url.replace(location.origin, '').replace(location.pathname + '/', '')
+                        location.hash = path
+                        var pathItems = path.split('/')
+                        if (pathItems[0] == 'box')
+                            $('#doc-menu-box').click()
+                        else
+                            $('#doc-menu-'+pathItems[1].split('-')[0]).click()
+                    })
+                    .fail(function(xhr) {
+                        errorMessage(xhr.responseText || xhr.statusText || ("Failed to load docs menu: " + xhr.status))
+                        docPageContainer.html(wrap('h1').text('N/A'))
+                        location.hash = 'error'
+                    })
+            }
+
             var menuCell = layout.add( { title: "Docs menu", width: {min: 50, max: 350} } )
+            $.get('/doc-menu-pane')
+                .done(function(data) {
+                    docMenuContainer = $(data).appendTo($(menuCell.dom))
+                    docMenuContainer.find('a').click(function(e) {
+                        e.preventDefault()
+                        loadDocPage(this.href)
+                    })
+                })
+                .fail(function(xhr) {
+                    errorMessage(xhr.responseText || xhr.statusText || ("Failed to load docs menu: " + xhr.status))
+                })
+
             var pageCell = layout.add( { title: "Docs content" } )
-            var docPageContainer = wrap('div').appendTo($(pageCell.dom))
+            docPageContainer = wrap('div').addClass('doc-page').attr('id', 'doc-page').appendTo($(pageCell.dom))
             docPageContainer.html(content)
+
+            if (location.hash)
+                loadDocPage('/doc/' + location.hash.substr(1))
         })
 block content
-    h1 Docs heading
-    | Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+    h1 Equares documentation
+    | Choose an item in the documentation menu on the left.

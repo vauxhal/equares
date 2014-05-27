@@ -286,25 +286,27 @@ commands['sync'] = function(req, res) {
 
 var equaresInfoCache = {};
 
-commands['requestInfo'] = function(req, res) {
-    var command = req.query.cmd;
-    if (equaresInfoCache[command]) {
-        res.write(equaresInfoCache[command]);
-        res.end();
-    }
+function boxInfo(req, box, cb) {
+    if (equaresInfoCache[box])
+        cb(box, equaresInfoCache[box])
     else {
-        var rc = equares.user(req).runConfig([equares.programPath, '-d', command])
+        var rc = equares.user(req).runConfig([equares.programPath, '-d', box])
         child_process.exec(rc.args.join(' '), {cwd: rc.cwd}, function (error, stdout, stderr) {
             var result = {
                 stdout: stdout,
                 stderr: stderr
             }
             if (error)
-                result.error = error;
-            res.write(equaresInfoCache[command] = JSON.stringify(result));
-            res.end();
-        });
+                result.error = error
+            cb(box, equaresInfoCache[box] = JSON.stringify(result))
+        })
     }
+}
+
+commands['requestInfo'] = function(req, res) {
+    boxInfo(req, req.query.cmd, function(box, info) {
+        res.send(info)
+    })
 }
 
 commands['requestInfoEx'] = function(req, res) {
@@ -485,3 +487,5 @@ module.exports = function() {
             res.send(404, 'Command not found')
     }
 }
+
+module.exports.boxInfo = boxInfo

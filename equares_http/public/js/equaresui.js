@@ -4,26 +4,7 @@ var equaresui = {};
 
 function wrap(tag) { return $("<" + tag + "></" + tag + ">") }
 
-MathJax.Hub.Config({
-    elements: ['simInfo'],
-    TeX: {
-        equationNumbers: { autoNumber: "AMS", useLabelIds: true},
-    },
-    tex2jax: {
-        inlineMath: [['$','$']]
-    }
-})
-
-MathJax.Hub.Register.MessageHook("End Process", function (message) {
-    var simInfo = $('#simInfo')
-    simInfo.html(marked(simInfo.html()))
-})
-
-function LatexEquationNumbersReset() {
-    var ams = MathJax.Extension["TeX/AMSmath"]
-    ams.startNumber = 0
-    ams.labels = {}
-}
+formatInfo.init('simInfo')
 
 equaresui.setSceneSource = function() {
     this.clear();
@@ -48,7 +29,7 @@ equaresui.setSceneSource = function() {
         boxCell.header().minimize(boxCell);
         docCell.header().restore(docCell);
     }
-    $('<input type="button" value="Ok, show boxes"/>').appendTo(
+    $('<input type="button" value="Show box list"/>').appendTo(
         wrap('div').addClass('leftPaneTools').append('<hr/>').appendTo(docDiv)
     ).click(showBoxes)
 
@@ -150,7 +131,14 @@ equaresui.setSceneSource = function() {
                 .show('fast')
                 .offset(pos);
         })
-        boxDiv.find('td').find('img').each(function() { hpBoxHelp.target(this) })
+        boxDiv.find('td').find('img')
+            .each(function() { hpBoxHelp.target(this) })
+            .click(function(){
+                var box = $(this).parent().next().text()
+                var a = wrap('a').attr('href', '/doc#box/'+box).attr('target', '_blank').attr('style', 'display: none;').appendTo('body')
+                a[0].click()
+                a.remove()
+            })
 
         boxDiv.find(".scheme-boxlist-box")
             .click(function(){
@@ -168,7 +156,7 @@ equaresui.setSceneSource = function() {
                 scope: "newBox"
             });
 
-        $('<input type="button" value="Show simulation info"/>').appendTo(
+        $('<input type="button" value="Show info pane"/>').appendTo(
             wrap('div').attr('class', 'leftPaneTools').append('<hr/>').appendTo(boxDiv)
         ).click(showSimInfo)
 
@@ -458,6 +446,12 @@ equaresui.setSceneSource = function() {
                     if (edom.selectedIndex != i)
                         edom.selectedIndex = i
                 })
+                host.append(
+                    wrap('a')
+                        .attr('href', '/doc#box/'+prop.getter()).attr('target', '_blank')
+                        .attr('style', 'margin-left: 10px;')
+                        .html('help')
+                )
                 break
             default:
                 if (t[0] == 'f') {
@@ -596,8 +590,7 @@ equaresui.setSceneSource = function() {
     function loadSimInfo(info) {
         if (arguments.length < 1)
             info = simProps.info
-        simInfo.html(info)
-        MathJax.Hub.Queue(LatexEquationNumbersReset, ["Typeset", MathJax.Hub, simInfo[0]])
+        formatInfo.update(info)
     }
 
     function beforeLoadSimulation()
