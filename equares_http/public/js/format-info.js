@@ -23,12 +23,16 @@ formatInfo.init = function (elementId) {
     }
     formatInfo.update = function(data) {
         data = data.replace("http:///", location.origin+'/')
-        var rx = /\?\[([^\]]*)]\(([^)]*)\)/, rxg = new RegExp(rx.source, 'g')
+        var rx = /(\?|=)\[([^\]]*)]\(([^)]*)\)/, rxg = new RegExp(rx.source, 'g')
         var m = data.match(rxg)
         if (m)
             for (var i=0; i<m.length; ++i) {
                 var v = m[i], mm = data.match(rx)
-                data = data.replace(v, '<a href="' + mm[2] + '" target="_blank">' + mm[1] + '</a>')
+                var a = '<a href="' + mm[3] + '"'
+                if (mm[1] === '?')
+                    a += ' target="_blank"'
+                a += '>'
+                data = data.replace(v, a + mm[2] + '</a>')
             }
         var e = $('#' + elementId)
         e.html(data)

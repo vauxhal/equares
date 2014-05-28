@@ -20,3 +20,7 @@ shows an example of data source and data storage.
 ![](/meta/doc/page/general-box-special.png 'Data source and data storage boxes')
 
 ## Links
+Links provide connections between ports. Each link connects an output port of a box to an input port of another box. This way input ports receive =[data](http:///doc#page/general-data) from output ports.
+In other words, links are _logical data channels_.
+
+Importantly, only one link can be connected to an input port. In contrast to that, any number of links can be connected to an output port.

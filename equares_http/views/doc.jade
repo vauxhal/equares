@@ -34,33 +34,28 @@ block otherScripts
             var layout = c2.setLayout( layoutOptions )
             var docMenuContainer, docPageContainer
 
-            function loadDocPage(url) {
+            $(window).on('hashchange', function() {
+                var h = location.hash.substr(1)
+                var url = location.origin + '/doc/' + h
                 $.get(url)
                     .done(function(data) {
                         formatInfo.update(data)
-                        var path = url.replace(location.origin, '').replace(location.pathname + '/', '')
-                        location.hash = path
-                        var pathItems = path.split('/')
-                        if (pathItems[0] == 'box')
+                        var hi = h.split('/')
+                        if (hi[0] == 'box')
                             $('#doc-menu-box').click()
                         else
-                            $('#doc-menu-'+pathItems[1].split('-')[0]).click()
+                            $('#doc-menu-'+hi[1].split('-')[0]).click()
                     })
                     .fail(function(xhr) {
                         errorMessage(xhr.responseText || xhr.statusText || ("Failed to load docs menu: " + xhr.status))
                         docPageContainer.html(wrap('h1').text('N/A'))
-                        location.hash = 'error'
                     })
-            }
+            })
 
             var menuCell = layout.add( { title: "Docs menu", width: {min: 50, max: 350} } )
             $.get('/doc-menu-pane')
                 .done(function(data) {
                     docMenuContainer = $(data).appendTo($(menuCell.dom))
-                    docMenuContainer.find('a').click(function(e) {
-                        e.preventDefault()
-                        loadDocPage(this.href)
-                    })
                 })
                 .fail(function(xhr) {
                     errorMessage(xhr.responseText || xhr.statusText || ("Failed to load docs menu: " + xhr.status))
