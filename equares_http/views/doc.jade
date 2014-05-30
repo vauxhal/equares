@@ -34,8 +34,10 @@ block otherScripts
             var layout = c2.setLayout( layoutOptions )
             var docMenuContainer, docPageContainer
 
-            $(window).on('hashchange', function() {
+            function onHashChange() {
                 var h = location.hash.substr(1)
+                if (!h)
+                    return
                 var url = location.origin + '/doc/' + h
                 $.get(url)
                     .done(function(data) {
@@ -50,7 +52,10 @@ block otherScripts
                         errorMessage(xhr.responseText || xhr.statusText || ("Failed to load docs menu: " + xhr.status))
                         docPageContainer.html(wrap('h1').text('N/A'))
                     })
-            })
+            }
+
+            $(window).on('hashchange', onHashChange)
+            onHashChange()
 
             var menuCell = layout.add( { title: "Docs menu", width: {min: 50, max: 350} } )
             $.get('/doc-menu-pane')

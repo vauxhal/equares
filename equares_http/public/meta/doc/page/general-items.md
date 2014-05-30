@@ -24,3 +24,5 @@ Links provide connections between ports. Each link connects an output port of a 
 In other words, links are _logical data channels_.
 
 Importantly, only one link can be connected to an input port. In contrast to that, any number of links can be connected to an output port.
+
+![](/meta/doc/page/general-box-links.png 'Links connecting box ports')
