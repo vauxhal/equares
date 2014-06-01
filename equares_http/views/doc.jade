@@ -43,10 +43,8 @@ block otherScripts
                     .done(function(data) {
                         formatInfo.update(data)
                         var hi = h.split('/')
-                        if (hi[0] == 'box')
-                            $('#doc-menu-box').click()
-                        else
-                            $('#doc-menu-'+hi[1].split('-')[0]).click()
+                        var selector = hi[0] == 'box'? '#doc-menu-box': '#doc-menu-'+hi[1].split('-')[0]
+                        $(selector).click()
                     })
                     .fail(function(xhr) {
                         errorMessage(xhr.responseText || xhr.statusText || ("Failed to load docs menu: " + xhr.status))
@@ -55,12 +53,12 @@ block otherScripts
             }
 
             $(window).on('hashchange', onHashChange)
-            onHashChange()
 
             var menuCell = layout.add( { title: "Docs menu", width: {min: 50, max: 350} } )
             $.get('/doc-menu-pane')
                 .done(function(data) {
                     docMenuContainer = $(data).appendTo($(menuCell.dom))
+                    onHashChange()
                 })
                 .fail(function(xhr) {
                     errorMessage(xhr.responseText || xhr.statusText || ("Failed to load docs menu: " + xhr.status))
@@ -69,9 +67,6 @@ block otherScripts
             var pageCell = layout.add( { title: "Docs content" } )
             docPageContainer = wrap('div').addClass('doc-page').attr('id', 'doc-page').appendTo($(pageCell.dom))
             docPageContainer.html(content)
-
-            if (location.hash)
-                loadDocPage('/doc/' + location.hash.substr(1))
         })
 block content
     h1 Equares documentation

@@ -420,7 +420,7 @@ commands['savesim'] = function(req, res) {
 commands['editsim'] = function(req, res) {
     if (!ensureAuth(req, res))
         return
-    simulation.Sim.findOne({_id: req.query.sim}, function(err, s) {
+    simulation.Sim.findBySpec(req.query.sim, function(err, s) {
         if (err) {
             console.log(err)
             res.send(500, err)
@@ -455,7 +455,7 @@ commands['editsim'] = function(req, res) {
 commands['delsim'] = function(req, res) {
     if (!ensureAuth(req, res))
         return
-    simulation.Sim.findOne({_id: req.query.sim}, function(err, s) {
+    simulation.Sim.findBySpec(req.query.sim, function(err, s) {
         if (err) {
             console.log(err)
             res.send(500, err)

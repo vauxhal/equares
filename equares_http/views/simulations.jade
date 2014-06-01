@@ -167,7 +167,9 @@ block otherScripts
                                         hdr.append(wrap('th').html(htitle(i)))
                                     for (var j in sims) {
                                         var sim = sims[j],
-                                            simid = $.param({sim: sim._id})
+                                            simSpecStr = sim.user? sim.user + '/' + sim.name: sim.name,
+                                            //simid = $.param({sim: sim._id})
+                                            simid = $.param({sim: simSpecStr}),
                                             row = wrap('tr').appendTo(tbl).addClass((+j+1)&1? 'odd': 'even')
                                         for (var i in headers) {
                                             var h = hname(i),   x = sim[h],   s

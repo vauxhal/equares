@@ -1,6 +1,7 @@
 var fs = require('fs')
 var mongoose = require('mongoose')
 var textSearch = require('mongoose-text-search');
+var auth = require('./auth')
 
 var ObjectId = mongoose.Schema.Types.ObjectId
 
@@ -27,6 +28,29 @@ SimSchema.statics.upsert = function(sim, done) {
 }
 SimSchema.statics.have = function(sim, done) {
     this.count({user: sim.user, name: sim.name}, done)
+}
+function parseSimSpec(simSpecStr) {
+    var m = simSpecStr.match(/^([^/]*)(\/(.*))?$/)
+    if (m[3])
+        return { user: m[1], name: m[3]}
+    else
+        return { name: m[1] }
+}
+SimSchema.statics.findBySpec = function(simSpecStr, cb) {
+    var simSpec = parseSimSpec(simSpecStr)
+    function respond(userId) {
+        Sim.findOne({user: userId, name: simSpec.name}, cb)
+    }
+    if (simSpec.user)
+        auth.User.findUser(simSpec.user, function(err, userId) {
+            if (err)
+                return cb(err, null)
+            if (!userId)
+                return cb(err, null)
+            respond(userId)
+        })
+    else
+        respond(null)
 }
 
 var Sim = mongoose.model('Sim', SimSchema, 'simulations')

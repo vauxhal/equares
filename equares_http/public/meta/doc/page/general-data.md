@@ -23,7 +23,9 @@ Two ports can only be connected if their formats appear to be the same.
 
 ![](/meta/doc/page/general-box-links.png 'An example of valid links')
 
-Otherwise, the link is shown as a red line, and an error is issued on an attempt to run simulation:
+## Format compatibility
+
+If formats of two ports are different, the link between them is shown as a red line, and an error message is issued on an attempt to run simulation:
 
 ![](/meta/doc/page/general-box-links-bad.png 'Invalid links are shown as red lines')
 

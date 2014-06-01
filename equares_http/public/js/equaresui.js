@@ -16,7 +16,7 @@ equaresui.setSceneSource = function() {
     this.setTitle( "Simulation editor" );
     var layout = this.setLayout( layoutOptions );
     
-    var docCell = layout.add( { title: "Simulation info", width: {min: 50, max: 500} } );
+    var docCell = layout.add( { title: "Info pane", width: {min: 50, max: 500} } );
     var boxCell = layout.add( { title: "Boxes", width: {min: 50, max: 300} } );
     docCell.dom.id = 'simInfoContainer'
     var docDiv = $(docCell.dom)

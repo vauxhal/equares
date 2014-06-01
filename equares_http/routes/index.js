@@ -2,7 +2,6 @@ var fs = require('fs')
 var simulation = require('../simulation')
 var Sim = simulation.Sim
 var RecentSim = simulation.RecentSim
-var auth = require('../auth')
 var mongoose = require('mongoose')
 var dbsearch = require('../dbsearch')
 
@@ -24,8 +23,8 @@ module.exports = {
         res.render('index', {req: req})
     },
     editor: function(req, res) {
-        if (req.query.sim) {
-            Sim.findOne({_id: req.query.sim}, function(err, s) {
+        if (req.query.sim)
+            Sim.findBySpec(req.query.sim, function(err, s) {
                 if (err) {
                     console.log(err)
                     res.send(500)
@@ -44,7 +43,6 @@ module.exports = {
                 else
                     res.send(404)
             })
-        }
         else
             res.render('editor', {req: req})
     },

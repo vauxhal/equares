@@ -10,14 +10,14 @@ script.
     $('#doc-menu-pane').accordion({ heightStyle: "content" })
     //$('#doc-menu-pane').accordion({ heightStyle: "fill" })
 #doc-menu-pane
-    h3 General
-    div#doc-menu-general
+    h3#doc-menu-general General
+    div
         ul
             li: a(href='/doc#page/general-overview') Overview
             li: a(href='/doc#page/general-items') Boxes, ports, and links
             li: a(href='/doc#page/general-data') Port data
-    h3 Editor panes
-    div#doc-menu-editorpane
+    h3#doc-menu-editorpane Editor panes
+    div
         ul
             li: a(href='/doc#page/editorpane-box') Box list
             li: a(href='/doc#page/editorpane-info') Info pane
@@ -29,10 +29,13 @@ script.
         ul
             li: a(href='/doc#page/editor-usage-createbox') Creating boxes
             li: a(href='/doc#page/editor-usage-connect') Making connections
-            li: a(href='/doc#page/editor-usage-boxprop') Editing parameters
+            li: a(href='/doc#page/editor-usage-boxprop') Editing box parameters
+            li: a(href='/doc#page/editor-usage-simprop') Simulation properties
             li: a(href='/doc#page/editor-usage-text-script') Editing source code
             li: a(href='/doc#page/editor-usage-text-info') Editing info text
             li: a(href='/doc#page/editor-usage-images') Adding images
+            li: a(href='/doc#page/editor-usage-replacebox') Changing box type
+            li: a(href='/doc#page/editor-usage-boxhelp') Displaying box help
     h3#doc-menu-simfile Simulation files
     div
         ul
