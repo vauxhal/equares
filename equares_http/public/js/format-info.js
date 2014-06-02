@@ -24,7 +24,7 @@ formatInfo.init = function (elementId) {
     }
     formatInfo.update = function(data) {
         data = data.replace("http:///", location.origin+'/')
-        var rx = /(^| )(\?|=)\[([^\]]*)]\(([^)]*)\)/, rxg = new RegExp(rx.source, 'g')
+        var rx = /(^|\s+)(\?|=)\[([^\]]*)]\(([^)]*)\)/, rxg = new RegExp(rx.source, 'g')
         var m = data.match(rxg)
         if (m)
             for (var i=0; i<m.length; ++i) {

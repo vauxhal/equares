@@ -3,7 +3,7 @@
 
 Object parameters pane is located at the top-right corner of the =[editor](/editor).
 
-It contains parameters of currently selected =[box](/doc#page/general-items); if no box is selected, it contains =[simulation properties](/doc#page/editor-usage-simprop).
+It contains [parameters](/doc#page/editor-usage-boxprop) of currently selected =[box](/doc#page/general-items); if no box is selected, it contains =[simulation properties](/doc#page/editor-usage-simprop).
 
 The title of the pane shows box name (if editing box parameters) or is set to "Simulation properties" (when editing simulation properties).
 The title is followed by the list of parameters. Parameter values can be edited using the text fields or check boxes on the right from parameter names.
