@@ -6,7 +6,7 @@ text parameter in the [object parameters pane](/doc#page/editorpane-prop) by cli
 
 The header of the editor displays the name of parameter being editing and the **Ok** button.
 
-If editing the **info** =[simulation property](/doc#page/editor-usage-simprop), the editor header also displays the **Image** button for adding images.
+If editing the **info** =[simulation property](/doc#page/editor-usage-simprop), the editor header also displays the **Image** button for =[adding images](/doc#page/editor-usage-images).
 
 If editing =[source code](/doc#page/editor-usage-text-script), the editor displays line numbers. It is important to know them when locating errors basing on compile error messages.
 

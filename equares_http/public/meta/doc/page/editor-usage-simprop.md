@@ -13,7 +13,7 @@ Each simulation has the following properties.
 * **description** Short one line textual description of simulation. Displayed in =[simulation table](/doc#page/simfile-table).
 * **info** Extended multiline description of simulation. Can contain pictures. Uses the
   ?[gfm](https://help.github.com/articles/github-flavored-markdown) flavor of
-  the ?[markdown](http://daringfireball.net/projects/markdown/) format.
+  the ?[markdown](http://daringfireball.net/projects/markdown/) format. See =[Editing info text](/doc#page/editor-usage-text-info) for details.
 * **keywords** A comma-separated list of keywords. Each keyword may be a single word or a list space separated words.
   Can be helpful in finding simulations (see =[simulation table](/doc#page/simfile-table)).
 * **script** JavaScript code to be executed at start of simulation. Can be used to declare constant parameters.
