@@ -8,3 +8,8 @@ to upload simulation file to the editor, and the **Download** command to downloa
 to your computer.
 
 ![upload and download simulation files](/meta/doc/page/simfile-load-updown.png "Menu commands for uploading and downloading simulations")
+
+Last but not least, you can load a simulation from the **Examples** menu in the =[editor](/editor).
+The menu contains a list of predefined simulations that are designed to be starting points of your own ones.
+
+![simulation examples](/meta/doc/page/simfile-load-examples.png "Simulation examples menu")

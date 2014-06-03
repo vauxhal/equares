@@ -19,4 +19,5 @@ Each simulation has the following properties.
 * **script** JavaScript code to be executed at start of simulation. Can be used to declare constant parameters.
   These parameters can be used in expressions that provide values for other parameters. This feature is employed in
   the =[vibrating pendulum](/editor?sim=vibrating-pendulum-psec) example simulation.
-* **public** If true, the simulation is visible to all users when =[saved](/doc#page/simfile-save). Otherwise, only visible to its owner.
+* **public** If true, the simulation is visible in the =[table of simulations](/doc#page/simfile-table) to all users
+  when =[saved](/doc#page/simfile-save). Otherwise, only visible to its owner.

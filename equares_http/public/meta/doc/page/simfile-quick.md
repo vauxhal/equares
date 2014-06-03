@@ -3,7 +3,7 @@
 Each time you modify anything in your simulation, the =[editor](/editor) automatically saves the simulation on our server. The area where the simulation is stored this way
 is called the **quicksave area**.
 
-If you are not logged in, the quicksave area is destroyed as soon as you close the browser.
+If you are not logged in, the quicksave area on the server is destroyed as soon as your browser session expires.
 
 If you are logged in, the quicksave area will persist across browser sessions.
 
