@@ -1,5 +1,6 @@
 #include "OdeCxxBox.h"
 #include "PerTypeStorage.h"
+#include "check_lib.h"
 #include <QFile>
 #include <QDir>
 #include <QFileInfo>
@@ -185,9 +186,6 @@ OdeCxxBox& OdeCxxBox::setSrc(const QString& src)
 {
     JSX_BEGIN
 
-    // Check source file: no #include
-    checkSrc(src);
-
     // Extract class name that will also be part of directory name
     QString className;
     {
@@ -340,6 +338,12 @@ OdeCxxBox::OdeLibProxy::OdeLibProxy(const QString& libName, const Box *box) :
     m_lib(libName),
     m_box(box)
 {
+    try {
+        checkLib(libName);
+    }
+    catch(const std::exception& e) {
+        ::throwBoxException(m_box, QString("Security check has failed on library file '%1': %2\n").arg(libName, QString::fromUtf8(e.what())));
+    }
     m_lib.load();
     if (!m_lib.isLoaded())
         ::throwBoxException(m_box, QString("Failed to open library file '%1'").arg(libName));
@@ -380,11 +384,6 @@ QStringList OdeCxxBox::OdeLibProxy::toNameList(const char *s)
 }
 
 
-
-void OdeCxxBox::checkSrc(const QString& src) {
-    // TODO
-    Q_UNUSED(src);
-}
 
 bool OdeCxxBox::libUpToDate(const QString &libName, const QString& hashString)
 {

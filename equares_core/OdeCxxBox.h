@@ -105,7 +105,6 @@ private:
 
     OdeLibProxy::Ptr m_libProxy;
 
-    void checkSrc(const QString& src);
     bool libUpToDate(const QString& libName, const QString& hashString);
 };
 

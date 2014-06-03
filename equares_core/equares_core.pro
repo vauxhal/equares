@@ -39,7 +39,8 @@ SOURCES += equares_core.cpp \
     OdeCxxBox.cpp \
     equares_exec.cpp \
     BoxSettings.cpp \
-    PerTypeStorage.cpp
+    PerTypeStorage.cpp \
+    check_lib.cpp
 
 HEADERS += equares_core.h\
         equares_core_global.h \
@@ -67,7 +68,8 @@ HEADERS += equares_core.h\
     EquaresException.h \
     equares_common.h \
     equares_exec.h \
-    PerTypeStorage.h
+    PerTypeStorage.h \
+    check_lib.h
 
 symbian {
     MMP_RULES += EXPORTUNFROZEN
