@@ -69,7 +69,7 @@ module.exports = function(app) {
     function boxHelpText(box, info)
     {
         var text = '<h2>Synopsis</h2>'
-        text += box + ' - '
+        text += box + ' &mdash; '
         text += (info.help? info.help: 'No help available') + '<br>'
         text += boxItemHelpText(info.inputs, 'Input ports')
         text += boxItemHelpText(info.outputs, 'Output ports')

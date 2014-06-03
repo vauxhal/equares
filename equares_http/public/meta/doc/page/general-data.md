@@ -31,7 +31,7 @@ If formats of two ports are different, the link between them is shown as a red l
 
 In this example the solver would say
 
-<span style="color: red;">Error: Incompatible port formats at link double pendulum:oderhs -> canvas:input</span>
+<span style="color: red;">Error: Incompatible port formats at link double pendulum:oderhs -&gt; canvas:input</span>
 
 Another wrong situation is that a box requires an array of certain dimension, but it appears that the actual format has a different dimension:
 

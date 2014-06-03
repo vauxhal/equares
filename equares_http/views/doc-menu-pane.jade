@@ -6,9 +6,12 @@ style.
     #doc-menu-pane ul {
         list-style-type: none;
     }
+    .selected-doc-menu-item {
+        text-decoration: underline;
+    }
 script.
-    $('#doc-menu-pane').accordion({ heightStyle: "content" })
-    //$('#doc-menu-pane').accordion({ heightStyle: "fill" })
+    //$('#doc-menu-pane').accordion({ heightStyle: "content" })
+    $('#doc-menu-pane').accordion({ heightStyle: "fill" })
 #doc-menu-pane
     h3#doc-menu-general General
     div

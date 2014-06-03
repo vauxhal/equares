@@ -9,6 +9,6 @@ This pane is located at the center of the =[editor](/editor). It is an interacti
 * =[Creating links](/doc#page/editor-usage-connect) between box ports (press left mouse button on one [box port](/doc#page/general-items), release on another port)
 * Deleting links between box ports (click link to be deleted)
 * Deleting boxes (click the ![close](/images/close.png) icon on the box you want to delete)
-* Viewing box status messages (hover status icon -
-  ![ok](/images/status-ok.png), ![waiting](/images/status-waiting.png), ![warning](/images/status-warning.png), or ![error](/images/status-error.png) - on the box)
-* Viewing port names and formats (hover box port - ![input port](/meta/doc/page/editorpane-scheme-port-in.png) or ![output port](/meta/doc/page/editorpane-scheme-port-out.png))
+* Viewing box status messages (hover status icon  &mdash;
+  ![ok](/images/status-ok.png), ![waiting](/images/status-waiting.png), ![warning](/images/status-warning.png), or ![error](/images/status-error.png) &mdash; on the box)
+* Viewing port names and formats (hover box port &mdash; ![input port](/meta/doc/page/editorpane-scheme-port-in.png) or ![output port](/meta/doc/page/editorpane-scheme-port-out.png))

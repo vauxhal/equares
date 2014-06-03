@@ -12,7 +12,7 @@ This service allows registered users to prepare, run, store, and share simulatio
 # Signing up
 
 In order to be able to use full functionality of the service, it's necessary to sign up and then log in.
-The registration is simple - use the **Sign up** link in the top-right corner of the window.
+The registration is simple &mdash; use the **Sign up** link in the top-right corner of the window.
 
 # Exploring examples
 
