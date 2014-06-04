@@ -1,0 +1,3 @@
+#!/bin/bash
+readelf -W --dyn-syms $1 |egrep "FUNC\s+(GLOBAL|WEAK)"|egrep UND |sed -r "s/^.*(WEAK|GLOBAL)\\s*\\w+\\s+\\w+\\s+(\\w+)(@+.*)?$/\\2/"
+
