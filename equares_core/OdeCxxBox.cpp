@@ -389,7 +389,7 @@ bool OdeCxxBox::libUpToDate(const QString &libName, const QString& hashString)
     try {
         QFileInfo fi(libName);
         QString libFileName = fi.dir().absoluteFilePath("lib" + fi.baseName() + ".so");
-        if (QFileInfo::exists(libFileName)) {
+        if (QFileInfo(libFileName).exists()) {
             OdeLibProxy lib(libName, this);
             return lib.hash() == hashString;
         }
