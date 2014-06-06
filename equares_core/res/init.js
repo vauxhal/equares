@@ -91,7 +91,7 @@ runSimulation = function(sim) {
                     }
                     //*/
                 } catch (err) {
-                    err.message = 'Unable to set property ' + bx.name + '.' + propName + ': ' + err.message + ' (value: ' + err.value + ')'
+                    err.message = 'Unable to set property ' + bx.name + '.' + propName + ':\n' + err.message
                     throw err
                 }
     }

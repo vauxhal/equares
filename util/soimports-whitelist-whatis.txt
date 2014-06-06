@@ -1,0 +1,283 @@
+acos (3)             - arc cosine function
+acosf (3)            - arc cosine function
+acosh (3)            - inverse hyperbolic cosine function
+acoshf (3)           - inverse hyperbolic cosine function
+acoshl (3)           - inverse hyperbolic cosine function
+acosl (3)            - arc cosine function
+asin (3)             - arc sine function
+asinf (3)            - arc sine function
+asinh (3)            - inverse hyperbolic sine function
+asinhf (3)           - inverse hyperbolic sine function
+asinhl (3)           - inverse hyperbolic sine function
+asinl (3)            - arc sine function
+atan (3)             - arc tangent function
+atan2 (3)            - arc tangent function of two variables
+atan2f (3)           - arc tangent function of two variables
+atan2l (3)           - arc tangent function of two variables
+atanf (3)            - arc tangent function
+atanh (3)            - inverse hyperbolic tangent function
+atanhf (3)           - inverse hyperbolic tangent function
+atanhl (3)           - inverse hyperbolic tangent function
+atanl (3)            - arc tangent function
+cabs (3)             - absolute value of a complex number
+cabsf (3)            - absolute value of a complex number
+cabsl (3)            - absolute value of a complex number
+cacos (3)            - complex arc cosine
+cacosf (3)           - complex arc cosine
+cacosh (3)           - complex arc hyperbolic cosine
+cacoshf (3)          - complex arc hyperbolic cosine
+cacoshl (3)          - complex arc hyperbolic cosine
+cacosl (3)           - complex arc cosine
+carg (3)             - calculate the complex argument
+cargf (3)            - calculate the complex argument
+cargl (3)            - calculate the complex argument
+casin (3)            - complex arc sine
+casinf (3)           - complex arc sine
+casinh (3)           - complex arc sine hyperbolic
+casinhf (3)          - complex arc sine hyperbolic
+casinhl (3)          - complex arc sine hyperbolic
+casinl (3)           - complex arc sine
+catan (3)            - complex arc tangents
+catanf (3)           - complex arc tangents
+catanh (3)           - complex arc tangents hyperbolic
+catanhf (3)          - complex arc tangents hyperbolic
+catanhl (3)          - complex arc tangents hyperbolic
+catanl (3)           - complex arc tangents
+cbrt (3)             - cube root function
+cbrtf (3)            - cube root function
+cbrtl (3)            - cube root function
+ccos (3)             - complex cosine function
+ccosf (3)            - complex cosine function
+ccosh (3)            - complex hyperbolic cosine
+ccoshf (3)           - complex hyperbolic cosine
+ccoshl (3)           - complex hyperbolic cosine
+ccosl (3)            - complex cosine function
+ceil (3)             - ceiling function: smallest integral value not less tha...
+ceilf (3)            - ceiling function: smallest integral value not less tha...
+ceill (3)            - ceiling function: smallest integral value not less tha...
+cexp (3)             - complex exponential function
+cexpf (3)            - complex exponential function
+cexpl (3)            - complex exponential function
+cimag (3)            - get imaginary part of a complex number
+cimagf (3)           - get imaginary part of a complex number
+cimagl (3)           - get imaginary part of a complex number
+clog (3)             - natural logarithm of a complex number
+clog10 (3)           - base-10 logarithm of a complex number
+clog10f (3)          - base-10 logarithm of a complex number
+clog10l (3)          - base-10 logarithm of a complex number
+clogf (3)            - natural logarithm of a complex number
+clogl (3)            - natural logarithm of a complex number
+conj (3)             - calculate the complex conjugate
+conjf (3)            - calculate the complex conjugate
+conjl (3)            - calculate the complex conjugate
+copysign (3)         - copy sign of a number
+copysignf (3)        - copy sign of a number
+copysignl (3)        - copy sign of a number
+cos (3)              - cosine function
+cosf (3)             - cosine function
+cosh (3)             - hyperbolic cosine function
+coshf (3)            - hyperbolic cosine function
+coshl (3)            - hyperbolic cosine function
+cosl (3)             - cosine function
+cpow (3)             - complex power function
+cpowf (3)            - complex power function
+cpowl (3)            - complex power function
+cproj (3)            - project into Riemann Sphere
+cprojf (3)           - project into Riemann Sphere
+cprojl (3)           - project into Riemann Sphere
+creal (3)            - get real part of a complex number
+crealf (3)           - get real part of a complex number
+creall (3)           - get real part of a complex number
+csin (3)             - complex sine function
+csinf (3)            - complex sine function
+csinh (3)            - complex hyperbolic sine
+csinhf (3)           - complex hyperbolic sine
+csinhl (3)           - complex hyperbolic sine
+csinl (3)            - complex sine function
+csqrt (3)            - complex square root
+csqrtf (3)           - complex square root
+csqrtl (3)           - complex square root
+ctan (3)             - complex tangent function
+ctanf (3)            - complex tangent function
+ctanh (3)            - complex hyperbolic tangent
+ctanhf (3)           - complex hyperbolic tangent
+ctanhl (3)           - complex hyperbolic tangent
+ctanl (3)            - complex tangent function
+drem (3)             - floating-point remainder function
+dremf (3)            - floating-point remainder function
+dreml (3)            - floating-point remainder function
+erf (3)              - error function
+erfc (3)             - complementary error function
+erfcf (3)            - complementary error function
+erfcl (3)            - complementary error function
+erff (3)             - error function
+erfl (3)             - error function
+exp (3)              - base-e exponential function
+exp10 (3)            - base-10 exponential function
+exp10f (3)           - base-10 exponential function
+exp10l (3)           - base-10 exponential function
+exp2 (3)             - base-2 exponential function
+exp2f (3)            - base-2 exponential function
+exp2l (3)            - base-2 exponential function
+expf (3)             - base-e exponential function
+expl (3)             - base-e exponential function
+expm1 (3)            - exponential minus 1
+expm1f (3)           - exponential minus 1
+expm1l (3)           - exponential minus 1
+fabs (3)             - absolute value of floating-point number
+fabsf (3)            - absolute value of floating-point number
+fabsl (3)            - absolute value of floating-point number
+fdim (3)             - positive difference
+fdimf (3)            - positive difference
+fdiml (3)            - positive difference
+finite (3)           - BSD floating-point classification functions
+finitef (3)          - BSD floating-point classification functions
+finitel (3)          - BSD floating-point classification functions
+floor (3)            - largest integral value not greater than argument
+floorf (3)           - largest integral value not greater than argument
+floorl (3)           - largest integral value not greater than argument
+fma (3)              - floating-point multiply and add
+fmaf (3)             - floating-point multiply and add
+fmal (3)             - floating-point multiply and add
+fmax (3)             - determine maximum of two floating-point numbers
+fmaxf (3)            - determine maximum of two floating-point numbers
+fmaxl (3)            - determine maximum of two floating-point numbers
+fmin (3)             - determine minimum of two floating-point numbers
+fminf (3)            - determine minimum of two floating-point numbers
+fminl (3)            - determine minimum of two floating-point numbers
+fmod (3)             - floating-point remainder function
+fmodf (3)            - floating-point remainder function
+fmodl (3)            - floating-point remainder function
+frexp (3)            - convert floating-point number to fractional and integr...
+frexpf (3)           - convert floating-point number to fractional and integr...
+frexpl (3)           - convert floating-point number to fractional and integr...
+gamma (3)            - (logarithm of the) gamma function
+gammaf (3)           - (logarithm of the) gamma function
+gammal (3)           - (logarithm of the) gamma function
+hypot (3)            - Euclidean distance function
+hypotf (3)           - Euclidean distance function
+hypotl (3)           - Euclidean distance function
+ilogb (3)            - get integer exponent of a floating-point value
+ilogbf (3)           - get integer exponent of a floating-point value
+ilogbl (3)           - get integer exponent of a floating-point value
+j0 (3)               - Bessel functions of the first kind
+j0f (3)              - Bessel functions of the first kind
+j0l (3)              - Bessel functions of the first kind
+j1 (3)               - Bessel functions of the first kind
+j1f (3)              - Bessel functions of the first kind
+j1l (3)              - Bessel functions of the first kind
+jn (3)               - Bessel functions of the first kind
+jnf (3)              - Bessel functions of the first kind
+jnl (3)              - Bessel functions of the first kind
+ldexp (3)            - multiply floating-point number by integral power of 2
+ldexpf (3)           - multiply floating-point number by integral power of 2
+ldexpl (3)           - multiply floating-point number by integral power of 2
+lgamma (3)           - log gamma function
+lgammaf (3)          - log gamma function
+lgammaf_r (3)        - log gamma function
+lgammal (3)          - log gamma function
+lgammal_r (3)        - log gamma function
+lgamma_r (3)         - log gamma function
+llrint (3)           - round to nearest integer
+llrintf (3)          - round to nearest integer
+llrintl (3)          - round to nearest integer
+llround (3)          - round to nearest integer, away from zero
+llroundf (3)         - round to nearest integer, away from zero
+llroundl (3)         - round to nearest integer, away from zero
+log (3)              - natural logarithmic function
+log10 (3)            - base-10 logarithmic function
+log10f (3)           - base-10 logarithmic function
+log10l (3)           - base-10 logarithmic function
+log1p (3)            - logarithm of 1 plus argument
+log1pf (3)           - logarithm of 1 plus argument
+log1pl (3)           - logarithm of 1 plus argument
+log2 (3)             - base-2 logarithmic function
+log2f (3)            - base-2 logarithmic function
+log2l (3)            - base-2 logarithmic function
+logb (3)             - get exponent of a floating-point value
+logbf (3)            - get exponent of a floating-point value
+logbl (3)            - get exponent of a floating-point value
+logf (3)             - natural logarithmic function
+logl (3)             - natural logarithmic function
+lrint (3)            - round to nearest integer
+lrintf (3)           - round to nearest integer
+lrintl (3)           - round to nearest integer
+lround (3)           - round to nearest integer, away from zero
+lroundf (3)          - round to nearest integer, away from zero
+lroundl (3)          - round to nearest integer, away from zero
+modf (3)             - extract signed integral and fractional values from flo...
+modff (3)            - extract signed integral and fractional values from flo...
+modfl (3)            - extract signed integral and fractional values from flo...
+nan (3)              - return 'Not a Number'
+NAN (3)              - floating-point constants
+nanf (3)             - return 'Not a Number'
+nanl (3)             - return 'Not a Number'
+nearbyint (3)        - round to nearest integer
+nearbyintf (3)       - round to nearest integer
+nearbyintl (3)       - round to nearest integer
+nextafter (3)        - floating-point number manipulation
+nextafterf (3)       - floating-point number manipulation
+nextafterl (3)       - floating-point number manipulation
+nexttoward (3)       - floating-point number manipulation
+nexttowardf (3)      - floating-point number manipulation
+nexttowardl (3)      - floating-point number manipulation
+pow (3)              - power functions
+pow10 (3)            - base-10 power functions
+pow10f (3)           - base-10 power functions
+pow10l (3)           - base-10 power functions
+powf (3)             - power functions
+powl (3)             - power functions
+remainder (3)        - floating-point remainder function
+remainderf (3)       - floating-point remainder function
+remainderl (3)       - floating-point remainder function
+remquo (3)           - remainder and part of quotient
+remquof (3)          - remainder and part of quotient
+remquol (3)          - remainder and part of quotient
+rint (3)             - round to nearest integer
+rintf (3)            - round to nearest integer
+rintl (3)            - round to nearest integer
+round (3)            - round to nearest integer, away from zero
+roundf (3)           - round to nearest integer, away from zero
+roundl (3)           - round to nearest integer, away from zero
+scalbln (3)          - multiply floating-point number by integral power of radix
+scalblnf (3)         - multiply floating-point number by integral power of radix
+scalblnl (3)         - multiply floating-point number by integral power of radix
+scalbn (3)           - multiply floating-point number by integral power of radix
+scalbnf (3)          - multiply floating-point number by integral power of radix
+scalbnl (3)          - multiply floating-point number by integral power of radix
+significand (3)      - get mantissa of floating-point number
+significandf (3)     - get mantissa of floating-point number
+significandl (3)     - get mantissa of floating-point number
+sin (3)              - sine function
+sincos (3)           - calculate sin and cos simultaneously
+sincosf (3)          - calculate sin and cos simultaneously
+sincosl (3)          - calculate sin and cos simultaneously
+sinf (3)             - sine function
+sinh (3)             - hyperbolic sine function
+sinhf (3)            - hyperbolic sine function
+sinhl (3)            - hyperbolic sine function
+sinl (3)             - sine function
+sqrt (3)             - square root function
+sqrtf (3)            - square root function
+sqrtl (3)            - square root function
+tan (3)              - tangent function
+tanf (3)             - tangent function
+tanh (3)             - hyperbolic tangent function
+tanhf (3)            - hyperbolic tangent function
+tanhl (3)            - hyperbolic tangent function
+tanl (3)             - tangent function
+tgamma (3)           - true gamma function
+tgammaf (3)          - true gamma function
+tgammal (3)          - true gamma function
+trunc (3)            - round to integer, toward zero
+truncf (3)           - round to integer, toward zero
+truncl (3)           - round to integer, toward zero
+y0 (3)               - Bessel functions of the second kind
+y0f (3)              - Bessel functions of the second kind
+y0l (3)              - Bessel functions of the second kind
+y1 (3)               - Bessel functions of the second kind
+y1f (3)              - Bessel functions of the second kind
+y1l (3)              - Bessel functions of the second kind
+yn (3)               - Bessel functions of the second kind
+ynf (3)              - Bessel functions of the second kind
+ynl (3)              - Bessel functions of the second kind

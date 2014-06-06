@@ -9,7 +9,7 @@ class QStringList;
 class JsRunner
 {
 public:
-    static bool runFile(QScriptEngine& engine, std::istream& is, bool printResults);
+    static bool runFile(QScriptEngine& engine, std::istream& is, bool printResults, bool stopOnError);
     static bool runFiles(QScriptEngine& engine, const QStringList& inputFileNames, bool printResults);
     static void runServer(QScriptEngine& engine);
 };

@@ -1,6 +1,5 @@
 <RCC>
     <qresource prefix="/cxx">
-        <file alias="OdeFileHeader.cpp">res/OdeFileHeader.cpp</file>
         <file alias="OdeClass.cpp">res/OdeClass.cpp</file>
         <file alias="OdeFileFooter.cpp">res/OdeFileFooter.cpp</file>
         <file alias="build_msvs.bat">res/build_msvs.bat</file>
@@ -11,5 +10,9 @@
     </qresource>
     <qresource prefix="/js">
         <file alias="init.js">res/init.js</file>
+    </qresource>
+    <qresource prefix="/checklib">
+        <file alias="soimports">res/soimports</file>
+        <file alias="soimports-whitelist.txt">res/soimports-whitelist.txt</file>
     </qresource>
 </RCC>

@@ -1,0 +1,1 @@
+readelf -W --dyn-syms $1 |egrep "FUNC\s+(GLOBAL|WEAK)"|egrep -v UND

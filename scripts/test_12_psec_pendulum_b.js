@@ -17,6 +17,8 @@ dump = new Bitmap
 proj.indices = [0,2]
 
 ode.src = '
+#include <cmath>
+
 struct DoublePendulum {
     int paramCount() const {
         return 5;   // l1, m1, l2, m2, g

@@ -9,6 +9,8 @@ initState = new Param
 ode = new CxxOde
 // ode.useQmake = false;
 ode.src = '
+#include <cmath>
+
 struct DoublePendulum {
     int paramCount() const {
         return 5;   // l1, m1, l2, m2, g

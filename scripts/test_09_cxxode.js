@@ -9,6 +9,8 @@ solver = new Rk4
 dump = new Dump
 
 ode.src = '
+#include <cmath>
+
 struct Pendulum {
     int paramCount() const {
         return 2;   // l, g
@@ -66,7 +68,7 @@ initState.data = [
     0
 ]
 
-// dump.fileName = "dump.txt"
+dump.fileName = "dump.txt"
 
 s.run();
 
