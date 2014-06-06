@@ -39,7 +39,7 @@ public:
     public:
         typedef QSharedPointer<OdeLibProxy> Ptr;
 
-        explicit OdeLibProxy(const QString& libName, const Box *box, bool doSecurityCheck = true);
+        explicit OdeLibProxy(const QString& libName, const Box *box);
         ~OdeLibProxy();
 
         int paramCount() const {

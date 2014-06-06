@@ -51,7 +51,7 @@ void checkLib(const QString& libName)
     QString stdout = QString::fromUtf8(proc.readAllStandardOutput());
     if (stdout.isEmpty())
         throw EquaresException(QObject::tr("Command\n%1\nreturned nothing").arg(cmd));
-    QStringList prohibitedSymbols;
+    QSet<QString> prohibitedSymbols;
     foreach (const QString& line, stdout.split('\n')) {
         if (line.isEmpty())
             continue;
@@ -62,5 +62,6 @@ void checkLib(const QString& libName)
             prohibitedSymbols << s;
     }
     if (!prohibitedSymbols.isEmpty())
-        throw EquaresException(QObject::tr("The following imported symbols are not allowed\n%1").arg(prohibitedSymbols.join(", ")));
+        throw EquaresException(QObject::tr("The following imported or weak symbols are not allowed:\n%1")
+            .arg(QStringList(prohibitedSymbols.toList()).join(", ")));
 }

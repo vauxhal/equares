@@ -333,17 +333,15 @@ const OdeCxxBox::OdeLibProxy *OdeCxxBox::odeLibProxy() const {
     return m_libProxy.data();
 }
 
-OdeCxxBox::OdeLibProxy::OdeLibProxy(const QString& libName, const Box *box, bool doSecurityCheck) :
+OdeCxxBox::OdeLibProxy::OdeLibProxy(const QString& libName, const Box *box) :
     m_lib(libName),
     m_box(box)
 {
-    if (doSecurityCheck) {
-        try {
-            checkLib(libName);
-        }
-        catch(const std::exception& e) {
-            ::throwBoxException(m_box, QString("Security check has failed on library file '%1':\n%2").arg(libName, QString::fromUtf8(e.what())));
-        }
+    try {
+        checkLib(libName);
+    }
+    catch(const std::exception& e) {
+        ::throwBoxException(m_box, QString("Security check has failed on library file '%1':\n%2").arg(libName, QString::fromUtf8(e.what())));
     }
     m_lib.load();
     if (!m_lib.isLoaded())
@@ -389,8 +387,14 @@ QStringList OdeCxxBox::OdeLibProxy::toNameList(const char *s)
 bool OdeCxxBox::libUpToDate(const QString &libName, const QString& hashString)
 {
     try {
-        OdeLibProxy lib(libName, this, false);
-        return lib.hash() == hashString;
+        QFileInfo fi(libName);
+        QString libFileName = fi.dir().absoluteFilePath("lib" + fi.baseName() + ".so");
+        if (QFileInfo::exists(libFileName)) {
+            OdeLibProxy lib(libName, this);
+            return lib.hash() == hashString;
+        }
+        else
+            return false;
     }
     catch (const EquaresException&) {
         return false;
