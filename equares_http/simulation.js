@@ -14,7 +14,8 @@ var SimSchema = mongoose.Schema({
     keywords:       {type: [String], index: true},
     script:         String,
     user:           {type: ObjectId, index: true},
-    public:         Boolean
+    public:         Boolean,
+    buildDirs:      {type: [String], index: true}
 })
 
 // give our schema text search capabilities
@@ -75,6 +76,7 @@ function refreshExamples() {
                     obj.script = ''
                 obj.user = null
                 obj.public = true
+                obj.buildDirs = []
                 console.log("  " + fileName + ": " + obj.name + " (" + obj.description + ")")
                 Sim.create(obj, function(err, sim) {
                     if (err)

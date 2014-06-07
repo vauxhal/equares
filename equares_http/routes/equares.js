@@ -44,6 +44,9 @@ equares.user = function(req) {
     var name = auth? req.user.username: ''  // TODO: session id
     return equares.users[name] || (equares.users[name] = new User(name, auth))
 }
+equares.anonymousUser = function() {
+    return equares.users[''] || (equares.users[''] = new User('', false))
+}
 
 User.prototype.runConfig = function(args) {
     function merge(a, b) {
@@ -383,6 +386,53 @@ commands['quickload'] = function(req, res) {
         res.send(sessionRecentSim())
 }
 
+// Finds build dirs for the specified simulation from database
+function buildDirs(sim, cb) {
+    var rc = equares.anonymousUser().runConfig(['-i', '-q'])
+    var stdin = ''
+    if (sim.script)
+        stdin += sim.script + '\n'
+    stdin += 'print(buildDirs(' + sim.definition + ').join("\n"))\n'
+    var proc = child_process.spawn(equares.programPath, rc.args, {cwd: rc.cwd});
+    var stdout = '', stderr = '', replied = false
+    function reply(text) {
+        if (!replied) {
+            replied = true
+            sim.buildDirs = text.split('\n')
+            cb(sim)
+        }
+    }
+
+    proc.stdout.on('data', function(chunk) {
+        stdout += chunk.toString()
+    })
+    proc.stderr.on('data', function(chunk) {
+        stderr += chunk.toString()
+    })
+    proc.stdin.on('error', function(){
+        console.log('buildDirs: Failed to start equares')
+        reply('')
+    })
+    proc.stdin.end(stdin)
+    proc.on('close', function(code) {
+        if (code === 0   &&   stderr.length === 0)
+            reply(stdout)
+        else {
+            console.log('buildDirs: Failed to retrieve build dirs: exit code=' + code + ', stderr:\n' + stderr + '\n\nstdout: ' + stdout)
+            reply('')
+        }
+    });
+    proc.on('error', function() {
+        if (stderr.length > 0   ||   stdout.length > 0)
+            // Process has started and returned a nonzero error code.
+            // This means that 'close' will follow - we will reply there.
+            // Note: Could not deduce reason for error from args, they are empty :(
+            return;
+        console.log('Failed to start equares')
+        reply('')
+    });
+}
+
 commands['savesim'] = function(req, res) {
     if (!ensureAuth(req, res))
         return
@@ -393,13 +443,15 @@ commands['savesim'] = function(req, res) {
         sim.public = false
 
     function save() {
-        simulation.Sim.upsert(sim, function(err, sim) {
-            if (err) {
-                console.log(err)
-                res.send(500, 'Failed to save simulation')
-            }
-            else
-                res.end()
+        buildDirs(sim, function(sim) {
+            simulation.Sim.upsert(sim, function(err, sim) {
+                if (err) {
+                    console.log(err)
+                    res.send(500, 'Failed to save simulation')
+                }
+                else
+                    res.end()
+            })
         })
     }
 
@@ -476,6 +528,29 @@ commands['delsim'] = function(req, res) {
             res.send(404, 'No such simulation')
     })
 }
+
+//*
+commands['testsim'] = function(req, res) {
+    if (!ensureAuth(req, res))
+        return
+    simulation.Sim.findBySpec(req.query.sim, function(err, s) {
+        if (err) {
+            console.log(err)
+            res.send(500)
+        }
+        else if (s) {
+            var sim = s.toObject()
+            //for (var i in {__v: 1, _id: 1, user: 1, date: 1})
+            //    delete sim[i]
+            buildDirs(sim, function(sim) {
+                res.end(sim.buildDirs.join('\n'))
+            })
+        }
+        else
+            res.send(404)
+    })
+}
+//*/
 
 module.exports = function() {
     return function(req, res, next) {

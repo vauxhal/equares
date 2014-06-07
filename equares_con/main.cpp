@@ -102,6 +102,21 @@ static QString readFile(const QString& fileName)
     return QString::fromUtf8(file.readAll());
 }
 
+static QScriptValue print(QScriptContext *context, QScriptEngine *engine) {
+    Q_UNUSED(engine);
+    int n = context->argumentCount();
+    QStringList args;
+    for (int i=0; i<n; ++i)
+        args << context->argument(i).toString();
+    // args << "---";
+    EQUARES_COUT << args.join(", ") << endl;
+    return QScriptValue();
+}
+
+void registerUtilFunc(QScriptEngine *engine) {
+    engine->globalObject().setProperty("print", engine->newFunction(print));
+}
+
 int main(int argc, char **argv)
 {
 #ifdef __linux__
@@ -115,6 +130,7 @@ int main(int argc, char **argv)
         enum Mode { RunMode, DescribeMode, ServerMode } mode = RunMode;
         QStringList nonFlagArgs;
         bool forceInteractive = false;
+        bool forceQuiet = false;
         QStringList args = app.arguments();
         args.removeFirst();
         QStringList describeSystemOptions;
@@ -145,6 +161,9 @@ int main(int argc, char **argv)
                 case 'b':
                     globalSettings["denyBuild"] = true;
                     break;
+                case 'q':
+                    forceQuiet = true;
+                    break;
                 default:
                     throw EquaresException(QString("Unrecognized option '%1'").arg(arg));
                 }
@@ -170,6 +189,7 @@ int main(int argc, char **argv)
         // Initialize equares core
         initBoxFactory();
         registerEquaresScriptTypes(&engine);
+        registerUtilFunc(&engine);
 
         bool ok = true;
 
@@ -178,7 +198,7 @@ int main(int argc, char **argv)
 
         switch (mode) {
         case RunMode:
-            ok = JsRunner::runFiles(engine, nonFlagArgs, true);
+            ok = JsRunner::runFiles(engine, nonFlagArgs, !forceQuiet);
             if (nonFlagArgs.isEmpty())
                 // Standard input is already processed
                 forceInteractive = false;
@@ -195,7 +215,7 @@ int main(int argc, char **argv)
 
         if (forceInteractive)
             // Process standard input (note: only runs if was ok)
-            ok = ok && JsRunner::runFiles(engine, QStringList(), mode != DescribeMode);
+            ok = ok && JsRunner::runFiles(engine, QStringList(), forceQuiet? false: mode != DescribeMode);
 
         if (mode == DescribeMode && ok)
             describeSystem(engine, nonFlagArgs, describeSystemOptions);

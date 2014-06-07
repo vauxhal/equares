@@ -1,4 +1,4 @@
-var runSimulation
+var runSimulation, buildDirs
 
 ;(function(){
 
@@ -55,8 +55,10 @@ function printVal(v, pad)
     case 'object':
         var a = v instanceof Array
         print (pad + (a?'[':'{'))
-        for (var i in v)
+        for (var i in v) {
+            print(pad + '[' + i + ']:')
             printVal(v[i], pad+'==')
+        }
         print (pad + (a?']':'}'))
         break;
     case 'undefined':
@@ -66,34 +68,39 @@ function printVal(v, pad)
     }
 }
 
-runSimulation = function(sim) {
-    var i
-    var boxes = {}
-    for (i=0; i<sim.boxes.length; ++i) {
-        var bx = sim.boxes[i]
-        var b = boxes[bx.name] = newx(bx.type)
-        b.name = bx.name
-        if (bx.props instanceof Object )
-            for (var propName in bx.props)
-                try {
-                    //*
-                    b[propName] = evalProp(bx.props[propName], b[propName])
-                    /*/
-                    // deBUG
-                    {
-                        print(bx.name + '.' + propName + ' (' + typeof(b[propName]) + ')')
-                        var v = evalProp(bx.props[propName], b[propName])
-                        print('-- before eval')
-                        printVal(bx.props[propName])
-                        print('-- after eval')
-                        printVal(v)
-                        b[propName] = v
-                    }
-                    //*/
-                } catch (err) {
-                    err.message = 'Unable to set property ' + bx.name + '.' + propName + ':\n' + err.message
-                    throw err
+function nativeBox(bx) {
+    var b = newx(bx.type)
+    b.name = bx.name
+    if (bx.props instanceof Object )
+        for (var propName in bx.props)
+            try {
+                //*
+                b[propName] = evalProp(bx.props[propName], b[propName])
+                /*/
+                // deBUG
+                {
+                print(bx.name + '.' + propName + ' (' + typeof(b[propName]) + ')')
+                var v = evalProp(bx.props[propName], b[propName])
+                print('-- before eval')
+                printVal(bx.props[propName])
+                print('-- after eval')
+                printVal(v)
+                b[propName] = v
                 }
+                //*/
+            } catch (err) {
+                err.message = 'Unable to set property ' + bx.name + '.' + propName + ':\n' + err.message
+                throw err
+            }
+    return b
+}
+
+function nativeSim(sim) {
+    var i,   n = sim.boxes.length
+    var boxes = {}
+    for (i=0; i<n; ++i) {
+        var bx = sim.boxes[i]
+        boxes[bx.name] = nativeBox(bx)
     }
     var links = []
     for (i=0; i<sim.links.length; ++i) {
@@ -104,9 +111,39 @@ runSimulation = function(sim) {
         ]
         links.push(l)
     }
-    this.s = new Simulation
+    var s = new Simulation
     s.setLinks(links)
+    return s
+}
+
+runSimulation = function(sim) {
+    var s = nativeSim(sim)
     s.run()
+}
+
+// Returns build dirs for the specified simulation from database
+// Note: The format of sim it not the same as in runSimulation():
+// we need to replace props[*] with props[*].value
+buildDirs = function(sim) {
+    var dirs = [], i, n = sim.boxes.length
+    for (i=0; i<n; ++i) {
+        var bx = sim.boxes[i]
+        var b = newx(bx.type)
+        if (!(b.buildDir instanceof Function))
+            continue
+
+        // Note: The format of sim it not the same as in runSimulation():
+        // we need to replace props[*] with props[*].value
+        for (var propName in bx.props)
+            bx.props[propName] = bx.props[propName].value
+
+        var d = b.buildDir(bx.props)
+        if (d instanceof Array)
+            dirs.concat(d)
+        else
+            dirs.push(d)
+    }
+    return dirs
 }
 
 })()

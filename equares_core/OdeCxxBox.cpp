@@ -15,6 +15,42 @@ static void throwBoxException(const Box *box, const QString& what) {
     throw EquaresBoxException(box, what);
 }
 
+// http://stackoverflow.com/questions/11050977/removing-a-non-empty-folder-in-qt
+static bool removeDir(const QString& dirName)
+{
+    bool result = true;
+    QDir dir(dirName);
+
+    if (dir.exists(dirName)) {
+        Q_FOREACH(QFileInfo info, dir.entryInfoList(QDir::NoDotAndDotDot | QDir::System | QDir::Hidden  | QDir::AllDirs | QDir::Files, QDir::DirsFirst)) {
+            if (info.isDir())
+                result = removeDir(info.absoluteFilePath());
+            else
+                result = QFile::remove(info.absoluteFilePath());
+            if (!result)
+                return result;
+        }
+        result = dir.rmdir(dirName);
+    }
+    return result;
+}
+
+class DirRemover
+{
+public:
+    explicit DirRemover(const QString& dirName) : m_dirName(dirName), m_cancel(false) {}
+    ~DirRemover() {
+        if (!m_cancel)
+            removeDir(m_dirName);
+    }
+    void cancel() {
+        m_cancel = true;
+    }
+private:
+    QString m_dirName;
+    bool m_cancel;
+};
+
 #ifdef _WIN32
 #define PLATFORM WINDOWS
 
@@ -130,10 +166,12 @@ static void buildLibWithQmake(const QDir& dir, const Box *box)
 
 static void buildLib(const QDir& dir, bool withQmake, const Box *box)
 {
+    DirRemover drm(dir.absolutePath());
     if (withQmake)
         buildLibWithQmake(dir, box);
     else
         buildLibNoQmake(dir, box);
+    drm.cancel();
 }
 
 REGISTER_BOX(OdeCxxBox, "CxxOde")
@@ -186,34 +224,12 @@ OdeCxxBox& OdeCxxBox::setSrc(const QString& src)
 {
     JSX_BEGIN
 
-    // Extract class name that will also be part of directory name
-    QString className;
-    {
-        QRegExp rx("^\\s*struct\\s+([a-zA-Z_][a-zA-Z0-9_]*)");
-        foreach (const QString& line, src.split('\n'))
-            if (rx.indexIn(line) != -1) {
-                className = rx.capturedTexts()[1];
-                Q_ASSERT(!className.isEmpty());
-                break;
-            }
-        if (className.isEmpty())
-            throwBoxException("Failed to set source: unable to retrieve struct name");
-    }
-
-    // Generate md5 checksum
-    QString hashString;
-    {
-        QCryptographicHash hash(QCryptographicHash::Md5);
-        hash.addData(src.toUtf8());
-        const char *xdigits = "0123456789abcdef";
-        foreach(unsigned char c, hash.result()) {
-            hashString += xdigits[(c>>4) & 0xf];
-            hashString += xdigits[c & 0xf];
-        }
-    }
+    // Get library dir name, class name, and hash string
+    QString className, hashString;
+    QString libDir = buildDirPriv(src, &className, &hashString);
 
     // Generate library subdir path
-    QString subdirPath = "equares/" + className + "_" + hashString;
+    QString subdirPath = "equares/" + libDir;
 
     // Library file full path name will be stored here
     QString libName;
@@ -288,6 +304,46 @@ OdeCxxBox& OdeCxxBox::setSrc(const QString& src)
 
     JSX_END
     return *this;
+}
+
+QString OdeCxxBox::buildDir(const QScriptValue &boxProps) const {
+    return buildDirPriv(boxProps.property("src").toString());
+}
+
+QString OdeCxxBox::buildDirPriv(const QString& src, QString *className, QString* hashString) const
+{
+    // Extract class name that will also be part of directory name
+    QString className_;
+    {
+        QRegExp rx("^\\s*struct\\s+([a-zA-Z_][a-zA-Z0-9_]*)");
+        foreach (const QString& line, src.split('\n'))
+            if (rx.indexIn(line) != -1) {
+                className_ = rx.capturedTexts()[1];
+                Q_ASSERT(!className_.isEmpty());
+                break;
+            }
+        if (className_.isEmpty())
+            throwBoxException("Failed to set source: unable to retrieve struct name");
+    }
+    if (className)
+        *className = className_;
+
+    // Generate md5 checksum
+    QString hashString_;
+    {
+        QCryptographicHash hash(QCryptographicHash::Md5);
+        hash.addData(src.toUtf8());
+        const char *xdigits = "0123456789abcdef";
+        foreach(unsigned char c, hash.result()) {
+            hashString_ += xdigits[(c>>4) & 0xf];
+            hashString_ += xdigits[c & 0xf];
+        }
+    }
+    if (hashString)
+        *hashString = hashString_;
+
+    // Generate library subdir path
+    return className_ + "_" + hashString_;
 }
 
 QString OdeCxxBox::srcExample() const {

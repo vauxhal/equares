@@ -96,6 +96,9 @@ public:
     };
     const OdeLibProxy *odeLibProxy() const;
 
+public slots:
+    QString buildDir(const QScriptValue& boxProps) const;
+
 private:
     mutable InputPort m_param;
     mutable InputPort m_state;
@@ -106,6 +109,7 @@ private:
     OdeLibProxy::Ptr m_libProxy;
 
     bool libUpToDate(const QString& libName, const QString& hashString);
+    QString buildDirPriv(const QString& src, QString *className = 0, QString* hashString = 0) const;
 };
 
 class OdeCxxRuntimeBox : public RuntimeBox
