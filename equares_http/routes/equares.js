@@ -5,6 +5,7 @@ var stream = require('stream');
 var fs = require('fs')
 var path = require('path')
 var simulation = require('../simulation')
+var auth = require('../auth')
 
 var equares = {};
 
@@ -564,3 +565,68 @@ module.exports = function() {
 }
 
 module.exports.boxInfo = boxInfo
+
+var removingOldBuildDirs = false
+function removeOldBuildDirs() {
+    if (removingOldBuildDirs)
+        return
+    removingOldBuildDirs = true
+    console.log('Removing old build directories...')
+    var usersRoot = path.normalize(__dirname + '/../users')
+
+    var tasks = 0, finished = false
+    function proceed() {
+        --tasks
+        if (!finished)
+            return
+        if (tasks < 0) {
+            console.log('...Finished removing old build directories')
+            removingOldBuildDirs = false
+        }
+    }
+
+    auth.User.find({}, {username: 1}).stream()
+        .on('data', function(doc) {
+            ++tasks
+            var username = doc.username, userId = doc._id
+            var userBuildDir = path.join(usersRoot, username, 'equares')
+            function inspectBuildDir(name) {
+                var buildPath = path.join(userBuildDir, name)
+                    fs.stat(buildPath, function(err, stats) {
+                        if (err)
+                            return proceed()
+                        if (!stats.isDirectory())
+                            return  proceed() // TODO: regular files removal
+                        simulation.Sim.count({user: userId, buildDirs: name}, function(err, n) {
+                            if (err || n > 0)
+                                return proceed()
+                            console.log('Removing old build directory ' + buildPath)
+                            child_process.exec('rm -rf ' + buildPath, function (error, stdout, stderr) {
+                                if (error)
+                                    console.log(stderr)
+                                proceed()
+                            })
+                        })
+                    })
+                }
+
+            fs.readdir(userBuildDir, function(err, files) {
+                if (err)
+                    return proceed()
+                tasks += files.length
+                proceed()
+                for (var i=0; i<files.length; ++i)
+                    inspectBuildDir(files[i])
+            })
+        })
+        .on('error', function (err) {
+            console.log(err)
+        })
+        .on('close', function () {
+            finished = true
+            proceed()
+        })
+}
+
+setTimeout(removeOldBuildDirs, 1000)
+setInterval(removeOldBuildDirs, 1000*60*60*24)
