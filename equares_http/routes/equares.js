@@ -591,7 +591,7 @@ function removeOldBuildDirs() {
     if (removingOldBuildDirs)
         return
     removingOldBuildDirs = true
-    console.log('Removing old build directories...')
+    console.log('Removing outdated user files ...')
     var usersRoot = path.normalize(__dirname + '/../users')
 
     var tasks = 0, finished = false
@@ -600,36 +600,60 @@ function removeOldBuildDirs() {
         if (!finished)
             return
         if (tasks < 0) {
-            console.log('...Finished removing old build directories')
+            console.log('... Finished removing outdated user files')
             removingOldBuildDirs = false
         }
     }
 
+    var now = (new Date).getTime()
+    var maxage = 23 // Maximum age of user result file, in hours
+    var rmrf = function(filePath) {
+        child_process.exec('rm -rf ' + filePath, function (error, stdout, stderr) {
+            if (error)
+                console.log(stderr)
+            proceed()
+        })
+    }
+
     auth.User.find({}, {username: 1}).stream()
         .on('data', function(doc) {
-            ++tasks
-            var username = doc.username, userId = doc._id
-            var userBuildDir = path.join(usersRoot, username, 'equares')
+            var username = doc.username, userId = doc._id,
+                userDir = path.join(usersRoot, username),
+                userBuildDir = path.join(userDir, 'equares')
             function inspectBuildDir(name) {
                 var buildPath = path.join(userBuildDir, name)
                     fs.stat(buildPath, function(err, stats) {
                         if (err)
                             return proceed()
-                        if (!stats.isDirectory())
-                            return  proceed() // TODO: regular files removal
+                        if (!stats.isDirectory()) {
+                            // Remove regular file
+                            console.log('Removing unexpected regular file ' + buildPath)
+                            return rmrf(buildPath)
+                        }
                         simulation.Sim.count({user: userId, buildDirs: name}, function(err, n) {
                             if (err || n > 0)
                                 return proceed()
                             console.log('Removing old build directory ' + buildPath)
-                            child_process.exec('rm -rf ' + buildPath, function (error, stdout, stderr) {
-                                if (error)
-                                    console.log(stderr)
-                                proceed()
-                            })
+                            rmrf(buildPath)
                         })
                     })
                 }
+            function inspectUserFile(name) {
+                if (name == 'equares')
+                    return proceed()    // Ignore build dir root
+                var filePath = path.join(userDir, name)
+                fs.stat(filePath, function(err, stats) {
+                    if (err)
+                        return proceed()
+                    var age = (now - stats.mtime.getTime())/(1000*60*60)
+                    if (age < maxage)
+                        return proceed()
+                    console.log('Removing file/dir ' + filePath + ' (age ' + age + 'h)')
+                    rmrf(filePath)
+                })
+            }
 
+            ++tasks
             fs.readdir(userBuildDir, function(err, files) {
                 if (err)
                     return proceed()
@@ -637,6 +661,16 @@ function removeOldBuildDirs() {
                 proceed()
                 for (var i=0; i<files.length; ++i)
                     inspectBuildDir(files[i])
+            })
+
+            ++tasks
+            fs.readdir(userDir, function(err, files) {
+                if (err)
+                    return proceed()
+                tasks += files.length
+                proceed()
+                for (var i=0; i<files.length; ++i)
+                    inspectUserFile(files[i])
             })
         })
         .on('error', function (err) {
