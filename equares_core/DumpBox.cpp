@@ -49,12 +49,13 @@ DumpRuntimeBox::DumpRuntimeBox(const DumpBox *box)
     m_dump.init(this, in[0], toPortNotifier(&DumpRuntimeBox::dump));
     setInputPorts(RuntimeInputPorts() << &m_dump);
     if (box->fileName().isEmpty())
-        m_cfile = stdout;
+        throwBoxException(QString("DumpRuntimeBox: Output file name is not specified (parameter fileName)"));
     else {
         m_cfile = fopen(box->fileName().toUtf8().data(), "w");
         if(!m_cfile)
             throwBoxException(QString("DumpRuntimeBox: Failed to open output file '%1'").arg(box->fileName()));
     }
+    m_totalDataWritten = 0;
 }
 
 DumpRuntimeBox::~DumpRuntimeBox()
@@ -78,6 +79,8 @@ bool DumpRuntimeBox::dump()
     int n = dumpPort->port()->format().dataSize();
     if (n == 0)
         return true;
+    if (m_totalDataWritten >= DataLimit)
+        return true;
     int m = dumpPort->port()->format().size(0);
     Q_ASSERT(m > 0);
     const double *data = dumpPort->data().data();
@@ -86,8 +89,16 @@ bool DumpRuntimeBox::dump()
         if (ii > 0)
             fputc('\t', m_cfile);
         fprintf(m_cfile, "%.16lg", data[i]);
+        ++m_totalDataWritten;
         if (ii+1 == m)
             fputc('\n', m_cfile);
+        if (m_totalDataWritten >= DataLimit) {
+            fprintf(m_cfile, "\n\n... (data size limit is exceeded)\n");
+            fclose(m_cfile);
+            m_cfile = 0;
+            ThreadManager::instance()->reportProgress(ProgressInfo().setSync(true) << fileName());
+            return true;
+        }
     }
     // TODO: decimate progress reports
 //    fflush(m_cfile);

@@ -840,17 +840,8 @@ equaresui.setSceneSource = function() {
                                 fi.jq.attr("src", svrname + "#" + new Date().getTime())
                                 break
                             case "text":
-                                // TODO: cut text, add download link
-                                $.get(svrname).done(function(text) {
-                                    text.replace("\r", "")
-                                    var lines = text.split("\n")
-                                        var table = wrap("table").appendTo(fi.jq.html(""))
-                                        for (var i=0; i<lines.length; ++i) {
-                                            var line = lines[i].split("\t")
-                                            var row = wrap("tr").appendTo(table)
-                                            for (var j=0; j<line.length; ++j)
-                                                wrap("td").html(line[j]).appendTo(row)
-                                        }
+                                $.get('cmd/simtextfile', {file:name}).done(function(data) {
+                                    fi.jq.html(data)
                                 })
                                 break
                             }

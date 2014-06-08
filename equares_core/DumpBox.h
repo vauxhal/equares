@@ -36,10 +36,12 @@ public:
 private:
     RuntimeInputPort m_dump;
 
+    enum { DataLimit = 1000000 };
     bool dump();
     QString fileName() const;
 
     FILE *m_cfile;
+    int m_totalDataWritten;
 };
 
 #endif // DUMPBOX_H

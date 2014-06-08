@@ -80,6 +80,9 @@ CanvasBox::Param CanvasBox::param() const {
 }
 
 CanvasBox& CanvasBox::setParam(const Param& param) {
+    if (param[0].resolution <= 0   ||   param[0].resolution > ResolutionLimit ||
+        param[1].resolution <= 0   ||   param[1].resolution > ResolutionLimit)
+        throwBoxException(QString("CanvasBox: Unable to set parameter: invalid resolution - should be in range [1,%1]").arg(ResolutionLimit));
     m_param = param;
     m_out.format().setSize(0, param[0].resolution);
     m_out.format().setSize(1, param[1].resolution);

@@ -24,6 +24,12 @@ void BitmapBox::checkPortFormat() const
         throwBoxException("BitmapBox: no format is specified for port 'input'");
     if (m_dump.format().dimension() != 2)
         throwBoxException("BitmapBox: a 2D format was expected for port 'input'");
+    if (m_dump.format().size(0) <= 0 ||
+        m_dump.format().size(1) <= 0)
+        throwBoxException(QString("BitmapBox: resolution invalid format (non-positive size) for port 'input'").arg(ResolutionLimit));
+    if (m_dump.format().size(0) > ResolutionLimit ||
+        m_dump.format().size(1) > ResolutionLimit)
+        throwBoxException(QString("BitmapBox: resolution limit (%1) is exceeded for port 'input'").arg(ResolutionLimit));
 }
 
 bool BitmapBox::propagatePortFormat() {

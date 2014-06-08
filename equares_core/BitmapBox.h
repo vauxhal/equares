@@ -21,6 +21,7 @@ public:
     QString fileName() const;
     BitmapBox& setFileName(const QString& fileName);
 private:
+    enum { ResolutionLimit = 2000 };
     mutable InputPort m_dump;
     QString m_fileName;
 };

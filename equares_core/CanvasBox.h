@@ -84,6 +84,7 @@ public:
     CanvasBox& setRefreshInterval(int refreshInterval);
 
 private:
+    enum { ResolutionLimit = 5000 };
     Param m_param;
     int m_refreshInterval;      // Refresh interval, in milliseconds
     mutable InputPort m_in;

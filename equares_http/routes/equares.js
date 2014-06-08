@@ -530,42 +530,62 @@ commands['delsim'] = function(req, res) {
     })
 }
 
-//*
-commands['testsim'] = function(req, res) {
+commands['simtextfile'] = function(req, res) {
     if (!ensureAuth(req, res))
         return
-    simulation.Sim.findBySpec(req.query.sim, function(err, s) {
-        if (err) {
-            console.log(err)
-            res.send(500)
+    var url = '/users/' + req.user.username + '/' + req.query.file
+    var file = path.normalize(__dirname + '/..' + url)
+    function makeTable(d) {
+        d = d.replace('\r', '').split('\n')
+        var n = d.length
+        if (n < 1)
+            return '<table></table>'
+        var rows = ''
+        for (var i=0; i<n; ++i) {
+            var cells = ''
+            var r = d[i].split('\t'), m = r.length
+            for (var j=0; j<m; ++j)
+                cells += '<td>' + r[j] + '</td>'
+            rows += '<tr>' + cells + '</tr>'
         }
-        else if (s) {
-            var sim = s.toObject()
-            //for (var i in {__v: 1, _id: 1, user: 1, date: 1})
-            //    delete sim[i]
-            buildDirs(sim, function(sim) {
-                res.end(sim.buildDirs.join('\n'))
+        return '<table>' + rows + '</table>'
+    }
+    fs.stat(file, function(err, stats) {
+        if (err)
+            return res.send(404)
+        if (stats.size === 0)
+            return res.send('empty file')
+        var sizeLimit = 100*1024, sizeToRead = stats.size <= sizeLimit? stats.size: sizeLimit
+        var replied = false
+        function reply(d) {
+            if (replied)
+                return
+            replied = true
+            if (typeof d == 'number')
+                return res.send(d)
+            var html = makeTable(d)
+            if (stats.size > sizeLimit)
+                html += '<br/>(truncated)'
+            html += '<br/><a href="' + url + '">download</a>'
+            res.send(html)
+        }
+
+        var data = ''
+        fs.createReadStream(file, {encoding: 'utf8', start: 0, end: sizeToRead-1})
+            .on('data', function(d) {
+                data += d
             })
-        }
-        else
-            res.send(404)
+            .on('end', function() {
+                reply(data)
+            })
+            .on('error', function(err) {
+                console.log(err)
+                reply(500)
+            })
     })
 }
-//*/
 
-module.exports = function() {
-    return function(req, res, next) {
-        var name = req.path.substr(1)
-        var cmd = commands[name]
-        if (cmd)
-            cmd(req, res)
-        else
-            res.send(404, 'Command not found')
-    }
-}
-
-module.exports.boxInfo = boxInfo
-
+// Cleanup service
 var removingOldBuildDirs = false
 function removeOldBuildDirs() {
     if (removingOldBuildDirs)
@@ -630,3 +650,17 @@ function removeOldBuildDirs() {
 
 setTimeout(removeOldBuildDirs, 1000)
 setInterval(removeOldBuildDirs, 1000*60*60*24)
+
+
+module.exports = function() {
+    return function(req, res, next) {
+        var name = req.path.substr(1)
+        var cmd = commands[name]
+        if (cmd)
+            cmd(req, res)
+        else
+            res.send(404, 'Command not found')
+    }
+}
+
+module.exports.boxInfo = boxInfo
