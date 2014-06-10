@@ -648,7 +648,7 @@ function removeOldBuildDirs() {
                     var age = (now - stats.mtime.getTime())/(1000*60*60)
                     if (age < maxage)
                         return proceed()
-                    console.log('Removing file/dir ' + filePath + ' (age ' + age + 'h)')
+                    console.log('Removing file/dir ' + filePath + ' (age ' + age + ' h)')
                     rmrf(filePath)
                 })
             }

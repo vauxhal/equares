@@ -88,7 +88,7 @@ bool BitmapRuntimeBox::dump()
         for (int row=0; row<nrows; ++row)
             for (int col=0; col<ncols; ++col, ++index) {
                 if (data[index] != 0)
-                    painter.fillRect(QRect(col,row,1,1), Qt::black);
+                    painter.fillRect(QRect(col,nrows-1-row,1,1), Qt::black);
             }
     }
     img.save(m_fileName);
