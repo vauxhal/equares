@@ -61,7 +61,8 @@ REGISTER_SCRIPT_INIT_FUNC(scriptInit)
 GridGeneratorBox::GridGeneratorBox(QObject *parent) :
     Box(parent),
     m_in("input", this),
-    m_out("output", this)
+    m_out("output", this),
+    m_flush("flush", this, PortFormat(0).setFixed())
 {
 }
 
@@ -70,7 +71,7 @@ InputPorts GridGeneratorBox::inputPorts() const {
 }
 
 OutputPorts GridGeneratorBox::outputPorts() const {
-    return OutputPorts() << &m_out;
+    return OutputPorts() << &m_out << &m_flush;
 }
 
 void GridGeneratorBox::checkPortFormat() const
@@ -113,6 +114,7 @@ GridGeneratorBox& GridGeneratorBox::setParam(const Param& param) {
         if (item.count <= 0   ||   item.count >= CountLimit)
             throwBoxException(QString("GridGeneratorBox: Unable to set parameter: invalid grid count %1 - should be in range [1, %2]").arg(item.count, CountLimit));
     }
+    m_param = param;
     return *this;
 }
 
@@ -130,7 +132,9 @@ GridGeneratorRuntimeBox::GridGeneratorRuntimeBox(const GridGeneratorBox *box) :
     OutputPorts out = box->outputPorts();
     m_data = QVector<double>(out[0]->format().dataSize(), 0);
     m_out.init(this, out[0], PortData(m_data.size(), m_data.data()));
-    setOutputPorts(RuntimeOutputPorts() << &m_out);
+    m_flush.init(this, out[1]);
+    m_midx.resize(m_param.size());
+    setOutputPorts(RuntimeOutputPorts() << &m_out << &m_flush);
 }
 
 // Increments multi-index stored in m_midx and
@@ -160,8 +164,9 @@ bool GridGeneratorRuntimeBox::processInput()
             const ParamItem& p = m_param[j];
             m_data[p.index] = p.interp(m_midx[j]);
         }
+        m_out.state().setValid();
         if (!m_out.activateLinks())
             return false;
     }
-    return true;
+    return m_flush.activateLinks();
 }

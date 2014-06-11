@@ -50,6 +50,7 @@ private:
     Param m_param;
     mutable InputPort m_in;
     mutable OutputPort m_out;
+    mutable OutputPort m_flush;
 };
 
 class EQUARES_CORESHARED_EXPORT GridGeneratorRuntimeBox : public RuntimeBox
@@ -60,6 +61,7 @@ public:
 private:
     RuntimeInputPort m_in;
     RuntimeOutputPort m_out;
+    RuntimeOutputPort m_flush;
 
     GridGeneratorBox::Param m_param;
     QVector<double> m_data;

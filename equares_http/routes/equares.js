@@ -262,6 +262,10 @@ commands['runSimulation'] = function(req, res) {
         var script = req.body.script,
             simulation = req.body.simulation
         var command = '===={\n' + script + '\nrunSimulation(\n' + JSON.stringify(simulation) + '\n)\n' + '====}'
+
+        // deBUG, TODO: Remove
+        fs.writeFile(user.runConfig([]).cwd + '/sim.json', JSON.stringify(simulation), {encoding: 'utf8'}, function() {})
+
         user.execCommand(command);
         res.send('Started simulation');
     }
