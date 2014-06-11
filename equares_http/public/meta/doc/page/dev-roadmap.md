@@ -16,7 +16,7 @@
 5. Solvers
    1. ODE solver for conservative system (RK2 trapezoid rule)
    2. CVODE solver
-   3. Algebraic equations
+   3. Nonlinear algebraic equations
    4. Linear algebra (LAPACK)
 6. Parallelization
    1. Multicore
@@ -24,7 +24,15 @@
    3. Cluster
 
 ### Boxes
-1. ParamArray
+1. ParamArray (with output port containing the description of the array of frames)
+2. Canvas with additional input port containing output data format
+3. Linear ODE with periodic coefficients
+4. Stability tester for linear ODE with periodic coefficients
+5. Phase portrait generator
+6. FDE (finite difference equation) of first order
+7. FDE runner (on output we know if the solution is periodic, limited, or growing)
+8. Line-by-line rasterizer
+9. Input transformer
 
 ## Web interface
 1. Email notifications
