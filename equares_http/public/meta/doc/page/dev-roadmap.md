@@ -33,6 +33,7 @@
 7. FDE runner (on output we know if the solution is periodic, limited, or growing)
 8. Line-by-line rasterizer
 9. Input transformer
+10. Canvas painter
 
 ## Web interface
 1. Email notifications
@@ -49,3 +50,6 @@
 ## Code
 1. Refactor web interface
 2. ?[Doxygen](http://www.doxygen.org) comments for core
+3. Make functionality of equares-box.js and partially of scheme-editor.js available in equares_core
+   in order to make it possible to run JSON-files stored in the DB. This will also fix potentially
+   buggy behavior of buildDirs().

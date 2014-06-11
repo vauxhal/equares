@@ -113,8 +113,18 @@ static QScriptValue print(QScriptContext *context, QScriptEngine *engine) {
     return QScriptValue();
 }
 
+static QScriptValue readFile(QScriptContext *context, QScriptEngine *engine) {
+    Q_UNUSED(engine);
+    if (context->argumentCount() != 1)
+        context->throwError("readFile(): one argument was expected");
+    QString fileName = context->argument(0).toString();
+    return readFile(fileName);
+}
+
 void registerUtilFunc(QScriptEngine *engine) {
     engine->globalObject().setProperty("print", engine->newFunction(print));
+    if (PerTypeStorage::instance<QVariantMap>().value("allowReadFile").toBool())
+        engine->globalObject().setProperty("readFile", engine->newFunction(readFile));
 }
 
 int main(int argc, char **argv)
@@ -150,8 +160,12 @@ int main(int argc, char **argv)
                 case 'd':
                     mode = DescribeMode;
                     break;
+                case 'f':
+                    globalSettings["allowReadFile"] = true;
+                    break;
                 case 's':
                     mode = ServerMode;
+                    // No break intentionally
                 case 'i':
                     forceInteractive = true;
                     break;
@@ -160,6 +174,7 @@ int main(int argc, char **argv)
                     break;
                 case 'b':
                     globalSettings["denyBuild"] = true;
+                    globalSettings["allowReadFile"] = false;
                     break;
                 case 'q':
                     forceQuiet = true;

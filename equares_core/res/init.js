@@ -1,6 +1,30 @@
-var runSimulation, buildDirs
+var runSimulation, buildDirs, runDbSim, printTree
 
 ;(function(){
+
+printTree = function(o, pad, name) {
+    if (typeof pad != 'string')
+        pad = ''
+    var t = typeof o
+    var s = pad
+    if (name)
+        s += name + ': '
+    s += t
+    if (t == 'object') {
+        var tn = o.constructor.name || 'unknown type'
+        s += ' (' + tn + ')'
+        if (o instanceof Array)
+            s += '[' + o.length + ']'
+        print(s)
+        var padd = pad + '    '
+        for (var i in o)
+            printTree(o[i], padd, i)
+    }
+    else {
+        s += ' = ' + JSON.stringify(o)
+        print(s)
+    }
+}
 
 function newx(type) { return new this[type] }
 
@@ -96,6 +120,9 @@ function nativeBox(bx) {
 }
 
 function nativeSim(sim) {
+    // deBUG, TODO: Remove
+//    printTree(sim)
+
     var i,   n = sim.boxes.length
     var boxes = {}
     for (i=0; i<n; ++i) {
@@ -135,7 +162,8 @@ buildDirs = function(sim) {
         // Note: The format of sim it not the same as in runSimulation():
         // we need to replace props[*] with props[*].value
         for (var propName in bx.props)
-            bx.props[propName] = bx.props[propName].value
+            bx.props[propName] = evalProp(bx.props[propName].value, b[propName])
+            // TODO: Remove bx.props[propName] = bx.props[propName].value
 
         var d = b.buildDir(bx.props)
         if (d instanceof Array)
@@ -144,6 +172,28 @@ buildDirs = function(sim) {
             dirs.push(d)
     }
     return dirs
+}
+
+function convertDbSim(dbsimdef) {
+    var sim = JSON.parse(dbsimdef)
+    // deBUG, TODO: Remove
+//    printTree(sim)
+    for (var i=0, n=sim.boxes.length; i<n; ++i) {
+        var bx = sim.boxes[i]
+        for (var propName in bx.props)
+            bx.props[propName] = bx.props[propName].value
+    }
+    // deBUG, TODO: Remove
+//    print('===')
+//    printTree(sim)
+    return sim
+}
+
+runDbSim = function(fileName) {
+    var dbsim = JSON.parse(readFile(fileName))
+    var sim = convertDbSim(dbsim.definition)
+    eval(dbsim.script)
+    runSimulation(sim)
 }
 
 })()
