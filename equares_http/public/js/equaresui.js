@@ -318,12 +318,87 @@ equaresui.setSceneSource = function() {
         return textarea
     }
 
+    function makeParameterValue(t)
+    {
+        if (t === undefined)
+            return undefined
+        if (t instanceof Array)
+            return []
+        if (t instanceof Object) {
+            var result = {}
+            for (var name in t)
+                result[name] = makeParameterValue(t[name])
+            return result
+        }
+        switch(t) {
+        case 's': case 't': case 'T': case 'M': return ''
+        case 'BoxType': return 'Param'
+        case 'i': case 'd': return 0
+        case 'b': return false
+        case 'i:*': case 's:*': return []
+        default: return undefined
+        }
+    }
+
     function makeEditor(host, prop) {
         var t = prop.userType
         if (t === undefined)
             host.html("N/A")
-        else if (t instanceof Array)
-            host.html("TODO: Array")
+        else if (t instanceof Array) {
+            var table = wrap("table").appendTo(host), odd = false
+            var length = prop.getter().length
+            for (var idx=0; idx<length; ++idx) {
+                var row = wrap("tr").appendTo(table)
+                row.addClass(odd ? "odd": "even")
+                row.append(wrap("td").html(idx))
+                var tdVal = wrap("td").appendTo(row)
+                ;(function(){    // Important: function provides closure for idx_
+                    var idx_ = idx
+                    makeEditor(tdVal,
+                        {
+                            name: idx,
+                            userType: t[0],
+                            getter: function() { return prop.getter()[idx_] },
+                            setter: function(val) {
+                                var v = prop.getter()
+                                v[idx_] = val
+                                prop.setter(v)
+                            }
+                        })
+                    wrap('td').appendTo(row)
+                        .append(
+                            $('<input type="button">')
+                                .attr("value", "-").click(function(){
+                                    var v = prop.getter()
+                                    v.splice(idx_, 1)
+                                    prop.setter(v)
+                                    equaresui.selectBox()
+                                })
+                        )
+                        .append(
+                            $('<input type="button">')
+                                .attr("value", "+").click(function(){
+                                    var v = prop.getter()
+                                    v.splice(idx_, 0, makeParameterValue(t[0]))
+                                    prop.setter(v)
+                                    equaresui.selectBox()
+                                })
+                        )
+                    odd = !odd
+                })()
+            }
+            table.append(wrap('tr').append(wrap('td')
+                .html($('<input type="button">')
+                    .attr("value", "+")
+                    .click(function() {
+                        var v = prop.getter()
+                        v.push(makeParameterValue(t[0]))
+                        prop.setter(v)
+                        equaresui.selectBox()
+                    })
+                )
+            ))
+        }
         else if (t instanceof Object) {
             var table = wrap("table").appendTo(host), odd = false
             for (var name in t) {
@@ -527,6 +602,10 @@ equaresui.setSceneSource = function() {
     equaresui.selectBox = function(box) {
         var pname
         var props
+        if (arguments.length == 0)
+            box = equaresui.selectedBox
+        else
+            equaresui.selectedBox = box
         if (box) {
             props = {
                 name: {
@@ -570,6 +649,7 @@ equaresui.setSceneSource = function() {
             })
         }
     }
+    equaresui.selectedBox = null
     
     // Load simulation properties
     var simPropFields = {name: 's', description: 's', info: 'M', keywords: 's:*', script: 't', public: 'b'}

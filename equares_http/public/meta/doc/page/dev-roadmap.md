@@ -53,3 +53,4 @@
 3. Make functionality of equares-box.js and partially of scheme-editor.js available in equares_core
    in order to make it possible to run JSON-files stored in the DB. This will also fix potentially
    buggy behavior of buildDirs().
+4. Get rid of hard-coded box list in page ```equares_http/views/doc-menu-pane.txt```

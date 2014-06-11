@@ -826,6 +826,10 @@ $.extend(equaresBox.rules, {
                 box.emit('critical')
             }
         }
-    }
+    },
+    GridGenerator: {
+        init: function() { setUnspecPortStatus(this, [0, 1]) },
+        port: function(port) { propagateFormat.call(this, port, 0, 1) }
+    },
 })
 })()
