@@ -41,7 +41,8 @@ SOURCES += equares_core.cpp \
     BoxSettings.cpp \
     PerTypeStorage.cpp \
     check_lib.cpp \
-    GridGeneratorBox.cpp
+    GridGeneratorBox.cpp \
+    ParamArrayBox.cpp
 
 HEADERS += equares_core.h\
         equares_core_global.h \
@@ -71,7 +72,8 @@ HEADERS += equares_core.h\
     equares_exec.h \
     PerTypeStorage.h \
     check_lib.h \
-    GridGeneratorBox.h
+    GridGeneratorBox.h \
+    ParamArrayBox.h
 
 symbian {
     MMP_RULES += EXPORTUNFROZEN

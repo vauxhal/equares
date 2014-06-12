@@ -12,4 +12,5 @@
    * Register your ```scriptInit()``` function using the ```REGISTER_SCRIPT_INIT_FUNC``` macro
 5. Provide an entry in file ```equares_core/res/BoxSettings.ini``` for your box
 6. Add a reference to your box in page ```equares_http/views/doc-menu-pane.jade``` (should become obsolete soon, see =[todo](/doc#page/dev-roadmap))
-7. Build, restart server, enjoy!
+7. Add box logics to filt ```equares_http/public/js/equares-box.js```
+8. Build, restart server, enjoy!

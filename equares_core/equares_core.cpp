@@ -200,17 +200,22 @@ void Runner::run()
     // Initiate process
     m_queue.clear();
     foreach (const RuntimeBox::Ptr& box, m_rtboxes)
-        if (box->inputPorts().empty())
+        if (!box->generator() && box->inputPorts().empty())
             foreach (const RuntimeOutputPort *port, box->outputPorts())
                 foreach (const RuntimeLink *link, port->links())
-                    postPortActivation(link->inputPort());
+                    postPortActivation(link->inputPort()->owner(), link->inputPort()->portNotifier());
+    foreach (const RuntimeBox::Ptr& box, m_rtboxes)
+        if (box->generator()) {
+            Q_ASSERT(box->inputPorts().empty());
+            postPortActivation(box.data(), box->generator());
+        }
 
     // Process enqueued boxes
     m_terminationRequested = 0;
     while (!m_queue.isEmpty()) {
         if (terminationRequested())
             break;
-        if (!m_queue.first()->activate())
+        if (!m_queue.first().activate())
             m_queue << m_queue.first();
         m_queue.removeFirst();
     }
@@ -233,8 +238,10 @@ bool Runner::terminationRequested() const {
     return terminationRequested != 0;
 }
 
-void Runner::postPortActivation(const RuntimeInputPort *port) {
-    m_queue << port;
+void Runner::postPortActivation(RuntimeBox *box, RuntimeBox::PortNotifier notifier) {
+    Q_ASSERT(box);
+    if (notifier)
+        m_queue << QueueItem(box, notifier);
 }
 
 

@@ -365,6 +365,9 @@ public:
     virtual OutputFileInfoList outputFileInfo() const {
         return OutputFileInfoList();
     }
+    virtual PortNotifier generator() const {
+        return 0;
+    }
 
 protected:
     template<class ThisClass>
@@ -542,13 +545,29 @@ public:
     void requestTermination();
     bool terminationRequested() const;
 
-    void postPortActivation(const RuntimeInputPort *port);
+    void postPortActivation(RuntimeBox *box, RuntimeBox::PortNotifier notifier);
 
 private:
     QList< RuntimeBox::Ptr > m_rtboxes;
     QList< RuntimeLink > m_rtlinks;
 
-    QList<const RuntimeInputPort *> m_queue;
+    class QueueItem {
+    public:
+        QueueItem(RuntimeBox *box, RuntimeBox::PortNotifier notifier) : box(box), notifier(notifier)
+        {
+            Q_ASSERT(box);
+            Q_ASSERT(notifier);
+        }
+        bool activate() const {
+            return (box->*notifier)();
+        }
+
+    private:
+        RuntimeBox *box;
+        RuntimeBox::PortNotifier notifier;
+    };
+
+    QList<QueueItem> m_queue;
     QAtomicInt m_terminationRequested;
 };
 

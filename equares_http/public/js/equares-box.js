@@ -689,6 +689,24 @@ $.extend(equaresBox.rules, {
             this.stateChanged("propset")
         }
     },
+    ParamArray: {
+        init: function() {
+            this.props["data"].toBoxProp = function(prop) {
+                var result = [], port = this.ports[0]
+                for (var i=0, n=prop.value.length; i<n; ++i)
+                    result = result.concat(port2value(prop.value[i], port))
+                return result
+            }
+            setUnspecPortStatus(this)
+        },
+        port: function(port) {
+            var t = port2type(port)
+            this.props["data"].userType = [t]
+            ;(t === undefined ? setUnspecPortStatus : setGoodStatus)(this)
+            this.prop("data", [])
+            this.stateChanged("propset")
+        }
+    },
     CrossSection: {
         init: function() { setUnspecPortStatus(this, [0, 1]) },
         port: function(port) { propagateFormat.call(this, port, 0, 1) }

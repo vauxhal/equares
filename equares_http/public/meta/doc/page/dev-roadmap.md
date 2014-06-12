@@ -24,7 +24,7 @@
    3. Cluster
 
 ### Boxes
-1. ParamArray (with output port containing the description of the array of frames)
+1. GridGenerator (with output port containing the description of the grid of frames)
 2. Canvas with additional input port containing output data format
 3. Linear ODE with periodic coefficients
 4. Stability tester for linear ODE with periodic coefficients
@@ -34,6 +34,8 @@
 8. Line-by-line rasterizer
 9. Input transformer
 10. Canvas painter
+11. ParamArray
+11. Interpolator
 
 ## Web interface
 1. Email notifications
@@ -46,6 +48,9 @@
    * Bug reports
 3. View for curves in 3D
 4. View for 2D and 3D projections of curve in nD
+5. Simulation scheme visualizer
+   * Move ports
+   * Allow curved links
 
 ## Code
 1. Refactor web interface
