@@ -114,7 +114,8 @@ public:
         proto.setPrototype(global.property("Object").property("prototype"));
 
         ctor = engine->newFunction(construct, proto);
-        ctor.setData(engine->toScriptValue(this));
+        QObject *q = this;
+        ctor.setData(engine->toScriptValue(q));
         engine->globalObject().setProperty(name(), ctor);
     }
 
