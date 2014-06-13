@@ -719,6 +719,10 @@ $.extend(equaresBox.rules, {
         init: function() { setUnspecPortStatus(this, [0, 1]) },
         port: function(port) { propagateFormat.call(this, port, 0, 1) }
     },
+    Interpolator: {
+        init: function() { setUnspecPortStatus(this, [0, 1]) },
+        port: function(port) { propagateFormat.call(this, port, 0, 1) }
+    },
     Valve: {
         init: function() { setUnspecPortStatus(this, [1, 2]) },
         port: function(port) { propagateFormat.call(this, port, 1, 2) }
