@@ -4,7 +4,7 @@
 #include "OdeBox.h"
 #include <cmath>
 
-struct VibratingPendulumOdeTraits {
+struct VibratingPendulumOdeTraits : OdeTraitsBase {
     enum {
         ParamCount = 4,     // l, g, a, omega
         VarCount = 2        // q, dq

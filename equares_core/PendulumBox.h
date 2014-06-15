@@ -4,7 +4,7 @@
 #include "OdeBox.h"
 #include <cmath>
 
-struct PendulumOdeTraits {
+struct PendulumOdeTraits : OdeTraitsBase {
     enum {
         ParamCount = 2,     // l, g
         VarCount = 2        // q, dq

@@ -43,7 +43,8 @@ SOURCES += equares_core.cpp \
     check_lib.cpp \
     GridGeneratorBox.cpp \
     ParamArrayBox.cpp \
-    InterpolatorBox.cpp
+    InterpolatorBox.cpp \
+    LinOdeStabCheckerBox.cpp
 
 HEADERS += equares_core.h\
         equares_core_global.h \
@@ -75,7 +76,8 @@ HEADERS += equares_core.h\
     check_lib.h \
     GridGeneratorBox.h \
     ParamArrayBox.h \
-    InterpolatorBox.h
+    InterpolatorBox.h \
+    LinOdeStabCheckerBox.h
 
 symbian {
     MMP_RULES += EXPORTUNFROZEN

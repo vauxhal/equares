@@ -607,7 +607,7 @@ function propagateFormat(port1, iin, iout) {
             if (f1.equals(f2))
                 setGoodStatus(this)
             else
-                setBadPortStatus(this, [iin, iout], "the same format was exoected")
+                setBadPortStatus(this, [iin, iout], "the same format was expected")
         }
         else
             setUnspecPortStatus(this, [iin, iout])
@@ -853,5 +853,10 @@ $.extend(equaresBox.rules, {
         init: function() { setUnspecPortStatus(this, [0, 1]) },
         port: function(port) { propagateFormat.call(this, port, 0, 1) }
     },
+    LinOdeStabChecker: {
+        port: function(port) {
+            propagateFormat.call(this, port, 1, 2)
+        }
+    }
 })
 })()

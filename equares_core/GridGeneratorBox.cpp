@@ -158,15 +158,17 @@ bool GridGeneratorRuntimeBox::processInput()
         return true;
     m_in.data().copyTo(&m_data[0]);
     m_midx.fill(0);
-    int i;
-    while ((i=incMidx()) >= 0) {
+    forever {
+        m_out.state().setValid();
+        if (!m_out.activateLinks())
+            return false;
+        int i = incMidx();
+        if (i < 0)
+            break;
         for (int j=0; j<=i; ++j) {
             const ParamItem& p = m_param[j];
             m_data[p.index] = p.interp(m_midx[j]);
         }
-        m_out.state().setValid();
-        if (!m_out.activateLinks())
-            return false;
     }
     return m_flush.activateLinks();
 }

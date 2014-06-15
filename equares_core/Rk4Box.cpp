@@ -127,7 +127,7 @@ bool Rk4RuntimeBox::start()
 
     int outputCounter = outputControl > 0 ?   outputControl :   nSteps;
     int runnerTermCheckCounter = nStepsBetweenRunnerTerminationCheck;
-    for (int step=0; step<nSteps; ++step) {
+    for (int step=0; step<nSteps; ++step, t+=h) {
         m_rhsState.setData(initData);
         m_rhsState.state().setValid();
         m_rhs.setData(PortData(m_n+1, m_k[0].data()));

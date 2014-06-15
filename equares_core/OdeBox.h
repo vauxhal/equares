@@ -24,7 +24,7 @@ public:
         return InputPorts() << &m_param << &m_state;
     }
     OutputPorts outputPorts() const {
-        return OutputPorts() << &m_rhs;
+        return OutputPorts() << &m_rhs << additionalOutputPorts();
     }
     void checkPortFormat() const {
         if (m_param.format() != PortFormat(OdeTraits::ParamCount))
@@ -43,6 +43,10 @@ protected:
     mutable InputPort m_param;
     mutable InputPort m_state;
     mutable OutputPort m_rhs;
+
+    virtual OutputPorts additionalOutputPorts() const {
+        return OutputPorts();
+    }
 };
 
 template<class OdeTraits>
@@ -55,11 +59,14 @@ public:
         InputPorts in = box->inputPorts();
         m_param.init(this, in[0], toPortNotifier(&OdeRuntimeBox::setParameters));
         m_state.init(this, in[1], toPortNotifier(&OdeRuntimeBox::setState));
-        setInputPorts(RuntimeInputPorts() << &m_param << &m_state);
 
         OutputPorts out = box->outputPorts();
-        m_rhs.init(this, out[0], PortData(2, m_rhsData));
-        setOutputPorts(RuntimeOutputPorts() << &m_rhs);
+        m_rhs.init(this, out[0], PortData(OdeTraits::VarCount, m_rhsData));
+
+        m_odeTraits.init(this);
+
+        setInputPorts(RuntimeInputPorts() << &m_param << &m_state);
+        setOutputPorts(RuntimeOutputPorts() << &m_rhs << m_odeTraits.additionalRuntimeOutputPorts());
 
         m_paramData = 0;
     }
@@ -97,5 +104,15 @@ template<class OdeTraits>
 inline RuntimeBox *OdeBox<OdeTraits>::newRuntimeBox() const {
     return new OdeRuntimeBox<OdeTraits>(this);
 }
+
+struct OdeTraitsBase
+{
+    RuntimeOutputPorts additionalRuntimeOutputPorts() const {
+        return RuntimeOutputPorts();
+    }
+    void init(RuntimeBox *owner) {
+        Q_UNUSED(owner);
+    }
+};
 
 #endif // ODEBOX_H
