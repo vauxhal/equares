@@ -156,6 +156,7 @@ var ctmEquaresSchemeEditor = {};
         var currentElement = null
         var prevCursorPos = null
         var draggingLine = false
+        var draggingPort = false
         var point
         (function() {
             var ptcache = null
@@ -177,22 +178,31 @@ var ctmEquaresSchemeEditor = {};
 
         DragHelper.prototype.beginDragPort = function(element, port, index) {
             d3.event.preventDefault()
-            if (!port.canConnect())
+            if (d3.event.ctrlKey) {
+                currentElement = element
+                draggingLine = false
+                draggingPort = true
+                prevCursorPos = null
+            }
+            else if (!port.canConnect())
                 return
-            currentElement = element
-            var pt = this.elpos(element, "cx", "cy")
-            var t = this.editor.maingroup.myTransform
-            pt.x -= t.x
-            pt.y -= t.y
-            var mp = d3.mouse(this.editor.maingroup.node())
-            this.dragLine
-                .attr("class", "scheme-drag-line")
-                .attr("x1", pt.x)
-                .attr("y1", pt.y)
-                .attr("x2", mp[0])
-                .attr("y2", mp[1])
-            draggingLine = true
-            prevCursorPos = null
+            else {
+                currentElement = element
+                var pt = this.elpos(element, "cx", "cy")
+                var t = this.editor.maingroup.myTransform
+                pt.x -= t.x
+                pt.y -= t.y
+                var mp = d3.mouse(this.editor.maingroup.node())
+                this.dragLine
+                    .attr("class", "scheme-drag-line")
+                    .attr("x1", pt.x)
+                    .attr("y1", pt.y)
+                    .attr("x2", mp[0])
+                    .attr("y2", mp[1])
+                draggingLine = true
+                draggingPort = false
+                prevCursorPos = null
+            }
         }
         DragHelper.prototype.beginDragBox = function(element, box, index) {
             currentElement = element
@@ -210,17 +220,20 @@ var ctmEquaresSchemeEditor = {};
                 this.dragLine.attr("class", "scheme-drag-line-hidden")
                 draggingLine = false
             }
+            draggingPort = false
             currentElement = null
             prevCursorPos = null
         }
         DragHelper.prototype.endDragPort = function(element, port, index) {
-            if (!draggingLine   ||   !(currentElement.__data__ instanceof Port))
+            if (!(draggingLine || draggingPort)   ||   !(currentElement.__data__ instanceof Port))
                 return
-            // Add new link if it is possible
-            var p1 = currentElement.__data__,   p2 = port
-            if (!equaresBox.canConnect(p1, p2))
-                return
-            this.editor.newLink(p1, p2)
+            if (draggingLine) {
+                // Add new link if it is possible
+                var p1 = currentElement.__data__,   p2 = port
+                if (!equaresBox.canConnect(p1, p2))
+                    return
+                this.editor.newLink(p1, p2)
+            }
         }
         DragHelper.prototype.onMouseUpMainRect = function(el) {
             if (!currentElement && clickTimer.clicked()) {
@@ -233,7 +246,56 @@ var ctmEquaresSchemeEditor = {};
             this.stopDragging()
         }
 
+        function normalizePortPos(portElement) {
+            var d = portElement.__data__,
+                sbox = d$(portElement.parentNode).select('.scheme-box-shape'),
+                width = +sbox.attr('width'), height = +sbox.attr('height'), rb = height / width,
+                cx = 0.5*width, cy = 0.5*height, x = d.x - cx, y = d.y - cy, eps = 1e-5, t
+            if (Math.abs(x) < eps) {
+                if (y > 0) {
+                    d.pos = 3.5
+                    y = cy
+                }
+                else {
+                    d.pos = 1.5
+                    y = -cy
+                }
+            }
+            else if (Math.abs(y) < eps) {
+                if (x > 0) {
+                    d.pos = 0.5
+                    x = cx
+                }
+                else {
+                    d.pos = 2.5
+                    x = -cx
+                }
+            }
+            else if (Math.abs(y/x) < rb) {
+                t = y / (Math.abs(x)*rb)
+                if (x > 0)
+                    d.pos = 0.5*(1-t)
+                else
+                    d.pos = 2 + 0.5*(1+t)
+                x = x > 0? cx: -cx
+                y = 0.5*t*height
+            }
+            else {
+                t = x*rb / Math.abs(y)
+                if (y < 0)
+                    d.pos = 1 + 0.5*(1-t)
+                else
+                    d.pos = 3 + 0.5*(1+t)
+                y = y > 0? cy: -cy
+                x = 0.5*t*width
+            }
+            d.x = cx + x
+            d.y = cy + y
+            d$(portElement).attr('cx', d.x).attr('cy', d.y)
+        }
+
         DragHelper.prototype.onMouseMove = function(el) {
+            var cursorPos, dx, dy
             if (draggingLine) {
                 // update drag line
                 var mp = d3.mouse(el)
@@ -241,10 +303,18 @@ var ctmEquaresSchemeEditor = {};
                     .attr("x2", mp[0])
                     .attr("y2", mp[1])
             }
-            if (prevCursorPos) {
-                var cursorPos = d3.mouse(currentElement? this.editor.maingroup.node(): this.editor.svg.node());
-                var dx = cursorPos[0] - prevCursorPos[0],
-                    dy = cursorPos[1] - prevCursorPos[1]
+            else if (draggingPort) {
+                var m = d3.mouse(currentElement.parentNode)
+                var d = currentElement.__data__
+                d.x = m[0]
+                d.y = m[1]
+                normalizePortPos(currentElement)
+                this.editor.update().modify()
+            }
+            else if (prevCursorPos) {
+                cursorPos = d3.mouse(currentElement? this.editor.maingroup.node(): this.editor.svg.node())
+                dx = cursorPos[0] - prevCursorPos[0]
+                dy = cursorPos[1] - prevCursorPos[1]
                 if (currentElement) {
                     var d = currentElement.__data__
                     d.x += dx
@@ -321,7 +391,7 @@ var ctmEquaresSchemeEditor = {};
         this.modified = true
         return this
     }
-    Editor.prototype.newBox = function(boxType, options) {
+    Editor.prototype.newBox = function(boxType, options, dontVisualize) {
         var opt = options || {}
 
         if (opt.offset) {
@@ -337,7 +407,9 @@ var ctmEquaresSchemeEditor = {};
         opt.index = this.boxes.length
         var result = new Box(boxType, opt)
         this.boxes.push(result)
-        this.visualize().modify()
+        if (!dontVisualize)
+            this.visualize()
+        this.modify()
         return result
     }
 
@@ -639,7 +711,7 @@ var ctmEquaresSchemeEditor = {};
         var i
         for (i=0; i<this.boxes.length; ++i) {
             var b = this.boxes[i],   bx = result.boxes[i] = {}
-            copyProps(bx, b, [ "name", "info/inputs", "info/outputs", "type", "props/*/value", "status", "x", "y" ])
+            copyProps(bx, b, [ "name", "info/inputs", "info/outputs", "type", "props/*/value", "status", "x", "y", "ports/*/pos" ])
         }
         for (i=0; i<this.links.length; ++i) {
             var l = this.links[i],   lx = result.links[i] = {}
@@ -693,7 +765,10 @@ var ctmEquaresSchemeEditor = {};
                     name: b.name,
                     info: b.info
                 }
-                editor.newBox(b.type, opt)
+                var newBox = editor.newBox(b.type, opt, true)
+                if (b.ports)
+                    for (j=0; j<b.ports.length; ++j)
+                        newBox.ports[j].pos = b.ports[j].pos
             }
 
             // Count the total number of critical parameters in all boxes;
