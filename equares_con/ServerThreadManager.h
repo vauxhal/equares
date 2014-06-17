@@ -6,6 +6,7 @@
 #include <QThreadStorage>
 #include <QMutex>
 #include <QSemaphore>
+#include <QBuffer>
 
 class ServerOutputStream : public DefaultOutputStream
 {
@@ -77,12 +78,17 @@ public:
 
     ThreadOutput::Ptr threadOutput() const;
     ThreadManager& setThreadOutput(ThreadOutput::Ptr threadOutput);
+    ThreadInput *threadInput() const;
+    ThreadManager& setThreadInput(ThreadInput::Ptr threadInput);
     int jobId() const;
     ThreadManager& start(Runnable *runnable);
     ThreadManager& reportProgress(const ProgressInfo& pi);
+    int registerInput(InputInfo::Ptr inputInfo);
+    QVector<double> readInput(int inputId, bool wait);
     ThreadManager& endSync(int jobId);
     ThreadManager& requestTermination(int jobId);
     ThreadManager& requestTermination();
+    ThreadManager& sendInput(int jobId, const QString& input);
 
     void initThread(ServerThread *thread, int jobId);
     void cleanupThread();
@@ -93,11 +99,11 @@ private:
         ServerThread *thread;
         int jobId;
         ThreadOutput::Ptr threadOutput;
+        QList<ThreadManagerInputData> inputData;
         ThreadData(ServerThread *thread, int jobId);
     };
 
     QThreadStorage<ThreadData*> m_threadData;
-    ThreadOutput::Ptr m_threadOutput;
 
     QMutex m_mutex;
     QList<ServerThread*> m_threads;
@@ -107,7 +113,13 @@ private:
     {
     public:
         ThreadSharedData() {}
-        explicit ThreadSharedData(ServerThread *thread) : m_thread(thread) {}
+        explicit ThreadSharedData(ServerThread *thread) :
+            m_threadInput(new QBuffer),
+            m_inputPos(0),
+            m_thread(thread)
+            {
+            m_threadInput->open(QIODevice::ReadWrite);
+            }
         QSemaphore *sem() const {
             if (!m_sem)
                 m_sem = SemPtr(new QSemaphore());
@@ -116,6 +128,8 @@ private:
         ServerThread *thread() const {
             return m_thread;
         }
+        QSharedPointer<QBuffer> m_threadInput;
+        qint64 m_inputPos;
     private:
         mutable SemPtr m_sem;
         ServerThread *m_thread;

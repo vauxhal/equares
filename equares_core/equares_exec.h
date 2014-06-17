@@ -7,6 +7,7 @@
 #include <QStringList>
 #include <QFile>
 #include <QSize>
+#include <QVector>
 #include "equares_core_global.h"
 #include "equares_common.h"
 
@@ -56,6 +57,37 @@ private:
     DefaultOutputStream m_stderrStream;
     QTextStream m_stdout;
     QTextStream m_stderr;
+};
+
+
+
+class EQUARES_CORESHARED_EXPORT ThreadInput
+{
+public:
+    typedef QSharedPointer<ThreadInput> Ptr;
+
+    virtual ~ThreadInput() {}
+    virtual QTextStream& standardInput() = 0;
+    virtual QIODevice& standardInputStream() = 0;
+};
+
+class EQUARES_CORESHARED_EXPORT DefaultInputStream : public QFile
+{
+public:
+    explicit DefaultInputStream();
+};
+
+class EQUARES_CORESHARED_EXPORT DefaultThreadInput : public ThreadInput
+{
+public:
+    DefaultThreadInput();
+
+    QTextStream& standardInput();
+    QIODevice& standardInputStream();
+
+private:
+    DefaultInputStream m_stdinStream;
+    QTextStream m_stdin;
 };
 
 
@@ -122,7 +154,7 @@ public:
     void createStubFile() const;
 
 private:
-    explicit OutputFileInfo(const QString& name, Type type, const QSize& size = QSize()) :
+    OutputFileInfo(const QString& name, Type type, const QSize& size = QSize()) :
         m_name(name), m_type(type), m_size(size) {}
     QString m_name;
     Type m_type;
@@ -130,6 +162,73 @@ private:
 };
 
 typedef QList<OutputFileInfo> OutputFileInfoList;
+
+
+class EQUARES_CORESHARED_EXPORT InputInfo
+{
+public:
+    typedef QSharedPointer<InputInfo> Ptr;
+    explicit InputInfo(const QString& consumerId) :
+        m_consumerId(consumerId) {}
+    ~InputInfo() {}
+    const QString& consumerId() const {
+        return m_consumerId;
+    }
+
+    virtual QString toString() const = 0;
+
+private:
+    QString m_consumerId;
+};
+
+class EQUARES_CORESHARED_EXPORT ImageInputInfo : public InputInfo
+{
+public:
+    enum Method {
+        ClickImage,
+        HoverImage
+    };
+    ImageInputInfo(const QString& consumerId, const QString& refImage, Method method = ClickImage) :
+        InputInfo(consumerId),
+        m_refImage(refImage), m_method(method) {}
+    QString toString() const;
+private:
+    QString m_refImage;
+    Method m_method;
+};
+
+class EQUARES_CORESHARED_EXPORT SimpleInputInfo : public InputInfo
+{
+public:
+    SimpleInputInfo(const QString& consumerId, const QStringList& names) :
+        InputInfo(consumerId),
+        m_names(names) {}
+    QString toString() const;
+private:
+    QStringList m_names;
+};
+
+class EQUARES_CORESHARED_EXPORT RangeInputInfo : public InputInfo
+{
+public:
+    struct Range {
+        QString name;
+        double vmin;
+        double vmax;
+        int resolution;
+        Range() : vmin(0), vmax(10), resolution(100) {}
+        Range(const QString& name, double vmin, double vmax, int resolution = 100) :
+            name(name), vmin(vmin), vmax(vmax), resolution(resolution) {}
+    };
+    typedef QList<Range> Ranges;
+
+    RangeInputInfo(const QString& consumerId, const Ranges& ranges) :
+        InputInfo(consumerId),
+        m_ranges(ranges) {}
+    QString toString() const;
+private:
+    Ranges m_ranges;
+};
 
 class EQUARES_CORESHARED_EXPORT ThreadManager
 {
@@ -144,11 +243,25 @@ public:
 
     virtual ThreadOutput::Ptr threadOutput() const = 0;
     virtual ThreadManager& setThreadOutput(ThreadOutput::Ptr threadOutput) = 0;
+    virtual ThreadInput *threadInput() const = 0;
     virtual ThreadManager& start(Runnable *runnable) = 0;
     virtual ThreadManager& reportProgress(const ProgressInfo& pi) = 0;
 
+    virtual int registerInput(InputInfo::Ptr inputInfo) = 0;
+    virtual QVector<double> readInput(int inputId, bool wait) = 0;
+
 private:
     static QList<ThreadManager*> m_instances;
+};
+
+struct ThreadManagerInputData
+{
+    typedef QVector<double> Chunk;
+    typedef QList<Chunk> Buf;
+    InputInfo::Ptr info;
+    Buf buf;
+    ThreadManagerInputData() {}
+    explicit ThreadManagerInputData(InputInfo::Ptr info) : info(info) {}
 };
 
 class EQUARES_CORESHARED_EXPORT DefaultThreadManager : public ThreadManager
@@ -158,11 +271,17 @@ public:
 
     ThreadOutput::Ptr threadOutput() const;
     ThreadManager& setThreadOutput(ThreadOutput::Ptr threadOutput);
+    ThreadInput *threadInput() const;
     ThreadManager& start(Runnable *runnable);
     ThreadManager& reportProgress(const ProgressInfo& pi);
 
+    int registerInput(InputInfo::Ptr inputInfo);
+    QVector<double> readInput(int inputId, bool wait);
+
 private:
     ThreadOutput::Ptr m_threadOutput;
+    ThreadInput::Ptr m_threadInput;
+    QList<ThreadManagerInputData> m_inputData;
 };
 
 #define EQUARES_COUT ThreadManager::instance()->threadOutput()->standardOutput()

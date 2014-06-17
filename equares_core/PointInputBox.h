@@ -4,52 +4,55 @@
 #include "equares_core.h"
 #include "equares_script.h"
 
-struct PointInputBoxDimParam
+struct PointInputBoxDimTransform
 {
     int index;
     double vmin;
     double vmax;
     int resolution;
-    PointInputBoxDimParam() : vmin(0), vmax(1), resolution(100) {}
-    PointInputBoxDimParam(double vmin, double vmax, int resolution) :
-        vmin(vmin), vmax(vmax), resolution(resolution) {}
-    int interp(int i) const {
+    PointInputBoxDimTransform() : index(0), vmin(0), vmax(1), resolution(100) {}
+    PointInputBoxDimTransform(int index, double vmin, double vmax, int resolution) :
+        index(index), vmin(vmin), vmax(vmax), resolution(resolution) {}
+    int transform(int i) const {
         Q_ASSERT(resolution > 0);
         double t = static_cast<double>(i) / resolution;
         return vmin + t*(vmax - vmin);
     }
 };
 
-Q_DECLARE_METATYPE(PointInputBoxDimParam)
+Q_DECLARE_METATYPE(PointInputBoxDimTransform)
 
-struct PointInputBoxParam
+struct PointInputBoxTransform
 {
 public:
-    PointInputBoxParam() {}
-    PointInputBoxParam(const PointInputBoxDimParam& d1, const PointInputBoxDimParam& d2) {
-        m_dimParam[0] = d1;
-        m_dimParam[1] = d2;
+    PointInputBoxTransform() {
+        m_dimTransform[1].index = 1;
+    }
+    PointInputBoxTransform(const PointInputBoxDimTransform& d1, const PointInputBoxDimTransform& d2) {
+        m_dimTransform[0] = d1;
+        m_dimTransform[1] = d2;
     }
 
-    PointInputBoxDimParam& operator[](int i) {
+    PointInputBoxDimTransform& operator[](int i) {
         Q_ASSERT(i==0 || i==1);
-        return m_dimParam[i];
+        return m_dimTransform[i];
     }
-    const PointInputBoxDimParam& operator[](int i) const {
-        return (*const_cast<PointInputBoxParam*>(this))[i];
+    const PointInputBoxDimTransform& operator[](int i) const {
+        return (*const_cast<PointInputBoxTransform*>(this))[i];
     }
 
 private:
-    PointInputBoxDimParam m_dimParam[2];
+    PointInputBoxDimTransform m_dimTransform[2];
 };
 
-Q_DECLARE_METATYPE(PointInputBoxParam)
+Q_DECLARE_METATYPE(PointInputBoxTransform)
 
 class EQUARES_CORESHARED_EXPORT PointInputBox : public Box
 {
     Q_OBJECT
-    Q_PROPERTY(PointInputBoxParam param READ param WRITE setParam)
+    Q_PROPERTY(PointInputBoxTransform transform READ transform WRITE setTransform)
     Q_PROPERTY(bool sync READ sync WRITE setSync)
+    Q_PROPERTY(bool loop READ loop WRITE setLoop)
     Q_PROPERTY(QString refBitmap READ refBitmap WRITE setRefBitmap)
 public:
     explicit PointInputBox(QObject *parent = 0);
@@ -60,19 +63,22 @@ public:
     void checkPortFormat() const;
     bool propagatePortFormat();
 
-    typedef PointInputBoxParam Param;
-    typedef PointInputBoxDimParam DimParam;
+    typedef PointInputBoxTransform Transform;
+    typedef PointInputBoxDimTransform DimTransform;
 
-    Param param() const;
-    PointInputBox& setParam(const Param& param);
+    Transform transform() const;
+    PointInputBox& setTransform(const Transform& param);
     bool sync() const;
     PointInputBox& setSync(bool sync);
+    bool loop() const;
+    PointInputBox& setLoop(bool loop);
     QString refBitmap() const;
     PointInputBox& setRefBitmap(const QString& refBitmap);
 
 private:
-    Param m_param;
+    Transform m_transform;
     bool m_sync;
+    bool m_loop;
     QString m_refBitmap;
     mutable InputPort m_activator;
     mutable InputPort m_in;
@@ -83,19 +89,23 @@ class EQUARES_CORESHARED_EXPORT PointInputRuntimeBox : public RuntimeBox
 {
 public:
     explicit PointInputRuntimeBox(const PointInputBox *box);
+    void registerInput();
 
 private:
     RuntimeInputPort m_activator;
     RuntimeInputPort m_in;
     RuntimeOutputPort m_out;
 
-    PointInputBox::Param m_param;
+    PointInputBox::Transform m_transform;
+    bool m_sync;
+    bool m_loop;
     QString m_refBitmap;
     QVector<double> m_data;
+    bool m_dataValid;
+    bool fetchInputPortData();
+    int m_inputId;
 
-    QVector<int> m_midx;
-
-    typedef PointInputBoxParam Param;
+    typedef PointInputBoxTransform Transform;
     bool activate();
     bool processInput();
 };

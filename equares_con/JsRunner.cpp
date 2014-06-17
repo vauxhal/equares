@@ -77,6 +77,7 @@ void JsRunner::runServer(QScriptEngine& engine)
     QRegExp cmdStart("^====\\{$");
     QRegExp cmdEnd("^====\\}$");
     QRegExp cmdSync("^==([0-9]+)==<$");
+    QRegExp cmdInput("^==([0-9]+)==:(.*)$");
     QRegExp cmdTerm("^==([0-9]+)==x$");
     QRegExp cmdTermAll("^====x$");
     QRegExp rxExit("^\\s*exit\\s*$");
@@ -97,6 +98,11 @@ void JsRunner::runServer(QScriptEngine& engine)
         if (cmdSync.exactMatch(s)) {
             int jobId = cmdSync.capturedTexts()[1].toInt();
             threadManager.endSync(jobId);
+        }
+        else if (cmdInput.exactMatch(s)) {
+            QStringList ct = cmdInput.capturedTexts();
+            int jobId = ct[1].toInt();
+            threadManager.sendInput(jobId, ct[2] + "\n");
         }
         else if (cmdTerm.exactMatch(s)) {
             int jobId = cmdTerm.capturedTexts()[1].toInt();

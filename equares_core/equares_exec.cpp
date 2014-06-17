@@ -21,6 +21,7 @@ bool DefaultOutputStream::isEmpty() const {
 }
 
 
+
 DefaultThreadOutput::DefaultThreadOutput() :
     m_stdoutStream(stdout),
     m_stderrStream(stderr),
@@ -39,6 +40,28 @@ QTextStream& DefaultThreadOutput::standardError() {
 
 bool DefaultThreadOutput::hasErrors() const {
     return !m_stderrStream.isEmpty();
+}
+
+
+
+DefaultInputStream::DefaultInputStream()
+{
+    open(stdin, QIODevice::ReadOnly, QFile::DontCloseHandle);
+}
+
+
+
+DefaultThreadInput::DefaultThreadInput() :
+    m_stdin(&m_stdinStream)
+{
+}
+
+QTextStream& DefaultThreadInput::standardInput() {
+    return m_stdin;
+}
+
+QIODevice& DefaultThreadInput::standardInputStream() {
+    return m_stdinStream;
 }
 
 
@@ -97,6 +120,26 @@ void OutputFileInfo::createStubFile() const
 
 
 
+QString ImageInputInfo::toString() const
+{
+    Q_ASSERT(false); // TODO
+    return QString();
+}
+
+QString SimpleInputInfo::toString() const
+{
+    Q_ASSERT(false); // TODO
+    return QString();
+}
+
+QString RangeInputInfo::toString() const
+{
+    Q_ASSERT(false); // TODO
+    return QString();
+}
+
+
+
 QList<ThreadManager*> ThreadManager::m_instances;
 
 ThreadManager::ThreadManager()
@@ -122,7 +165,8 @@ ThreadManager *ThreadManager::instance()
 
 
 DefaultThreadManager::DefaultThreadManager() :
-    m_threadOutput(new DefaultThreadOutput())
+    m_threadOutput(new DefaultThreadOutput()),
+    m_threadInput(new DefaultThreadInput())
 {
 }
 
@@ -133,6 +177,11 @@ ThreadOutput::Ptr DefaultThreadManager::threadOutput() const {
 ThreadManager& DefaultThreadManager::setThreadOutput(ThreadOutput::Ptr threadOutput) {
     m_threadOutput = threadOutput;
     return *this;
+}
+
+ThreadInput *DefaultThreadManager::threadInput() const
+{
+    return m_threadInput.data();
 }
 
 ThreadManager& DefaultThreadManager::start(Runnable *runnable)
@@ -161,4 +210,30 @@ ThreadManager& DefaultThreadManager::reportProgress(const ProgressInfo& pi)
     if (!msg.isEmpty())
         EQUARES_COUT << msg.join("\n") << endl;
     return *this;
+}
+
+int DefaultThreadManager::registerInput(InputInfo::Ptr inputInfo)
+{
+    int result = m_inputData.size();
+    m_inputData << ThreadManagerInputData(inputInfo);
+    return result;
+}
+
+QVector<double> DefaultThreadManager::readInput(int inputId, bool wait)
+{
+    // TODO
+    Q_ASSERT(inputId >= 0   &&   inputId < m_inputData.size());
+    ThreadManagerInputData::Buf& buf = m_inputData[inputId].buf;
+    if (buf.isEmpty()) {
+        if (wait) {
+            // TODO: wait for input
+            Q_ASSERT(false);
+        }
+        return QVector<double>();
+    }
+    else {
+        QVector<double> result = buf.first();
+        buf.removeFirst();
+        return result;
+    }
 }

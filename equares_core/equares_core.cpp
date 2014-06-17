@@ -197,6 +197,10 @@ void Runner::run()
         out << "end file announcement" << endl;
     }
 
+    // Register interactive input
+    foreach (RuntimeBox::Ptr box, m_rtboxes)
+        box->registerInput();
+
     // Initiate process
     m_queue.clear();
     foreach (const RuntimeBox::Ptr& box, m_rtboxes)

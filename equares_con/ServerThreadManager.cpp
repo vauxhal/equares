@@ -178,6 +178,13 @@ ThreadManager& ServerThreadManager::setThreadOutput(ThreadOutput::Ptr threadOutp
     return *this;
 }
 
+ThreadInput *ServerThreadManager::threadInput() const
+{
+    // TODO: Remove method from base
+    Q_ASSERT(false);
+    return 0;
+}
+
 int ServerThreadManager::jobId() const
 {
     Q_ASSERT(m_threadData.hasLocalData());
@@ -212,6 +219,75 @@ ThreadManager& ServerThreadManager::reportProgress(const ProgressInfo& pi)
     return *this;
 }
 
+int ServerThreadManager::registerInput(InputInfo::Ptr inputInfo)
+{
+    Q_ASSERT(m_threadData.hasLocalData());
+    ThreadData *td = m_threadData.localData();
+    QList<ThreadManagerInputData>& dlst = td->inputData;
+    int result = dlst.size();
+    dlst << ThreadManagerInputData(inputInfo);
+    return result;
+}
+
+QVector<double> ServerThreadManager::readInput(int inputId, bool wait)
+{
+    Q_ASSERT(m_threadData.hasLocalData());
+    ThreadData *td = m_threadData.localData();
+    QList<ThreadManagerInputData>& dlst = td->inputData;
+    Q_ASSERT(inputId >= 0   &&   inputId < dlst.size());
+    ThreadManagerInputData& d = dlst[inputId];
+
+    while (d.buf.isEmpty()) {
+        // Fetch data from thread input stream
+        QMutexLocker lock(&m_mutex);
+        ThreadMap::iterator it = m_threadSharedData.find(td->jobId);
+        Q_ASSERT(it != m_threadSharedData.end());
+        /*QTextStream& is = it.value().threadInput()->standardInput();
+        if (is.atEnd()) {
+            if (wait) {
+                lock.unlock();
+                td->thread->msleep(500);
+                continue;
+            }
+            else
+                return QVector<double>();
+        }
+        QString s = is.readLine();
+        */
+        QIODevice *is = it.value().m_threadInput.data();
+        qint64 pos = it.value().m_inputPos;
+        if (is->size() == pos) {
+            if (wait) {
+                lock.unlock();
+                td->thread->msleep(500);
+                continue;
+            }
+            else
+                return QVector<double>();
+        }
+        is->seek(pos);
+        QString s = QString::fromUtf8(is->readLine());
+        it.value().m_inputPos = pos = is->pos();
+        QStringList tokens = s.trimmed().split(QRegExp("\\s+"));
+        if (tokens.isEmpty())
+            continue;
+        for (int id=0; id<dlst.size(); ++id) {
+            ThreadManagerInputData& d = dlst[id];
+            if (tokens[0] != d.info->consumerId())
+                continue;
+            QVector<double> chunk(tokens.length()-1);
+            for (int i=1; i<tokens.length(); ++i)
+                chunk[i-1] = tokens[i].toDouble();
+            d.buf << chunk;
+        }
+    }
+
+    // Pick item at the beginning of the buffer
+    QVector<double> chunk = d.buf.first();
+    d.buf.removeFirst();
+    return chunk;
+}
+
 ThreadManager& ServerThreadManager::endSync(int jobId)
 {
     QSemaphore *sem = semSync(jobId);
@@ -237,6 +313,18 @@ ThreadManager& ServerThreadManager::requestTermination()
     foreach(const ThreadSharedData& d, m_threadSharedData) {
         d.sem()->release(MaxSemLocks);
         d.thread()->requestTermination();
+    }
+    return *this;
+}
+
+ThreadManager& ServerThreadManager::sendInput(int jobId, const QString& input)
+{
+    QMutexLocker lock(&m_mutex);
+    ThreadMap::iterator it = m_threadSharedData.find(jobId);
+    if (it != m_threadSharedData.end()) {
+        QIODevice *is = it.value().m_threadInput.data();
+        is->seek(is->size());
+        is->write(input.toUtf8());
     }
     return *this;
 }
