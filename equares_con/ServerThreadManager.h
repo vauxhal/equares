@@ -6,7 +6,6 @@
 #include <QThreadStorage>
 #include <QMutex>
 #include <QSemaphore>
-#include <QBuffer>
 
 class ServerOutputStream : public DefaultOutputStream
 {
@@ -59,6 +58,7 @@ class ServerThread : public QThread
 public:
     ServerThread(ServerThreadManager *threadMan, Runnable *runnable, int jobId);
     void requestTermination();
+    using QThread::msleep;  // Protected in Qt4
 
 protected:
     void run();
@@ -78,8 +78,6 @@ public:
 
     ThreadOutput::Ptr threadOutput() const;
     ThreadManager& setThreadOutput(ThreadOutput::Ptr threadOutput);
-    ThreadInput *threadInput() const;
-    ThreadManager& setThreadInput(ThreadInput::Ptr threadInput);
     int jobId() const;
     ThreadManager& start(Runnable *runnable);
     ThreadManager& reportProgress(const ProgressInfo& pi);
@@ -113,13 +111,7 @@ private:
     {
     public:
         ThreadSharedData() {}
-        explicit ThreadSharedData(ServerThread *thread) :
-            m_threadInput(new QBuffer),
-            m_inputPos(0),
-            m_thread(thread)
-            {
-            m_threadInput->open(QIODevice::ReadWrite);
-            }
+        explicit ThreadSharedData(ServerThread *thread) : m_thread(thread) {}
         QSemaphore *sem() const {
             if (!m_sem)
                 m_sem = SemPtr(new QSemaphore());
@@ -128,8 +120,7 @@ private:
         ServerThread *thread() const {
             return m_thread;
         }
-        QSharedPointer<QBuffer> m_threadInput;
-        qint64 m_inputPos;
+        QStringList m_threadInput;
     private:
         mutable SemPtr m_sem;
         ServerThread *m_thread;

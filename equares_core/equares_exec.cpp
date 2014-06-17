@@ -44,28 +44,6 @@ bool DefaultThreadOutput::hasErrors() const {
 
 
 
-DefaultInputStream::DefaultInputStream()
-{
-    open(stdin, QIODevice::ReadOnly, QFile::DontCloseHandle);
-}
-
-
-
-DefaultThreadInput::DefaultThreadInput() :
-    m_stdin(&m_stdinStream)
-{
-}
-
-QTextStream& DefaultThreadInput::standardInput() {
-    return m_stdin;
-}
-
-QIODevice& DefaultThreadInput::standardInputStream() {
-    return m_stdinStream;
-}
-
-
-
 QString OutputFileInfo::toString() const
 {
     QString result = "{\"name\": \"" + name() + "\", \"type\": ";
@@ -165,8 +143,7 @@ ThreadManager *ThreadManager::instance()
 
 
 DefaultThreadManager::DefaultThreadManager() :
-    m_threadOutput(new DefaultThreadOutput()),
-    m_threadInput(new DefaultThreadInput())
+    m_threadOutput(new DefaultThreadOutput())
 {
 }
 
@@ -177,11 +154,6 @@ ThreadOutput::Ptr DefaultThreadManager::threadOutput() const {
 ThreadManager& DefaultThreadManager::setThreadOutput(ThreadOutput::Ptr threadOutput) {
     m_threadOutput = threadOutput;
     return *this;
-}
-
-ThreadInput *DefaultThreadManager::threadInput() const
-{
-    return m_threadInput.data();
 }
 
 ThreadManager& DefaultThreadManager::start(Runnable *runnable)

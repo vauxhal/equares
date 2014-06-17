@@ -178,13 +178,6 @@ ThreadManager& ServerThreadManager::setThreadOutput(ThreadOutput::Ptr threadOutp
     return *this;
 }
 
-ThreadInput *ServerThreadManager::threadInput() const
-{
-    // TODO: Remove method from base
-    Q_ASSERT(false);
-    return 0;
-}
-
 int ServerThreadManager::jobId() const
 {
     Q_ASSERT(m_threadData.hasLocalData());
@@ -242,8 +235,8 @@ QVector<double> ServerThreadManager::readInput(int inputId, bool wait)
         QMutexLocker lock(&m_mutex);
         ThreadMap::iterator it = m_threadSharedData.find(td->jobId);
         Q_ASSERT(it != m_threadSharedData.end());
-        /*QTextStream& is = it.value().threadInput()->standardInput();
-        if (is.atEnd()) {
+        QStringList& threadInput = it.value().m_threadInput;
+        if (threadInput.isEmpty()) {
             if (wait) {
                 lock.unlock();
                 td->thread->msleep(500);
@@ -252,22 +245,8 @@ QVector<double> ServerThreadManager::readInput(int inputId, bool wait)
             else
                 return QVector<double>();
         }
-        QString s = is.readLine();
-        */
-        QIODevice *is = it.value().m_threadInput.data();
-        qint64 pos = it.value().m_inputPos;
-        if (is->size() == pos) {
-            if (wait) {
-                lock.unlock();
-                td->thread->msleep(500);
-                continue;
-            }
-            else
-                return QVector<double>();
-        }
-        is->seek(pos);
-        QString s = QString::fromUtf8(is->readLine());
-        it.value().m_inputPos = pos = is->pos();
+        QString s = threadInput.first();
+        threadInput.removeFirst();
         QStringList tokens = s.trimmed().split(QRegExp("\\s+"));
         if (tokens.isEmpty())
             continue;
@@ -321,11 +300,8 @@ ThreadManager& ServerThreadManager::sendInput(int jobId, const QString& input)
 {
     QMutexLocker lock(&m_mutex);
     ThreadMap::iterator it = m_threadSharedData.find(jobId);
-    if (it != m_threadSharedData.end()) {
-        QIODevice *is = it.value().m_threadInput.data();
-        is->seek(is->size());
-        is->write(input.toUtf8());
-    }
+    if (it != m_threadSharedData.end())
+        it.value().m_threadInput << input;
     return *this;
 }
 

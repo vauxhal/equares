@@ -61,37 +61,6 @@ private:
 
 
 
-class EQUARES_CORESHARED_EXPORT ThreadInput
-{
-public:
-    typedef QSharedPointer<ThreadInput> Ptr;
-
-    virtual ~ThreadInput() {}
-    virtual QTextStream& standardInput() = 0;
-    virtual QIODevice& standardInputStream() = 0;
-};
-
-class EQUARES_CORESHARED_EXPORT DefaultInputStream : public QFile
-{
-public:
-    explicit DefaultInputStream();
-};
-
-class EQUARES_CORESHARED_EXPORT DefaultThreadInput : public ThreadInput
-{
-public:
-    DefaultThreadInput();
-
-    QTextStream& standardInput();
-    QIODevice& standardInputStream();
-
-private:
-    DefaultInputStream m_stdinStream;
-    QTextStream m_stdin;
-};
-
-
-
 class ProgressInfo
 {
 public:
@@ -170,7 +139,7 @@ public:
     typedef QSharedPointer<InputInfo> Ptr;
     explicit InputInfo(const QString& consumerId) :
         m_consumerId(consumerId) {}
-    ~InputInfo() {}
+    virtual ~InputInfo() {}
     const QString& consumerId() const {
         return m_consumerId;
     }
@@ -243,7 +212,6 @@ public:
 
     virtual ThreadOutput::Ptr threadOutput() const = 0;
     virtual ThreadManager& setThreadOutput(ThreadOutput::Ptr threadOutput) = 0;
-    virtual ThreadInput *threadInput() const = 0;
     virtual ThreadManager& start(Runnable *runnable) = 0;
     virtual ThreadManager& reportProgress(const ProgressInfo& pi) = 0;
 
@@ -271,7 +239,6 @@ public:
 
     ThreadOutput::Ptr threadOutput() const;
     ThreadManager& setThreadOutput(ThreadOutput::Ptr threadOutput);
-    ThreadInput *threadInput() const;
     ThreadManager& start(Runnable *runnable);
     ThreadManager& reportProgress(const ProgressInfo& pi);
 
@@ -280,7 +247,6 @@ public:
 
 private:
     ThreadOutput::Ptr m_threadOutput;
-    ThreadInput::Ptr m_threadInput;
     QList<ThreadManagerInputData> m_inputData;
 };
 

@@ -194,6 +194,8 @@ bool PointInputRuntimeBox::activate()
         if (!(m_loop && m_sync))
             break;
         Q_ASSERT(input.size() == 2);
+        // deBUG
+        EQUARES_COUT << "PointInput: " << input[0] << input[1] << endl;
         for (int i=0; i<2; ++i) {
             const PointInputBoxDimTransform& t = m_transform[i];
             Q_ASSERT(t.index >= 0   &&   t.index < m_data.size());
