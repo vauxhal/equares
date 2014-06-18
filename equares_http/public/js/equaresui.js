@@ -848,14 +848,16 @@ equaresui.setSceneSource = function() {
                 var equaresOutputEvent = new EventSource("cmd/outputEvent");
                 var rxFile = /^==([0-9])+==\> file: (.*)/,
                     rxSync = /^==([0-9])+==\> sync/;
-                var outFileInfo = {}
+                var inputInfo = [],   inputRefs = {},   outFileInfo = {}
                 var started = false
-                var prefix, syncToken
+                var prefix, syncToken, inputPrefix
+                var iaStarted = false   // Input announcement started
+                var iaFinished = false  // Input announcement finished
                 var faStarted = false   // File announcement started
                 var faFinished = false  // File announcement finished
                 equaresOutputEvent.onmessage=function(event) {
                     data = JSON.parse(event.data);
-                    var str = data.text, i, fi, m
+                    var str = data.text, i, j, fi, ii, irefs, m
                     switch (data.stream) {
                     case 0: return  // Ignore stdin
                     case 1:         // Parse stdout
@@ -865,6 +867,7 @@ equaresui.setSceneSource = function() {
                             if (m && m.length > 1) {
                                 prefix = "==" + m[1] + "==> "
                                 syncToken = "==" + m[1] + "==<"
+                                inputPrefix = "==" + m[1] + "==:"
                                 started = true
                             }
                             return
@@ -874,6 +877,29 @@ equaresui.setSceneSource = function() {
                             return
                         // Cut prefix
                         str = str.substr(prefix.length).trimRight()
+                        if (!iaStarted) {
+                            // Wait for input annouuncement
+                            if (str === "begin input announcement")
+                                iaStarted = true
+                            return
+                        }
+                        if (!iaFinished) {
+                            // Process input annouuncement
+                            if (str === "end input announcement") {
+                                iaFinished = true
+                            }
+                            else {
+                                ii = JSON.parse(str)
+                                inputInfo.push(ii)
+                                if (ii.type === 'image') {
+                                    irefs = inputRefs[ii.refImage];
+                                    if (!irefs)
+                                        irefs = inputRefs[ii.refImage] = [];
+                                    irefs.push(ii)
+                                }
+                            }
+                            return
+                        }
                         if (!faStarted) {
                             // Wait for file annouuncement
                             if (str === "begin file announcement")
@@ -885,7 +911,17 @@ equaresui.setSceneSource = function() {
                             if (str === "end file announcement") {
                                 // Create elements for displaying announced files
                                 for(i in outFileInfo) {
-                                    outfiles.append('<span>'+i+'</span><br/>' )
+                                    irefs = inputRefs[i]
+                                    function inputMethods(irefs) {
+                                        var methods = {}
+                                        for (var j in irefs)
+                                            methods[irefs[j].method] = 1
+                                        var m = []
+                                        for (j in methods)
+                                            m.push(j)
+                                        return m.join(', ')
+                                    }
+                                    outfiles.append('<span>'+i+(irefs? ' (interactive: '+inputMethods(irefs)+')': '')+'</span><br/>' )
                                     fi = outFileInfo[i]
                                     switch(fi.type) {
                                     case "image":
@@ -895,6 +931,17 @@ equaresui.setSceneSource = function() {
                                             .addClass("outputFile")
                                             .appendTo(outfiles)
                                         outfiles.append("<br/>")
+                                        for (j in irefs) {
+                                            (function(iref) {  // Provide closure for irefs
+                                                fi.jq.on(iref.method, function(e) {
+                                                    $.ajax("cmd/input", {data: {cmd: inputPrefix + iref.consumer + ' ' + e.offsetX + ' ' + e.offsetY}, type: "GET", cache: false})
+                                                    .fail(function(error) {
+                                                        errorMessage(error.responseText || error.statusText || ("Ajax error: " + error.status))
+                                                    })
+                                                return
+                                                })
+                                            })(irefs[j])
+                                        }
                                         break
                                     case "text":
                                         fi.jq = wrap('div').addClass("outputFile").appendTo(outfiles).html("Waiting...")

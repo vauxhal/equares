@@ -171,9 +171,20 @@ void Runner::start(const Simulation *sim)
 
 void Runner::run()
 {
+    // Declare short name for EQUARES_COUT
+    QTextStream& out = EQUARES_COUT;
+
+    // Register and announce interactive input
+    out << "begin input announcement" << endl;
+    foreach (RuntimeBox::Ptr box, m_rtboxes) {
+        foreach (InputInfo::Ptr info, box->inputInfo())
+            out << info->toString() << endl;
+        box->registerInput();
+    }
+    out << "end input announcement" << endl;
+
     // Announce output files
     OutputFileInfoList ofi;
-    QTextStream& out = EQUARES_COUT;
     {
         // Gather output file information from all boxes
         foreach (const RuntimeBox::Ptr& box, m_rtboxes)
@@ -196,10 +207,6 @@ void Runner::run()
             out << info.toString() << endl;
         out << "end file announcement" << endl;
     }
-
-    // Register interactive input
-    foreach (RuntimeBox::Ptr box, m_rtboxes)
-        box->registerInput();
 
     // Initiate process
     m_queue.clear();

@@ -365,10 +365,13 @@ public:
     virtual OutputFileInfoList outputFileInfo() const {
         return OutputFileInfoList();
     }
+    virtual InputInfoList inputInfo() const {
+        return InputInfoList();
+    }
+    virtual void registerInput() {}
     virtual PortNotifier generator() const {
         return 0;
     }
-    virtual void registerInput() {}
 
 protected:
     template<class ThisClass>

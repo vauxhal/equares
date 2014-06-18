@@ -13,7 +13,7 @@ struct PointInputBoxDimTransform
     PointInputBoxDimTransform() : index(0), vmin(0), vmax(1), resolution(100) {}
     PointInputBoxDimTransform(int index, double vmin, double vmax, int resolution) :
         index(index), vmin(vmin), vmax(vmax), resolution(resolution) {}
-    int transform(int i) const {
+    double transform(int i) const {
         Q_ASSERT(resolution > 0);
         double t = static_cast<double>(i) / resolution;
         return vmin + t*(vmax - vmin);
@@ -89,6 +89,7 @@ class EQUARES_CORESHARED_EXPORT PointInputRuntimeBox : public RuntimeBox
 {
 public:
     explicit PointInputRuntimeBox(const PointInputBox *box);
+    InputInfoList inputInfo() const;
     void registerInput();
 
 private:

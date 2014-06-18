@@ -292,6 +292,19 @@ commands['sync'] = function(req, res) {
     }
 };
 
+commands['input'] = function(req, res) {
+    if (!ensureAuth(req, res))
+        return
+    var user = equares.user(req)
+    var command = req.query.cmd
+    if (!command.match(/^==\d+==\:.*$/))
+        res.send(403)
+    else {
+        user.execCommand(command)
+        res.send(user.isRunning(user)? '1': '0')
+    }
+};
+
 var equaresInfoCache = {};
 
 function boxInfo(req, box, cb) {

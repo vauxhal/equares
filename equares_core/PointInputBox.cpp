@@ -164,10 +164,13 @@ PointInputRuntimeBox::PointInputRuntimeBox(const PointInputBox *box) :
     m_dataValid = false;
 }
 
+InputInfoList PointInputRuntimeBox::inputInfo() const {
+    return InputInfoList() << InputInfo::Ptr(new ImageInputInfo(owner()->name(), m_refBitmap));
+}
+
 void PointInputRuntimeBox::registerInput()
 {
-    m_inputId = ThreadManager::instance()->registerInput(
-        InputInfo::Ptr(new ImageInputInfo(owner()->name(), m_refBitmap)));
+    m_inputId = ThreadManager::instance()->registerInput(inputInfo()[0]);
 }
 
 bool PointInputRuntimeBox::fetchInputPortData()
@@ -199,7 +202,10 @@ bool PointInputRuntimeBox::activate()
         for (int i=0; i<2; ++i) {
             const PointInputBoxDimTransform& t = m_transform[i];
             Q_ASSERT(t.index >= 0   &&   t.index < m_data.size());
-            m_data[t.index] = t.transform(static_cast<int>(input[i]));
+            int x = static_cast<int>(input[i]);
+            if (i == 1)
+                x = t.resolution - x;
+            m_data[t.index] = t.transform(x);
             m_out.state().setValid();
         }
         if (!m_out.activateLinks())

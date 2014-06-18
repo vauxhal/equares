@@ -239,7 +239,7 @@ QVector<double> ServerThreadManager::readInput(int inputId, bool wait)
         if (threadInput.isEmpty()) {
             if (wait) {
                 lock.unlock();
-                td->thread->msleep(500);
+                td->thread->msleep(200);
                 continue;
             }
             else

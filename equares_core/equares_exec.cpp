@@ -100,20 +100,42 @@ void OutputFileInfo::createStubFile() const
 
 QString ImageInputInfo::toString() const
 {
-    Q_ASSERT(false); // TODO
-    return QString();
+    return QString("{\"consumer\": \"%1\", \"type\": \"image\", \"method\": \"%2\", \"refImage\": \"%3\"}")
+        .arg(consumerId(), methodToString(m_method), m_refImage);
+}
+
+QString ImageInputInfo::methodToString(Method method) {
+    switch (method) {
+    case ClickImage: return "click";
+    case HoverImage: return "hover";
+    default: Q_ASSERT(false); return "unknown";
+    }
 }
 
 QString SimpleInputInfo::toString() const
 {
-    Q_ASSERT(false); // TODO
-    return QString();
+    QString result = QString("{\"consumer\": \"%1\", \"type\": \"simple\", \"items\": [");
+    for (int i=0; i<m_names.size(); ++i) {
+        if (i > 0)
+            result += ", ";
+        result += "\"" + m_names[i] + "\"";
+    }
+    result += "]}";
+    return result;
 }
 
 QString RangeInputInfo::toString() const
 {
-    Q_ASSERT(false); // TODO
-    return QString();
+    QString result = QString("{\"consumer\": \"%1\", \"type\": \"range\", \"items\": [");
+    for (int i=0; i<m_ranges.size(); ++i) {
+        if (i > 0)
+            result += ", ";
+        const Range& r = m_ranges[i];
+        result += QString("{\"name\": \"%1\", \"vmin\": \"%2\", \"vmax\": \"%3\", \"resolution\": \"%4\"}")
+            .arg(r.name, QString::number(r.vmin), QString::number(r.vmax), QString::number(r.resolution));
+    }
+    result += "]}";
+    return result;
 }
 
 

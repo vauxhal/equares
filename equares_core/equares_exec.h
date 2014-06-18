@@ -150,6 +150,8 @@ private:
     QString m_consumerId;
 };
 
+typedef QList<InputInfo::Ptr> InputInfoList;
+
 class EQUARES_CORESHARED_EXPORT ImageInputInfo : public InputInfo
 {
 public:
@@ -164,6 +166,7 @@ public:
 private:
     QString m_refImage;
     Method m_method;
+    static QString methodToString(Method method);
 };
 
 class EQUARES_CORESHARED_EXPORT SimpleInputInfo : public InputInfo
