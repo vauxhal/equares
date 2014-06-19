@@ -583,7 +583,7 @@ commands['simtextfile'] = function(req, res) {
             var html = makeTable(d)
             if (stats.size > sizeLimit)
                 html += '<br/>(truncated)'
-            html += '<br/><a href="' + url + '">download</a>'
+            html += '<br/><a href="' + url + '" target="_blank">download</a>'
             res.send(html)
         }
 

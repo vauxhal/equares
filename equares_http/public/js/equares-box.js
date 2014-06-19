@@ -754,7 +754,7 @@ $.extend(equaresBox.rules, {
         prop: function(name) {
             if (name === "param") {
                 var v = this.prop(name)
-                setFormat(this.ports[2], {format: [v.x.resolution, v.y.resolution]})
+                setFormat(this.ports[3], {format: [v.x.resolution, v.y.resolution]})
             }
         },
         port: function(port) {

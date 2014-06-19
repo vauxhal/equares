@@ -180,6 +180,16 @@ private:
     QStringList m_names;
 };
 
+class EQUARES_CORESHARED_EXPORT SignalInputInfo : public InputInfo
+{
+public:
+    SignalInputInfo(const QString& consumerId, const QString& signalName) :
+        InputInfo(consumerId), m_signalName(signalName) {}
+    QString toString() const;
+private:
+    QString m_signalName;
+};
+
 class EQUARES_CORESHARED_EXPORT RangeInputInfo : public InputInfo
 {
 public:

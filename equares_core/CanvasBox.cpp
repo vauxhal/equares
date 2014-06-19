@@ -47,12 +47,13 @@ CanvasBox::CanvasBox(QObject *parent) :
     m_refreshInterval(0),
     m_in("input", this, PortFormat(2).setFixed()),
     m_flush("flush", this),
+    m_clear("clear", this),
     m_out("output", this, PortFormat(m_param[0].resolution, m_param[1].resolution).setFixed())
 {
 }
 
 InputPorts CanvasBox::inputPorts() const {
-    return InputPorts() << &m_in << &m_flush;
+    return InputPorts() << &m_in << &m_flush << &m_clear;
 }
 
 OutputPorts CanvasBox::outputPorts() const {
@@ -109,7 +110,8 @@ CanvasRuntimeBox::CanvasRuntimeBox(const CanvasBox *box) :
     InputPorts in = box->inputPorts();
     m_in.init(this, in[0], toPortNotifier(&CanvasRuntimeBox::processInput));
     m_flush.init(this, in[1], PortNotifier(&CanvasRuntimeBox::flush));
-    setInputPorts(RuntimeInputPorts() << &m_in << &m_flush);
+    m_clear.init(this, in[1], PortNotifier(&CanvasRuntimeBox::clear));
+    setInputPorts(RuntimeInputPorts() << &m_in << &m_flush << &m_clear);
 
     OutputPorts out = box->outputPorts();
     m_data = QVector<double>(out[0]->format().dataSize(), 0);
@@ -138,4 +140,10 @@ bool CanvasRuntimeBox::flush()
 {
     m_out.state().setValid();
     return m_out.activateLinks();
+}
+
+bool CanvasRuntimeBox::clear()
+{
+    m_data.fill(0);
+    return flush();
 }

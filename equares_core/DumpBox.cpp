@@ -4,12 +4,13 @@ REGISTER_BOX(DumpBox, "Dump")
 
 DumpBox::DumpBox(QObject *parent) :
     Box(parent),
-    m_dump("input", this)
+    m_dump("input", this),
+    m_flush("flush", this)
 {
 }
 
 InputPorts DumpBox::inputPorts() const {
-    return InputPorts() << &m_dump;
+    return InputPorts() << &m_dump << &m_flush;
 }
 
 OutputPorts DumpBox::outputPorts() const {
@@ -47,7 +48,8 @@ DumpRuntimeBox::DumpRuntimeBox(const DumpBox *box)
 
     InputPorts in = box->inputPorts();
     m_dump.init(this, in[0], toPortNotifier(&DumpRuntimeBox::dump));
-    setInputPorts(RuntimeInputPorts() << &m_dump);
+    m_flush.init(this, in[1], PortNotifier(&DumpRuntimeBox::flush));
+    setInputPorts(RuntimeInputPorts() << &m_dump << &m_flush);
     if (box->fileName().isEmpty())
         throwBoxException(QString("DumpRuntimeBox: Output file name is not specified (parameter fileName)"));
     else {
@@ -100,10 +102,13 @@ bool DumpRuntimeBox::dump()
             return true;
         }
     }
-    // TODO: decimate progress reports
-//    fflush(m_cfile);
-//    ThreadManager::instance()->reportProgress(ProgressInfo().setSync(true) << fileName());
     return true;
+}
+
+void DumpRuntimeBox::flush()
+{
+    fflush(m_cfile);
+    ThreadManager::instance()->reportProgress(ProgressInfo().setSync(true) << fileName());
 }
 
 QString DumpRuntimeBox::fileName() const

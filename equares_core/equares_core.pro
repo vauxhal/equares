@@ -45,7 +45,10 @@ SOURCES += equares_core.cpp \
     ParamArrayBox.cpp \
     InterpolatorBox.cpp \
     LinOdeStabCheckerBox.cpp \
-    PointInputBox.cpp
+    PointInputBox.cpp \
+    SimpleInputBox.cpp \
+    RangeInputBox.cpp \
+    SignalInputBox.cpp
 
 HEADERS += equares_core.h\
         equares_core_global.h \
@@ -79,7 +82,10 @@ HEADERS += equares_core.h\
     ParamArrayBox.h \
     InterpolatorBox.h \
     LinOdeStabCheckerBox.h \
-    PointInputBox.h
+    PointInputBox.h \
+    SimpleInputBox.h \
+    RangeInputBox.h \
+    SignalInputBox.h
 
 symbian {
     MMP_RULES += EXPORTUNFROZEN

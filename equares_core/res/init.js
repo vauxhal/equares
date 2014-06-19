@@ -32,8 +32,13 @@ function evalProp(src, dst)
 {
     switch (typeof dst)
     {
-    case 'string': case 'boolean':
+    case 'string':
         return src
+    case 'boolean':
+        if (typeof src === 'string')
+            return src === 'true'
+        else
+            return src? true: false
     case 'number':
         try {
             return eval(src)

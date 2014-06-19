@@ -23,6 +23,7 @@ public:
     DumpBox& setFileName(const QString& fileName);
 private:
     mutable InputPort m_dump;
+    mutable InputPort m_flush;
     QString m_fileName;
 };
 
@@ -35,9 +36,11 @@ public:
 
 private:
     RuntimeInputPort m_dump;
+    RuntimeInputPort m_flush;
 
     enum { DataLimit = 1000000 };
     bool dump();
+    void flush();
     QString fileName() const;
 
     FILE *m_cfile;

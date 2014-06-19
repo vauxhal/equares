@@ -89,6 +89,7 @@ private:
     int m_refreshInterval;      // Refresh interval, in milliseconds
     mutable InputPort m_in;
     mutable InputPort m_flush;
+    mutable InputPort m_clear;
     mutable OutputPort m_out;
 };
 
@@ -100,6 +101,7 @@ public:
 private:
     RuntimeInputPort m_in;
     RuntimeInputPort m_flush;
+    RuntimeInputPort m_clear;
     RuntimeOutputPort m_out;
 
     CanvasBox::Param m_param;
@@ -109,6 +111,7 @@ private:
 
     bool processInput();
     bool flush();
+    bool clear();
 };
 
 #endif // CANVASBOX_H

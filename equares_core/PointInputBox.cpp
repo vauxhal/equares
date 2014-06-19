@@ -162,6 +162,7 @@ PointInputRuntimeBox::PointInputRuntimeBox(const PointInputBox *box) :
 
     m_inputId = -1;
     m_dataValid = false;
+    m_iinputDataValid = false;
 }
 
 InputInfoList PointInputRuntimeBox::inputInfo() const {
@@ -191,34 +192,42 @@ bool PointInputRuntimeBox::activate()
     forever {
         if (!fetchInputPortData())
             return false;
-        QVector<double> input = ThreadManager::instance()->readInput(m_inputId, m_sync);
-        if (input.isEmpty())
+        if (!m_iinputDataValid) {
+            m_iinputData = ThreadManager::instance()->readInput(m_inputId, m_sync);
+            m_iinputDataValid = true;
+        }
+        if (m_iinputData.isEmpty()) {
+            if (!m_sync)
+                m_iinputDataValid = false;
             return true;
-        if (!(m_loop && m_sync))
-            break;
-        Q_ASSERT(input.size() == 2);
-        // deBUG
-        EQUARES_COUT << "PointInput: " << input[0] << input[1] << endl;
+        }
+        Q_ASSERT(m_iinputData.size() == 2);
         for (int i=0; i<2; ++i) {
             const PointInputBoxDimTransform& t = m_transform[i];
             Q_ASSERT(t.index >= 0   &&   t.index < m_data.size());
-            int x = static_cast<int>(input[i]);
+            int x = static_cast<int>(m_iinputData[i]);
             if (i == 1)
                 x = t.resolution - x;
             m_data[t.index] = t.transform(x);
-            m_out.state().setValid();
         }
-        if (!m_out.activateLinks())
+        m_out.state().setValid();
+        if (m_out.activateLinks())
+            m_iinputDataValid = false;
+        else
             return false;
+        if (!(m_loop && m_sync))
+            return true;
     }
-    return true;
 }
 
 bool PointInputRuntimeBox::processInput()
 {
-    // TODO
     Q_ASSERT(m_in.state().hasData());
     m_dataValid = false;
-    fetchInputPortData();
-    return m_out.activateLinks();
+    if (m_sync)
+        return activate();
+    else {
+        fetchInputPortData();
+        return m_out.activateLinks();
+    }
 }

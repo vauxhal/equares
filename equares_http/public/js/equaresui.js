@@ -831,6 +831,7 @@ equaresui.setSceneSource = function() {
                     $.ajax("cmd/toggle", {type: "GET", cache: false})
                 }
 
+                var interactiveInput = $('#simulation-interactive-input').html("").css("text-align", "center")
                 var outfiles = $("#simulation-output-files").html("").css("text-align", "center")
 
                 var equaresStatEvent = new EventSource("cmd/statEvent");
@@ -891,11 +892,25 @@ equaresui.setSceneSource = function() {
                             else {
                                 ii = JSON.parse(str)
                                 inputInfo.push(ii)
-                                if (ii.type === 'image') {
+                                switch (ii.type) {
+                                case 'image':
                                     irefs = inputRefs[ii.refImage];
                                     if (!irefs)
                                         irefs = inputRefs[ii.refImage] = [];
                                     irefs.push(ii)
+                                    break
+                                case 'signal':
+                                    (function(ii) { // Closure for ii
+                                        interactiveInput.append(
+                                            $('<input type="button" value="' + ii.name + '"/>').click(function() {
+                                                $.ajax("cmd/input", {data: {cmd: inputPrefix + ii.consumer + ' 1'}, type: "GET", cache: false})
+                                                    .fail(function(error) {
+                                                        errorMessage(error.responseText || error.statusText || ("Ajax error: " + error.status))
+                                                    })
+                                                })
+                                        )
+                                    })(ii)
+                                    break
                                 }
                             }
                             return

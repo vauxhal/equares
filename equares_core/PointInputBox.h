@@ -104,6 +104,8 @@ private:
     QVector<double> m_data;
     bool m_dataValid;
     bool fetchInputPortData();
+    QVector<double> m_iinputData;
+    bool m_iinputDataValid;
     int m_inputId;
 
     typedef PointInputBoxTransform Transform;

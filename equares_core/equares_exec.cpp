@@ -114,7 +114,8 @@ QString ImageInputInfo::methodToString(Method method) {
 
 QString SimpleInputInfo::toString() const
 {
-    QString result = QString("{\"consumer\": \"%1\", \"type\": \"simple\", \"items\": [");
+    QString result = QString("{\"consumer\": \"%1\", \"type\": \"simple\", \"items\": [")
+        .arg(consumerId());
     for (int i=0; i<m_names.size(); ++i) {
         if (i > 0)
             result += ", ";
@@ -124,9 +125,15 @@ QString SimpleInputInfo::toString() const
     return result;
 }
 
+QString SignalInputInfo::toString() const {
+    return QString("{\"consumer\": \"%1\", \"type\": \"signal\", \"name\": \"%2\"}")
+        .arg(consumerId(), m_signalName);
+}
+
 QString RangeInputInfo::toString() const
 {
-    QString result = QString("{\"consumer\": \"%1\", \"type\": \"range\", \"items\": [");
+    QString result = QString("{\"consumer\": \"%1\", \"type\": \"range\", \"items\": [")
+        .arg(consumerId());
     for (int i=0; i<m_ranges.size(); ++i) {
         if (i > 0)
             result += ", ";
