@@ -180,5 +180,35 @@ inline bool hasFlag(int flags, int flag) {
         ClassName(const ClassName&); \
         ClassName& operator=(const ClassName&);
 
+class EntryCounter {
+public:
+    EntryCounter() : m_counter(0) {}
+    ~EntryCounter() {
+        Q_ASSERT(m_counter == 0);
+    }
+    operator int() const {
+        return m_counter;
+    }
+    int inc() {
+        return ++m_counter;
+    }
+    int dec() {
+        return --m_counter;
+    }
+private:
+    int m_counter;
+};
+
+class ScopedInc {
+public:
+    explicit ScopedInc(EntryCounter& ec) : m_ec(ec) {
+        m_ec.inc();
+    }
+    ~ScopedInc() {
+        m_ec.dec();
+    }
+private:
+    EntryCounter& m_ec;
+};
 
 #endif // EQUARES_COMMON_H

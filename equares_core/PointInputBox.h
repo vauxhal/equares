@@ -107,6 +107,7 @@ private:
     QVector<double> m_iinputData;
     bool m_iinputDataValid;
     int m_inputId;
+    EntryCounter m_ec;
 
     typedef PointInputBoxTransform Transform;
     bool activate();

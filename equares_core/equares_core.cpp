@@ -226,9 +226,25 @@ void Runner::run()
     while (!m_queue.isEmpty()) {
         if (terminationRequested())
             break;
-        if (!m_queue.first().activate())
-            m_queue << m_queue.first();
-        m_queue.removeFirst();
+        try {
+            if (!m_queue.first().activate())
+                m_queue << m_queue.first();
+            m_queue.removeFirst();
+        }
+        catch(const BoxBreakException& bbx) {
+            m_queue.clear();
+            RuntimeBox *box = bbx.rtbox();
+            Q_ASSERT(box);
+            if (box->generator()) {
+                Q_ASSERT(box->inputPorts().empty());
+                postPortActivation(box, box->generator());
+            }
+            else {
+                foreach (const RuntimeOutputPort *port, box->outputPorts())
+                    foreach (const RuntimeLink *link, port->links())
+                        postPortActivation(link->inputPort()->owner(), link->inputPort()->portNotifier());
+            }
+        }
     }
 
     // Report final state of output files

@@ -14,6 +14,6 @@ public:
     }
 private:
     QByteArray m_what;
- };
+};
 
 #endif // EQUARESEXCEPTION_H

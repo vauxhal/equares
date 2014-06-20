@@ -541,6 +541,18 @@ private:
     static BoxList linkBoxes(const LinkList& links);
 };
 
+class BoxBreakException
+{
+public:
+    ~BoxBreakException() throw() {}
+    explicit BoxBreakException(RuntimeBox *rtbox) throw() : m_rtbox(rtbox) {}
+    RuntimeBox *rtbox() const throw() {
+        return m_rtbox;
+    }
+private:
+    RuntimeBox *m_rtbox;
+};
+
 class EQUARES_CORESHARED_EXPORT Runner : public Runnable
 {
 public:

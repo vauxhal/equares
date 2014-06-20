@@ -189,6 +189,11 @@ bool PointInputRuntimeBox::fetchInputPortData()
 
 bool PointInputRuntimeBox::activate()
 {
+    ScopedInc incEc(m_ec);
+    if (m_ec != 1) {
+        m_iinputDataValid = false;
+        throw BoxBreakException(this);
+    }
     forever {
         if (!fetchInputPortData())
             return false;
@@ -227,7 +232,9 @@ bool PointInputRuntimeBox::processInput()
     if (m_sync)
         return activate();
     else {
-        fetchInputPortData();
-        return m_out.activateLinks();
+        if (fetchInputPortData())
+            return m_out.activateLinks();
+        else
+            return false;
     }
 }
