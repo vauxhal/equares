@@ -867,6 +867,11 @@ $.extend(equaresBox.rules, {
         port: function(port) {
             propagateFormat.call(this, port, 1, 2)
         }
+    },
+    RangeInput: {
+        port: function(port) {
+            propagateFormat.call(this, port, 1, 2)
+        }
     }
 })
 })()

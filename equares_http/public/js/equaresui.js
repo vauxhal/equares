@@ -911,6 +911,20 @@ equaresui.setSceneSource = function() {
                                         )
                                     })(ii)
                                     break
+                                case 'simple':
+                                    (function(ii) { // Closure for ii
+                                        interactiveInput.append(
+                                            wrap('div')
+                                                .append(wrap('span').text(ii[0].name))
+                                                .append('<input type="text"/>').change(function() {
+                                                    $.ajax("cmd/input", {data: {cmd: inputPrefix + ii[0].consumer + ' ' + this.value}, type: "GET", cache: false})
+                                                        .fail(function(error) {
+                                                            errorMessage(error.responseText || error.statusText || ("Ajax error: " + error.status))
+                                                        })
+                                                    })
+                                        )
+                                    })(ii)
+                                    break
                                 }
                             }
                             return

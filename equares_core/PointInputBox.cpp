@@ -51,49 +51,20 @@ REGISTER_SCRIPT_INIT_FUNC(scriptInit)
 
 
 
-PointInputBox::PointInputBox(QObject *parent) :
-    Box(parent),
-    m_sync(true),
-    m_loop(true),
-    m_activator("activator", this),
-    m_in("input", this),
-    m_out("output", this)
+PointInputBox::PointInputBox(QObject *parent) : DataInputBox(parent)
 {
-}
-
-InputPorts PointInputBox::inputPorts() const {
-    return InputPorts() << &m_activator << &m_in;
-}
-
-OutputPorts PointInputBox::outputPorts() const {
-    return OutputPorts() << &m_out;
 }
 
 void PointInputBox::checkPortFormat() const
 {
-    if (!m_in.format().isValid())
-        throwBoxException("PointInputBox: no format is specified for port 'input'");
-    if (m_in.format().dimension() != 1)
-        throwBoxException("PointInputBox: an 1D format was expected for port 'input'");
-    int inputSize = m_in.format().size(0);
+    DataInputBox::checkPortFormat();
+    int inputSize = inputPorts()[1]->format().size(0);
     for (int i=0; i<2; ++i) {
         if (m_transform[i].index < 0   ||   m_transform[i].index >= inputSize)
             throwBoxException("PointInputBox: Invalid input port format or invalid coordinate indices");
         if (m_transform[i].resolution <= 0)
             throwBoxException(QString("PointInputBox: Invalid grid resolution %1 - should be positive").arg(m_transform[i].resolution));
     }
-    if (m_in.format() != m_out.format())
-        throwBoxException("PointInputBox: Incompatible input/output port formats");
-}
-
-bool PointInputBox::propagatePortFormat() {
-    if (m_in.format().isValid() == m_out.format().isValid())
-        return false;
-    if (m_in.format().isValid())
-        m_out.format() = m_in.format();
-    else
-        m_in.format() = m_out.format();
-    return true;
 }
 
 RuntimeBox *PointInputBox::newRuntimeBox() const {
@@ -113,24 +84,6 @@ PointInputBox& PointInputBox::setTransform(const Transform& param) {
     return *this;
 }
 
-bool PointInputBox::sync() const {
-    return m_sync;
-}
-
-PointInputBox& PointInputBox::setSync(bool sync) {
-    m_sync = sync;
-    return *this;
-}
-
-bool PointInputBox::loop() const {
-    return m_loop;
-}
-
-PointInputBox& PointInputBox::setLoop(bool loop) {
-    m_loop = loop;
-    return *this;
-}
-
 QString PointInputBox::refBitmap() const {
     return m_refBitmap;
 }
@@ -143,98 +96,23 @@ PointInputBox& PointInputBox::setRefBitmap(const QString& refBitmap) {
 
 
 PointInputRuntimeBox::PointInputRuntimeBox(const PointInputBox *box) :
+    DataInputRuntimeBox(box),
     m_transform(box->transform()),
-    m_sync(box->sync()),
-    m_loop(box->loop()),
     m_refBitmap(box->refBitmap())
 {
-    setOwner(box);
-
-    InputPorts in = box->inputPorts();
-    m_activator.init(this, in[0], toPortNotifier(&PointInputRuntimeBox::activate));
-    m_in.init(this, in[1], toPortNotifier(&PointInputRuntimeBox::processInput));
-    setInputPorts(RuntimeInputPorts() << &m_activator << &m_in);
-
-    OutputPorts out = box->outputPorts();
-    m_data.resize(out[0]->format().dataSize());
-    m_out.init(this, out[0], PortData(m_data.size(), m_data.data()));
-    setOutputPorts(RuntimeOutputPorts() << &m_out);
-
-    m_inputId = -1;
-    m_dataValid = false;
-    m_iinputDataValid = false;
 }
 
 InputInfoList PointInputRuntimeBox::inputInfo() const {
     return InputInfoList() << InputInfo::Ptr(new ImageInputInfo(owner()->name(), m_refBitmap));
 }
 
-void PointInputRuntimeBox::registerInput()
+void PointInputRuntimeBox::transformData(double *portData, const double *inputData) const
 {
-    m_inputId = ThreadManager::instance()->registerInput(inputInfo()[0]);
-}
-
-bool PointInputRuntimeBox::fetchInputPortData()
-{
-    if (m_dataValid)
-        return true;
-    if (!m_in.state().hasData())
-        return false;
-    Q_ASSERT(m_in.data().size() == m_data.size());
-    m_in.data().copyTo(m_data.data());
-    m_out.state().setValid();
-    m_dataValid = true;
-    return true;
-}
-
-bool PointInputRuntimeBox::activate()
-{
-    ScopedInc incEc(m_ec);
-    if (m_ec != 1) {
-        m_iinputDataValid = false;
-        throw BoxBreakException(this);
-    }
-    forever {
-        if (!fetchInputPortData())
-            return false;
-        if (!m_iinputDataValid) {
-            m_iinputData = ThreadManager::instance()->readInput(m_inputId, m_sync);
-            m_iinputDataValid = true;
-        }
-        if (m_iinputData.isEmpty()) {
-            if (!m_sync)
-                m_iinputDataValid = false;
-            return true;
-        }
-        Q_ASSERT(m_iinputData.size() == 2);
-        for (int i=0; i<2; ++i) {
-            const PointInputBoxDimTransform& t = m_transform[i];
-            Q_ASSERT(t.index >= 0   &&   t.index < m_data.size());
-            int x = static_cast<int>(m_iinputData[i]);
-            if (i == 1)
-                x = t.resolution - x;
-            m_data[t.index] = t.transform(x);
-        }
-        m_out.state().setValid();
-        if (m_out.activateLinks())
-            m_iinputDataValid = false;
-        else
-            return false;
-        if (!(m_loop && m_sync))
-            return true;
-    }
-}
-
-bool PointInputRuntimeBox::processInput()
-{
-    Q_ASSERT(m_in.state().hasData());
-    m_dataValid = false;
-    if (m_sync)
-        return activate();
-    else {
-        if (fetchInputPortData())
-            return m_out.activateLinks();
-        else
-            return false;
+    for (int i=0; i<2; ++i) {
+        const PointInputBoxDimTransform& t = m_transform[i];
+        int x = static_cast<int>(inputData[i]);
+        if (i == 1)
+            x = t.resolution - x;
+        portData[t.index] = t.transform(x);
     }
 }

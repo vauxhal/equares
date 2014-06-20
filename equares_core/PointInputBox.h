@@ -1,8 +1,7 @@
 #ifndef POINTINPUTBOX_H
 #define POINTINPUTBOX_H
 
-#include "equares_core.h"
-#include "equares_script.h"
+#include "DataInputBox.h"
 
 struct PointInputBoxDimTransform
 {
@@ -47,71 +46,44 @@ private:
 
 Q_DECLARE_METATYPE(PointInputBoxTransform)
 
-class EQUARES_CORESHARED_EXPORT PointInputBox : public Box
+class EQUARES_CORESHARED_EXPORT PointInputBox : public DataInputBox
 {
     Q_OBJECT
     Q_PROPERTY(PointInputBoxTransform transform READ transform WRITE setTransform)
-    Q_PROPERTY(bool sync READ sync WRITE setSync)
-    Q_PROPERTY(bool loop READ loop WRITE setLoop)
     Q_PROPERTY(QString refBitmap READ refBitmap WRITE setRefBitmap)
 public:
     explicit PointInputBox(QObject *parent = 0);
 
-    InputPorts inputPorts() const;
-    OutputPorts outputPorts() const;
     RuntimeBox *newRuntimeBox() const;
     void checkPortFormat() const;
-    bool propagatePortFormat();
 
     typedef PointInputBoxTransform Transform;
     typedef PointInputBoxDimTransform DimTransform;
 
     Transform transform() const;
     PointInputBox& setTransform(const Transform& param);
-    bool sync() const;
-    PointInputBox& setSync(bool sync);
-    bool loop() const;
-    PointInputBox& setLoop(bool loop);
     QString refBitmap() const;
     PointInputBox& setRefBitmap(const QString& refBitmap);
 
 private:
     Transform m_transform;
-    bool m_sync;
-    bool m_loop;
     QString m_refBitmap;
-    mutable InputPort m_activator;
-    mutable InputPort m_in;
-    mutable OutputPort m_out;
 };
 
-class EQUARES_CORESHARED_EXPORT PointInputRuntimeBox : public RuntimeBox
+class EQUARES_CORESHARED_EXPORT PointInputRuntimeBox : public DataInputRuntimeBox
 {
 public:
     explicit PointInputRuntimeBox(const PointInputBox *box);
     InputInfoList inputInfo() const;
-    void registerInput();
+
+protected:
+    void transformData(double *portData, const double *inputData) const;
 
 private:
-    RuntimeInputPort m_activator;
-    RuntimeInputPort m_in;
-    RuntimeOutputPort m_out;
-
-    PointInputBox::Transform m_transform;
-    bool m_sync;
-    bool m_loop;
-    QString m_refBitmap;
-    QVector<double> m_data;
-    bool m_dataValid;
-    bool fetchInputPortData();
-    QVector<double> m_iinputData;
-    bool m_iinputDataValid;
-    int m_inputId;
-    EntryCounter m_ec;
 
     typedef PointInputBoxTransform Transform;
-    bool activate();
-    bool processInput();
+    Transform m_transform;
+    QString m_refBitmap;
 };
 
 #endif // POINTINPUTBOX_H
