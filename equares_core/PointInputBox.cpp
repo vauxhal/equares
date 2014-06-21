@@ -116,3 +116,16 @@ void PointInputRuntimeBox::transformData(double *portData, const double *inputDa
         portData[t.index] = t.transform(x);
     }
 }
+
+QVector<double> PointInputRuntimeBox::inputData(const double *portData) const
+{
+    QVector<double> result(2);
+    for (int i=0; i<2; ++i) {
+        const PointInputBoxDimTransform& t = m_transform[i];
+        int x = t.transformBack(portData[t.index]);
+        if (i == 1)
+            x = t.resolution - x;
+        result[i] = static_cast<double>(x);
+    }
+    return result;
+}

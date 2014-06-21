@@ -227,8 +227,11 @@ void Runner::run()
         if (terminationRequested())
             break;
         try {
-            if (!m_queue.first().activate())
+            if (!m_queue.first().activate()) {
+                foreach (const RuntimeBox::Ptr& box, m_rtboxes)
+                    box->reset();
                 m_queue << m_queue.first();
+            }
             m_queue.removeFirst();
         }
         catch(const BoxBreakException& bbx) {

@@ -33,6 +33,7 @@ public:
     explicit DumpRuntimeBox(const DumpBox *box);
     ~DumpRuntimeBox();
     OutputFileInfoList outputFileInfo() const;
+    void reset();
 
 private:
     RuntimeInputPort m_dump;

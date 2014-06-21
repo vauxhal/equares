@@ -848,8 +848,9 @@ equaresui.setSceneSource = function() {
                 }
                 var equaresOutputEvent = new EventSource("cmd/outputEvent");
                 var rxFile = /^==([0-9])+==\> file: (.*)/,
-                    rxSync = /^==([0-9])+==\> sync/;
-                var inputInfo = [],   inputRefs = {},   outFileInfo = {}
+                    rxSync = /^==([0-9])+==\> sync/,
+                    rxNum = /^[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?$/
+                var inputInfo = {},   inputRefs = {},   outFileInfo = {}
                 var started = false
                 var prefix, syncToken, inputPrefix
                 var iaStarted = false   // Input announcement started
@@ -891,7 +892,7 @@ equaresui.setSceneSource = function() {
                             }
                             else {
                                 ii = JSON.parse(str)
-                                inputInfo.push(ii)
+                                inputInfo[ii.consumer] = ii
                                 switch (ii.type) {
                                 case 'image':
                                     irefs = inputRefs[ii.refImage];
@@ -913,16 +914,69 @@ equaresui.setSceneSource = function() {
                                     break
                                 case 'simple':
                                     (function(ii) { // Closure for ii
-                                        interactiveInput.append(
-                                            wrap('div')
-                                                .append(wrap('span').text(ii[0].name))
-                                                .append('<input type="text"/>').change(function() {
-                                                    $.ajax("cmd/input", {data: {cmd: inputPrefix + ii[0].consumer + ' ' + this.value}, type: "GET", cache: false})
-                                                        .fail(function(error) {
-                                                            errorMessage(error.responseText || error.statusText || ("Ajax error: " + error.status))
-                                                        })
-                                                    })
-                                        )
+                                        var data = [], editors = [], i
+                                        ii.acquirePortInput = function(data) {
+                                            var n = editors.length
+                                            if (n > data.length)
+                                                n = data.length
+                                            for (i=0; i<n; ++i)
+                                                editors[i].val(data[i])
+                                        }
+                                        function send() {
+                                            for (i=0; i<ii.items.length; ++i) {
+                                                var v = editors[i].val()
+                                                if (!v.match(rxNum))
+                                                    return errorMessage('Please enter a real number in field \'' + ii.items[i])
+                                                data[i] = +v
+                                            }
+                                            $.ajax("cmd/input", {data: {cmd: inputPrefix + ii.consumer + ' ' + data.join(' ')}, type: "GET", cache: false})
+                                                .fail(function(error) {
+                                                    errorMessage(error.responseText || error.statusText || ("Ajax error: " + error.status))
+                                                })
+                                        }
+                                        for (i=0; i<ii.items.length; ++i) {
+                                            interactiveInput.append(wrap('div')
+                                                .append(wrap('span').text(ii.items[i]))
+                                                .append(editors[i] = $('<input type="text"/>').change(send))
+                                            )
+                                        }
+                                    })(ii)
+                                    break
+                                case 'range':
+                                    (function(ii) { // Closure for ii
+                                        var data = [], editors = [], i, dataLabel = []
+                                        ii.acquirePortInput = function(data) {
+                                            var n = editors.length
+                                            if (n > data.length)
+                                                n = data.length
+                                            for (i=0; i<n; ++i) {
+                                                editors[i].slider('value', +data[i])
+                                                dataLabel[i].text(data[i])
+                                            }
+                                        }
+                                        function send() {
+                                            for (i=0; i<ii.items.length; ++i)
+                                                dataLabel[i].text(data[i] = +editors[i].slider('value'))
+                                            $.ajax("cmd/input", {data: {cmd: inputPrefix + ii.consumer + ' ' + data.join(' ')}, type: "GET", cache: false})
+                                                .fail(function(error) {
+                                                    errorMessage(error.responseText || error.statusText || ("Ajax error: " + error.status))
+                                                })
+                                        }
+                                        for (i=0; i<ii.items.length; ++i) {
+                                            var r = ii.items[i]
+                                            interactiveInput.append(wrap('div')
+                                                .append(wrap('span').text(r.name + ' = '))
+                                                .append(dataLabel[i] = wrap('span').text(r.vmin))
+                                                .append(wrap('span').text(' in range [' + r.vmin + ', ' + r.vmax + ']'))
+                                                .append(editors[i] = wrap('div').slider({
+                                                    value: +r.vmin,
+                                                    min: +r.vmin,
+                                                    max: +r.vmax,
+                                                    step: (+r.vmax-r.vmin)/(r.resolution||1),
+                                                    slide: send
+                                                }))
+                                            )
+                                        }
                                     })(ii)
                                     break
                                 }
@@ -1009,6 +1063,12 @@ equaresui.setSceneSource = function() {
                                 errorMessage(error.responseText || error.statusText || ("Ajax error: " + error.status))
                             })
                             return
+                        }
+                        m = str.match(/^input:\s+(\w+)\s+(.*$)/)
+                        if (m && m.length > 2) {
+                            var consumer = inputInfo[m[1]]
+                            if (consumer && (consumer.acquirePortInput instanceof Function))
+                                consumer.acquirePortInput(m[2].split(/\s+/))
                         }
                         if (str === "finished") {
                             equaresui.stopSimulation()

@@ -105,6 +105,10 @@ bool DumpRuntimeBox::dump()
     return true;
 }
 
+void DumpRuntimeBox::reset() {
+    fseek(m_cfile, 0, SEEK_SET);
+}
+
 void DumpRuntimeBox::flush()
 {
     fflush(m_cfile);

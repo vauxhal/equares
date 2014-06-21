@@ -372,6 +372,7 @@ public:
     virtual PortNotifier generator() const {
         return 0;
     }
+    virtual void reset() {}
 
 protected:
     template<class ThisClass>

@@ -44,6 +44,7 @@ public:
 
 protected:
     void transformData(double *portData, const double *inputData) const;
+    QVector<double> inputData(const double *portData) const;
 
 private:
     typedef SimpleInputBoxParamItem ParamItem;

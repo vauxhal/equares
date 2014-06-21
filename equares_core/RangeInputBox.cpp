@@ -81,7 +81,8 @@ RangeInputBox& RangeInputBox::setParam(const Param& param) {
 
 
 RangeInputRuntimeBox::RangeInputRuntimeBox(const RangeInputBox *box) :
-    DataInputRuntimeBox(box)
+    DataInputRuntimeBox(box),
+    m_param(box->param())
 {
 }
 
@@ -98,4 +99,14 @@ void RangeInputRuntimeBox::transformData(double *portData, const double *inputDa
         int idx = m_param[i].index;
         portData[idx] = inputData[i];
     }
+}
+
+QVector<double> RangeInputRuntimeBox::inputData(const double *portData) const
+{
+    QVector<double> result(m_param.size());
+    for (int i=0; i<m_param.size(); ++i) {
+        int idx = m_param[i].index;
+        result[i] = portData[idx];
+    }
+    return result;
 }

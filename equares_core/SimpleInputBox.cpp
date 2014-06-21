@@ -75,7 +75,8 @@ SimpleInputBox& SimpleInputBox::setParam(const Param& param) {
 
 
 SimpleInputRuntimeBox::SimpleInputRuntimeBox(const SimpleInputBox *box) :
-    DataInputRuntimeBox(box)
+    DataInputRuntimeBox(box),
+    m_param(box->param())
 {
 }
 
@@ -93,3 +94,14 @@ void SimpleInputRuntimeBox::transformData(double *portData, const double *inputD
         portData[idx] = inputData[i];
     }
 }
+
+QVector<double> SimpleInputRuntimeBox::inputData(const double *portData) const
+{
+    QVector<double> result(m_param.size());
+    for (int i=0; i<m_param.size(); ++i) {
+        int idx = m_param[i].index;
+        result[i] = portData[idx];
+    }
+    return result;
+}
+

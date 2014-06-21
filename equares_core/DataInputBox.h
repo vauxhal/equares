@@ -3,6 +3,7 @@
 
 #include "equares_core.h"
 #include "equares_script.h"
+#include <QTime>
 
 class EQUARES_CORESHARED_EXPORT DataInputBox : public Box
 {
@@ -39,6 +40,7 @@ public:
 
 protected:
     virtual void transformData(double *portData, const double *inputData) const = 0;
+    virtual QVector<double> inputData(const double *portData) const = 0;
 
 private:
     RuntimeInputPort m_activator;
@@ -54,6 +56,8 @@ private:
     bool m_iinputDataValid;
     int m_inputId;
     EntryCounter m_ec;
+    QTime m_time;
+    bool m_unititializedInputPort;
 
     bool activate();
     bool processInput();

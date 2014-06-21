@@ -17,6 +17,11 @@ struct PointInputBoxDimTransform
         double t = static_cast<double>(i) / resolution;
         return vmin + t*(vmax - vmin);
     }
+    int transformBack(double x) const {
+        Q_ASSERT(resolution > 0);
+        double t = (x - vmin) / (vmax - vmin);
+        return static_cast<int>(t*resolution);
+    }
 };
 
 Q_DECLARE_METATYPE(PointInputBoxDimTransform)
@@ -78,6 +83,7 @@ public:
 
 protected:
     void transformData(double *portData, const double *inputData) const;
+    QVector<double> inputData(const double *portData) const;
 
 private:
 

@@ -77,6 +77,8 @@ DataInputRuntimeBox::DataInputRuntimeBox(const DataInputBox *box) :
     m_inputId = -1;
     m_dataValid = false;
     m_iinputDataValid = false;
+    m_time.start();
+    m_unititializedInputPort = true;
 }
 
 void DataInputRuntimeBox::registerInput()
@@ -94,6 +96,19 @@ bool DataInputRuntimeBox::fetchInputPortData()
     m_in.data().copyTo(m_data.data());
     m_out.state().setValid();
     m_dataValid = true;
+
+    // Report input data corresponding to new port data
+    if (!m_sync) {
+        const int DataInputFeedbackDelay = 1000;
+        if (m_unititializedInputPort || m_time.elapsed() >= DataInputFeedbackDelay) {
+            m_unititializedInputPort = false;
+            m_time.restart();
+            QStringList input;
+            foreach (double d, inputData(m_data.data()))
+                input << QString::number(d);
+            EQUARES_COUT << "input: " << owner()->name() << " " << input.join(" ") << endl;
+        }
+    }
     return true;
 }
 
