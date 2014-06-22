@@ -127,7 +127,7 @@ function dbsearch(req, options, cb) {
                     n2 = total
                 if (n1 > n2)
                     n1 = n2
-                options.model.find({$query: query || {}, $orderby: {date: 1}},
+                options.model.find({$query: query || {}, $orderby: {date: -1}},
                     options.project,
                     {skip: n1, limit: n2-n1}).stream()
                     .on('data', function (doc) {

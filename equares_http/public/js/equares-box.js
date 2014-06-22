@@ -706,15 +706,21 @@ function propagateFormat(port1, iin, iout) {
 }
 
 function propagateSameFormat() {
+    var box = this
+    function clearFormat() {
+        for (var i=0; i<n; ++i)
+            setFormat(box.ports[i], {})
+    }
     // Find common port format
-    var f = new PortFormat({}), i, n = this.ports.length, fp, allValid = true, port
+    var f = new PortFormat({}), i, n = box.ports.length, fp, allValid = true, port
     for (i=0; i<n; ++i) {
-        fp = this.ports[i].getFormat(true)
+        fp = box.ports[i].getFormat(true)
         if (fp.valid()) {
             if (f.valid()) {
                 if (!fp.equals(f)) {
                     // Incompatible formats, give up
-                    setBadPortStatus(this, 'Some ports have different formats')
+                    clearFormat()
+                    setBadPortStatus(box, 'Some ports have different formats')
                     return
                 }
             }
@@ -728,17 +734,18 @@ function propagateSameFormat() {
     if (allValid)
         return  // Nothing to do
     if (!f.valid()) {
-        setUnspecPortStatus(this, 'Format is unknown for some ports')
+        clearFormat()
+        setUnspecPortStatus(box, 'Unknown port format')
         return
     }
 
     // Propagate common port format
     for (i=0; i<n; ++i) {
-        port = this.ports[i]
+        port = box.ports[i]
         if (!port.getFormat(true).valid())
             setFormat(port, f)
     }
-    setGoodStatus(this)
+    setGoodStatus(box)
 }
 
 function propagateFormatDirected(port1, ifrom, ito)
