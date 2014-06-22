@@ -71,7 +71,7 @@ OutputFileInfoList DumpRuntimeBox::outputFileInfo() const
     return OutputFileInfoList() << OutputFileInfo::text(fileName());
 }
 
-bool DumpRuntimeBox::dump()
+bool DumpRuntimeBox::dump(int)
 {
     RuntimeOutputPort
         *dumpPort = m_dump.outputPort();
@@ -109,7 +109,7 @@ void DumpRuntimeBox::reset() {
     fseek(m_cfile, 0, SEEK_SET);
 }
 
-bool DumpRuntimeBox::flush()
+bool DumpRuntimeBox::flush(int)
 {
     fflush(m_cfile);
     ThreadManager::instance()->reportProgress(ProgressInfo().setSync(true) << fileName());

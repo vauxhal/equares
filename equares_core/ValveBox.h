@@ -37,8 +37,8 @@ private:
     bool m_hasData;
     QVector<double> m_data;
 
-    bool setValve();
-    bool setInput();
+    bool setValve(int);
+    bool setInput(int);
 
     bool processData();
 };

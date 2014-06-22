@@ -333,7 +333,7 @@ var equaresBox = {};
             return
         function positionPorts() {
             for (var i=0; i<nin; ++i)
-                box.info.inputs[i].pos = box.ports[i].pos = 3 + (i+0.5)/nin
+                box.info.inputs[i].pos = box.ports[i].pos = 2 - (i+0.5)/nin
         }
         var d = nin - nin0, i
         if (d < 0) {
@@ -350,13 +350,13 @@ var equaresBox = {};
             positionPorts()
         }
         else if (d > 0) {
-            var info0 = box.cache.infoOut
+            var info0 = box.cache.infoIn
             for (i=0; i<d; ++i) {
                 var n = nin0 + 1 + i
                 var ph = info0.help.match(/^(.*)\d+$/)[1] + n,
-                    pn = 'out_' + n,   info = { help: ph, name: pn, pos: 0 }
+                    pn = 'in_' + n,   info = { help: ph, name: pn, pos: 0 }
                 box.info.inputs.push(info)
-                box.ports.splice(nin0+i, 0, new OutputPort(info, box, n))
+                box.ports.splice(nin0+i, 0, new InputPort(info, box, n))
             }
             positionPorts()
         }
@@ -1006,6 +1006,29 @@ $.extend(equaresBox.rules, {
                     return errorMessage('Invalid number of output ports')
                 }
                 box.resizeOutputPorts(nout)
+            }
+        },
+        port: function(port) {
+            propagateSameFormat.call(this)
+        }
+    },
+    Merge: {
+        init: function() {
+            var portIds = []
+            for (var i=0; i<=this.info.inputs.length; ++i)
+                portIds.push(i)
+            setUnspecPortStatus(this, portIds)
+        },
+        prop: function(name) {
+            var box = this
+            if (name === "inputPortCount") {
+                var MaxInputPorts = 10
+                var nin = Math.floor(+box.props[name].value), nin0 = box.info.inputs.length
+                if (!(nin > 0 && nin <= MaxInputPorts)) {
+                    box.props[name].value = nin0
+                    return errorMessage('Invalid number of input ports')
+                }
+                box.resizeInputPorts(nin)
             }
         },
         port: function(port) {

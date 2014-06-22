@@ -36,7 +36,7 @@ private:
     RuntimeInputPort m_in;
     QVector<RuntimeOutputPort> m_out;
 
-    bool processInput();
+    bool processInput(int);
 };
 
 #endif // SLITBOX_H

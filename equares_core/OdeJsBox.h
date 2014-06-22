@@ -53,8 +53,8 @@ private:
     QScriptValue m_rhsFunc;
     QScriptValue m_argsForRhs;
 
-    bool setParameters();
-    bool setState();
+    bool setParameters(int);
+    bool setState(int);
 };
 
 #endif // ODEJSBOX_H

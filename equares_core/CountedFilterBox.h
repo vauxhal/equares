@@ -36,8 +36,8 @@ private:
     int m_c0;
     bool m_hasCounter;
 
-    bool setCount();
-    bool processInput();
+    bool setCount(int);
+    bool processInput(int);
 };
 
 #endif // COUNTEDFILTERBOX_H

@@ -112,7 +112,7 @@ bool DataInputRuntimeBox::fetchInputPortData()
     return true;
 }
 
-bool DataInputRuntimeBox::activate()
+bool DataInputRuntimeBox::activate(int)
 {
     ScopedInc incEc(m_ec);
     if (m_ec != 1) {
@@ -142,12 +142,12 @@ bool DataInputRuntimeBox::activate()
     }
 }
 
-bool DataInputRuntimeBox::processInput()
+bool DataInputRuntimeBox::processInput(int)
 {
     Q_ASSERT(m_in.state().hasData());
     m_dataValid = false;
     if (m_sync)
-        return activate();
+        return activate(0);
     else {
         if (fetchInputPortData())
             return m_out.activateLinks();

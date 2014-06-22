@@ -71,7 +71,7 @@ private:
 
     typedef GridGeneratorBoxParamItem ParamItem;
     typedef GridGeneratorBoxParam Param;
-    bool processInput();
+    bool processInput(int);
 };
 
 #endif // GRIDGENERATORBOX_H

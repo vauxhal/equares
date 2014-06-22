@@ -90,7 +90,7 @@ void SignalInputRuntimeBox::registerInput()
     m_inputId = ThreadManager::instance()->registerInput(inputInfo()[0]);
 }
 
-bool SignalInputRuntimeBox::activate()
+bool SignalInputRuntimeBox::activate(int)
 {
     forever {
         if (!m_iinputDataValid) {

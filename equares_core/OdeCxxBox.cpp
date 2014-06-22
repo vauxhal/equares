@@ -481,7 +481,7 @@ OdeCxxRuntimeBox::OdeCxxRuntimeBox(const OdeCxxBox *box) :
     m_paramData.resize(in[0]->format().dataSize());
 }
 
-bool OdeCxxRuntimeBox::setParameters()
+bool OdeCxxRuntimeBox::setParameters(int)
 {
     RuntimeOutputPort *paramPort = m_param.outputPort();
     Q_ASSERT(paramPort->state().hasData());
@@ -491,7 +491,7 @@ bool OdeCxxRuntimeBox::setParameters()
     return true;
 }
 
-bool OdeCxxRuntimeBox::setState()
+bool OdeCxxRuntimeBox::setState(int)
 {
     if (!m_hasParamData)
         return false;

@@ -38,7 +38,7 @@ private:
     QVector<double> m_initStateData;
     double m_resultData;
 
-    bool run();
+    bool run(int);
 };
 
 #endif // LINODESTABCHECKERBOX_H

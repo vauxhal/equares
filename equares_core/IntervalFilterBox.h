@@ -57,7 +57,7 @@ private:
     bool m_hasPrevData;
     double m_nextPos;
 
-    bool processInput();
+    bool processInput(int);
     void interp(double *dst, double t);
 };
 

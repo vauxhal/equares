@@ -121,7 +121,7 @@ CanvasRuntimeBox::CanvasRuntimeBox(const CanvasBox *box) :
     m_time.start();
 }
 
-bool CanvasRuntimeBox::processInput()
+bool CanvasRuntimeBox::processInput(int)
 {
     Q_ASSERT(m_in.state().hasData());
     int i = m_param.index(m_in.outputPort()->data().data());
@@ -129,20 +129,20 @@ bool CanvasRuntimeBox::processInput()
         double *data = m_out.data().data();
         data[i] = 1;
         if (m_refreshInterval > 0   &&   m_time.elapsed() >= m_refreshInterval) {
-            flush();
+            flush(0);
             m_time.restart();
         }
     }
     return true;
 }
 
-bool CanvasRuntimeBox::flush()
+bool CanvasRuntimeBox::flush(int)
 {
     m_out.state().setValid();
     return m_out.activateLinks();
 }
 
-bool CanvasRuntimeBox::clear()
+bool CanvasRuntimeBox::clear(int)
 {
     m_data.fill(0);
     return true;

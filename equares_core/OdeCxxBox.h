@@ -128,8 +128,8 @@ private:
     QVector<double> m_paramData;
     QVector<double> m_rhsData;
 
-    bool setParameters();
-    bool setState();
+    bool setParameters(int);
+    bool setState(int);
 };
 
 #endif // ODECXXBOX_H

@@ -61,7 +61,7 @@ private:
     bool m_canCross;
     bool m_twoSided;
 
-    bool processInput();
+    bool processInput(int);
 
     enum Pos {
         Negative,

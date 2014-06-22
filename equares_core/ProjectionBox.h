@@ -37,7 +37,7 @@ private:
     QVector<int> m_indices;
     QVector<double> m_data;
 
-    bool processInput();
+    bool processInput(int);
 };
 
 #endif // PROJECTIONBOX_H

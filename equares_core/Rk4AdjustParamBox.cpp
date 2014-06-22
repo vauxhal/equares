@@ -66,7 +66,7 @@ Rk4AdjustParamRuntimeBox::Rk4AdjustParamRuntimeBox(const Rk4AdjustParamBox *box)
     setOutputPorts(RuntimeOutputPorts() << &m_rk4param);
 }
 
-bool Rk4AdjustParamRuntimeBox::processInput()
+bool Rk4AdjustParamRuntimeBox::processInput(int)
 {
     bool hasStepCount = m_stepCount.isConnected();
     bool hasDuration = m_duration.isConnected();

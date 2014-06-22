@@ -107,7 +107,7 @@ OdeJsRuntimeBox::OdeJsRuntimeBox(const OdeJsBox *box)
     }
 }
 
-bool OdeJsRuntimeBox::setParameters() {
+bool OdeJsRuntimeBox::setParameters(int) {
     RuntimeOutputPort *paramPort = m_param.outputPort();
     Q_ASSERT(paramPort->state().hasData());
     paramPort->data().copyTo(m_paramData.data());
@@ -120,7 +120,7 @@ bool OdeJsRuntimeBox::setParameters() {
     return true;
 }
 
-bool OdeJsRuntimeBox::setState() {
+bool OdeJsRuntimeBox::setState(int) {
     if (!m_hasParamData)
         return false;
     RuntimeOutputPort *statePort = m_state.outputPort();

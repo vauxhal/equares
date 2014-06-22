@@ -59,7 +59,7 @@ ValveRuntimeBox::ValveRuntimeBox(const ValveBox *box)
     setOutputPorts(RuntimeOutputPorts() << &m_out);
 }
 
-bool ValveRuntimeBox::setValve()
+bool ValveRuntimeBox::setValve(int)
 {
     Q_ASSERT(m_valve.outputPort()->state().hasData());
     m_valveOpen = m_valve.data().data()[0] != 0;
@@ -67,7 +67,7 @@ bool ValveRuntimeBox::setValve()
     return processData();
 }
 
-bool ValveRuntimeBox::setInput()
+bool ValveRuntimeBox::setInput(int)
 {
     Q_ASSERT(m_in.outputPort()->state().hasData());
     m_out.data().copyFrom(m_in.outputPort()->data().data());

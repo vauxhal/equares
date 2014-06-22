@@ -129,6 +129,8 @@ PropClass(WithSimulation, Simulation*, Simulation*, simulation, setSimulation)
 
 PropClass(WithHelpString, QString, const QString&, helpString, setHelpString)
 
+PropClass(WithPortId, int, int, portId, setPortId)
+
 
 
 class EQUARES_CORESHARED_EXPORT EntryHints
@@ -361,7 +363,7 @@ class RuntimeBox :
 public:
     typedef QSharedPointer<RuntimeBox> Ptr;
     virtual ~RuntimeBox () {}
-    typedef bool (RuntimeBox::*PortNotifier)();
+    typedef bool (RuntimeBox::*PortNotifier)(int);
     virtual OutputFileInfoList outputFileInfo() const {
         return OutputFileInfoList();
     }
@@ -376,7 +378,7 @@ public:
 
 protected:
     template<class ThisClass>
-    static PortNotifier toPortNotifier(bool (ThisClass::*notifier)()) {
+    static PortNotifier toPortNotifier(bool (ThisClass::*notifier)(int)) {
         return static_cast<PortNotifier>(notifier);
     }
     void throwBoxException(const QString& what) const {
@@ -401,12 +403,14 @@ PropClass(WithPortNotifier, RuntimeBox::PortNotifier, RuntimeBox::PortNotifier, 
 class RuntimeInputPort :
     public RuntimePort,
     public LinkedToOne<const RuntimeLink>,
-    public WithPortNotifier
+    public WithPortNotifier,
+    public WithPortId
 {
 public:
-    void init(RuntimeBox *owner, Port *port, RuntimeBox::PortNotifier portNotifier = 0) {
+    void init(RuntimeBox *owner, Port *port, RuntimeBox::PortNotifier portNotifier = 0, int portId = 0) {
         RuntimePort::init(owner, port);
         setPortNotifier(portNotifier);
+        setPortId(portId);
     }
 
     bool hasPortNotifier() const {
@@ -562,7 +566,7 @@ public:
     void requestTermination();
     bool terminationRequested() const;
 
-    void postPortActivation(RuntimeBox *box, RuntimeBox::PortNotifier notifier);
+    void postPortActivation(RuntimeBox *box, RuntimeBox::PortNotifier notifier, int notifierArg);
 
 private:
     QList< RuntimeBox::Ptr > m_rtboxes;
@@ -570,18 +574,20 @@ private:
 
     class QueueItem {
     public:
-        QueueItem(RuntimeBox *box, RuntimeBox::PortNotifier notifier) : box(box), notifier(notifier)
+        QueueItem(RuntimeBox *box, RuntimeBox::PortNotifier notifier, int notifierArg) :
+            box(box), notifier(notifier), notifierArg(notifierArg)
         {
             Q_ASSERT(box);
             Q_ASSERT(notifier);
         }
         bool activate() const {
-            return (box->*notifier)();
+            return (box->*notifier)(notifierArg);
         }
 
     private:
         RuntimeBox *box;
         RuntimeBox::PortNotifier notifier;
+        int notifierArg;
     };
 
     QList<QueueItem> m_queue;
@@ -592,7 +598,7 @@ inline bool RuntimeInputPort::activate() const {
     RuntimeBox::PortNotifier notifier = portNotifier();
     if (!notifier)
         return true;
-    return (owner()->*notifier)();
+    return (owner()->*notifier)(portId());
 }
 
 class EQUARES_CORESHARED_EXPORT BoxFactory

@@ -41,8 +41,8 @@ private:
     RuntimeOutputPort m_finish;
     bool m_terminationRequested;
 
-    bool start();
-    bool stop();
+    bool start(int);
+    bool stop(int);
 
     int m_n;
     QVector<double> m_nextData;

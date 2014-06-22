@@ -79,7 +79,7 @@ private:
     const double *m_paramData;
     OdeTraits m_odeTraits;
 
-    bool setParameters() {
+    bool setParameters(int) {
         RuntimeOutputPort *paramPort = m_param.outputPort();
         Q_ASSERT(paramPort->state().hasData());
         m_paramData = paramPort->data().data();
@@ -87,7 +87,7 @@ private:
         return true;
     }
 
-    bool setState() {
+    bool setState(int) {
         if (!m_paramData)
             return false;
         RuntimeOutputPort *statePort = m_state.outputPort();

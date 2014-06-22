@@ -41,7 +41,7 @@ private:
     double *m_data;
     int m_frameSize;
     int m_frameCount;
-    bool generate();
+    bool generate(int);
 };
 
 #endif // PARAMARRAYBOX_H

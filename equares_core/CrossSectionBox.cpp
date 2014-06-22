@@ -116,7 +116,7 @@ CrossSectionRuntimeBox::CrossSectionRuntimeBox(const CrossSectionBox *box)
     setOutputPorts(RuntimeOutputPorts() << &m_out);
 }
 
-bool CrossSectionRuntimeBox::processInput()
+bool CrossSectionRuntimeBox::processInput(int)
 {
     m_in.data().copyTo(m_d1);
     Pos p = pos(m_d1);

@@ -43,7 +43,7 @@ private:
     double *m_d2;
     bool m_hasPrevData;
 
-    bool processInput();
+    bool processInput(int);
     void interp(double *dst, double t);
 };
 

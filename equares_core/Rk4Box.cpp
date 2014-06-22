@@ -89,7 +89,7 @@ Rk4RuntimeBox::Rk4RuntimeBox(const Rk4Box *box)
     setOutputPorts(RuntimeOutputPorts() << &m_nextState << &m_rhsState << &m_finish);
 }
 
-bool Rk4RuntimeBox::start()
+bool Rk4RuntimeBox::start(int)
 {
     RuntimeOutputPort
         *paramPort = m_param.outputPort(),
@@ -173,7 +173,7 @@ bool Rk4RuntimeBox::start()
     return m_finish.activateLinks();
 }
 
-bool Rk4RuntimeBox::stop() {
+bool Rk4RuntimeBox::stop(int) {
     m_terminationRequested = true;
     return true;
 }

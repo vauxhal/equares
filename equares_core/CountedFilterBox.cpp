@@ -57,7 +57,7 @@ CountedFilterRuntimeBox::CountedFilterRuntimeBox(const CountedFilterBox *box)
     m_hasCounter = false;
 }
 
-bool CountedFilterRuntimeBox::setCount()
+bool CountedFilterRuntimeBox::setCount(int)
 {
     Q_ASSERT(m_count.outputPort()->state().hasData());
     m_c0 = static_cast<int>(m_count.data().data()[0]);
@@ -66,7 +66,7 @@ bool CountedFilterRuntimeBox::setCount()
     return true;
 }
 
-bool CountedFilterRuntimeBox::processInput()
+bool CountedFilterRuntimeBox::processInput(int)
 {
     if (!m_hasCounter)
         return false;

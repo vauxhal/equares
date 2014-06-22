@@ -37,7 +37,7 @@ private:
     RuntimeOutputPort m_rk4param;
     double m_data[3];
 
-    bool processInput();
+    bool processInput(int);
 };
 
 #endif // RK4ADJUSTPARAMBOX_H

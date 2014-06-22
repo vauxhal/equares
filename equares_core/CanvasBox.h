@@ -109,9 +109,9 @@ private:
     QVector<double> m_data;
     QTime m_time;
 
-    bool processInput();
-    bool flush();
-    bool clear();
+    bool processInput(int);
+    bool flush(int);
+    bool clear(int);
 };
 
 #endif // CANVASBOX_H

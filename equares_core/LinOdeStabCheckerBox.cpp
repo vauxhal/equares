@@ -66,7 +66,7 @@ LinOdeStabCheckerRuntimeBox::LinOdeStabCheckerRuntimeBox(const LinOdeStabChecker
     setOutputPorts(RuntimeOutputPorts() << &m_initState << &m_result);
 }
 
-bool LinOdeStabCheckerRuntimeBox::run()
+bool LinOdeStabCheckerRuntimeBox::run(int)
 {
     int n = m_n - 1;
     if (n != 2)

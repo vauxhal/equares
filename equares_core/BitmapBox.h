@@ -36,7 +36,7 @@ private:
     RuntimeInputPort m_dump;
     QString m_fileName;
 
-    bool dump();
+    bool dump(int);
 };
 
 #endif // BITMAPBOX_H

@@ -98,7 +98,7 @@ IntervalFilterRuntimeBox::IntervalFilterRuntimeBox(const IntervalFilterBox *box)
     setOutputPorts(RuntimeOutputPorts() << &m_out);
 }
 
-bool IntervalFilterRuntimeBox::processInput()
+bool IntervalFilterRuntimeBox::processInput(int)
 {
     qSwap(m_d1, m_d2);
     m_in.data().copyTo(m_d2);

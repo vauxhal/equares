@@ -64,7 +64,7 @@ ProjectionRuntimeBox::ProjectionRuntimeBox(const ProjectionBox *box)
     setOutputPorts(RuntimeOutputPorts() << &m_out);
 }
 
-bool ProjectionRuntimeBox::processInput()
+bool ProjectionRuntimeBox::processInput(int)
 {
     Q_ASSERT(m_in.outputPort()->state().hasData());
     double *in = m_in.data().data();

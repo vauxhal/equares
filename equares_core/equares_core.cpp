@@ -213,12 +213,14 @@ void Runner::run()
     foreach (const RuntimeBox::Ptr& box, m_rtboxes)
         if (!box->generator() && box->inputPorts().empty())
             foreach (const RuntimeOutputPort *port, box->outputPorts())
-                foreach (const RuntimeLink *link, port->links())
-                    postPortActivation(link->inputPort()->owner(), link->inputPort()->portNotifier());
+                foreach (const RuntimeLink *link, port->links()) {
+                    RuntimeInputPort *inport = link->inputPort();
+                    postPortActivation(inport->owner(), inport->portNotifier(), inport->portId());
+                }
     foreach (const RuntimeBox::Ptr& box, m_rtboxes)
         if (box->generator()) {
             Q_ASSERT(box->inputPorts().empty());
-            postPortActivation(box.data(), box->generator());
+            postPortActivation(box.data(), box->generator(), 0);
         }
 
     // Process enqueued boxes
@@ -240,12 +242,14 @@ void Runner::run()
             Q_ASSERT(box);
             if (box->generator()) {
                 Q_ASSERT(box->inputPorts().empty());
-                postPortActivation(box, box->generator());
+                postPortActivation(box, box->generator(), 0);
             }
             else {
                 foreach (const RuntimeOutputPort *port, box->outputPorts())
-                    foreach (const RuntimeLink *link, port->links())
-                        postPortActivation(link->inputPort()->owner(), link->inputPort()->portNotifier());
+                    foreach (const RuntimeLink *link, port->links()) {
+                        RuntimeInputPort *inport = link->inputPort();
+                        postPortActivation(inport->owner(), inport->portNotifier(), inport->portId());
+                    }
             }
         }
     }
@@ -268,10 +272,10 @@ bool Runner::terminationRequested() const {
     return terminationRequested != 0;
 }
 
-void Runner::postPortActivation(RuntimeBox *box, RuntimeBox::PortNotifier notifier) {
+void Runner::postPortActivation(RuntimeBox *box, RuntimeBox::PortNotifier notifier, int notifierArg) {
     Q_ASSERT(box);
     if (notifier)
-        m_queue << QueueItem(box, notifier);
+        m_queue << QueueItem(box, notifier, notifierArg);
 }
 
 

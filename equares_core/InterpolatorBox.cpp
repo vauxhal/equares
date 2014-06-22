@@ -72,7 +72,7 @@ InterpolatorRuntimeBox::InterpolatorRuntimeBox(const InterpolatorBox *box)
     setOutputPorts(RuntimeOutputPorts() << &m_out);
 }
 
-bool InterpolatorRuntimeBox::processInput()
+bool InterpolatorRuntimeBox::processInput(int)
 {
     qSwap(m_d1, m_d2);
     m_in.data().copyTo(m_d2);

@@ -73,7 +73,7 @@ RuntimeBox::PortNotifier ParamArrayRuntimeBox::generator() const
     return toPortNotifier(&ParamArrayRuntimeBox::generate);
 }
 
-bool ParamArrayRuntimeBox::generate()
+bool ParamArrayRuntimeBox::generate(int)
 {
     double *data = m_data;
     for (int i=0; i<m_frameCount; ++i, data += m_frameSize) {

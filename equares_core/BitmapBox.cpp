@@ -69,7 +69,7 @@ OutputFileInfoList BitmapRuntimeBox::outputFileInfo() const
     return OutputFileInfoList() << OutputFileInfo::image(m_fileName, size[0], size[1]);
 }
 
-bool BitmapRuntimeBox::dump()
+bool BitmapRuntimeBox::dump(int)
 {
     RuntimeOutputPort
         *dumpPort = m_dump.outputPort();

@@ -40,8 +40,8 @@ private:
     RuntimeInputPort m_flush;
 
     enum { DataLimit = 1000000 };
-    bool dump();
-    bool flush();
+    bool dump(int);
+    bool flush(int);
     QString fileName() const;
 
     FILE *m_cfile;

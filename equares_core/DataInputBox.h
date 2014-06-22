@@ -59,8 +59,8 @@ private:
     QTime m_time;
     bool m_unititializedInputPort;
 
-    bool activate();
-    bool processInput();
+    bool activate(int);
+    bool processInput(int);
 };
 
 #endif // DATAINPUTBOX_H

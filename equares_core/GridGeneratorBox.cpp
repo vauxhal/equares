@@ -151,7 +151,7 @@ int GridGeneratorRuntimeBox::incMidx() {
     return -1;
 }
 
-bool GridGeneratorRuntimeBox::processInput()
+bool GridGeneratorRuntimeBox::processInput(int)
 {
     Q_ASSERT(m_in.state().hasData());
     if (m_data.isEmpty())

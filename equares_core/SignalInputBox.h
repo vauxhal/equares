@@ -52,7 +52,7 @@ private:
     bool m_inputDataEmpty;
     int m_inputId;
 
-    bool activate();
+    bool activate(int);
 };
 
 #endif // SIGNALINPUTBOX_H
