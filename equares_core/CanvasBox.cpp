@@ -145,5 +145,5 @@ bool CanvasRuntimeBox::flush()
 bool CanvasRuntimeBox::clear()
 {
     m_data.fill(0);
-    return flush();
+    return true;
 }

@@ -49,7 +49,8 @@ SOURCES += equares_core.cpp \
     SimpleInputBox.cpp \
     RangeInputBox.cpp \
     SignalInputBox.cpp \
-    DataInputBox.cpp
+    DataInputBox.cpp \
+    SlitBox.cpp
 
 HEADERS += equares_core.h\
         equares_core_global.h \
@@ -87,7 +88,8 @@ HEADERS += equares_core.h\
     SimpleInputBox.h \
     RangeInputBox.h \
     SignalInputBox.h \
-    DataInputBox.h
+    DataInputBox.h \
+    SlitBox.h
 
 symbian {
     MMP_RULES += EXPORTUNFROZEN

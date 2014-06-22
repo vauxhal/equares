@@ -77,6 +77,11 @@ var ctmEquaresSchemeEditor = {};
     }
     Box.prototype = new equaresBox.Box()
     Box.prototype.rename = function(newName) { return renameBox(this, newName) }
+    Box.prototype.redraw = function() {
+        removeBoxVisualizer(this)
+        this.editor.visualize().update()
+        return this
+    }
     Box.prototype.changeType = function(boxType) {
         // Replace box with a new one
         removeBoxVisualizer(this)

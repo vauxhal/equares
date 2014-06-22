@@ -109,10 +109,11 @@ void DumpRuntimeBox::reset() {
     fseek(m_cfile, 0, SEEK_SET);
 }
 
-void DumpRuntimeBox::flush()
+bool DumpRuntimeBox::flush()
 {
     fflush(m_cfile);
     ThreadManager::instance()->reportProgress(ProgressInfo().setSync(true) << fileName());
+    return true;
 }
 
 QString DumpRuntimeBox::fileName() const

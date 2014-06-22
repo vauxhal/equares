@@ -322,6 +322,86 @@ var equaresBox = {};
             return null
         }
     }
+    Box.prototype.resizeInputPorts = function(nin) {
+        var box = this
+        box.cache = box.cache || {}
+        if (!box.cache.infoIn)
+            box.cache.infoIn = box.info.inputs[0]
+        var nin0 = box.info.inputs.length, nout = box.info.outputs.length
+        if (box.info.inputs.length === nin)
+            // It's likely the case when we are loading previously saved box
+            return
+        function positionPorts() {
+            for (var i=0; i<nin; ++i)
+                box.info.inputs[i].pos = box.ports[i].pos = 3 + (i+0.5)/nin
+        }
+        var d = nin - nin0, i
+        if (d < 0) {
+            var deadLinks = []
+            for (i=nin; i<nin0; ++i) {
+                var port = box.ports[i], pc = port.connection
+                if (pc)
+                    deadLinks.push(box.editor.findLink(port, pc))
+            }
+            for (i=0; i<deadLinks.length; ++i)
+                box.editor.deleteLink(deadLinks[i])
+            box.info.inputs.splice(nin, -d)
+            box.ports.splice(nin, -d)
+            positionPorts()
+        }
+        else if (d > 0) {
+            var info0 = box.cache.infoOut
+            for (i=0; i<d; ++i) {
+                var n = nin0 + 1 + i
+                var ph = info0.help.match(/^(.*)\d+$/)[1] + n,
+                    pn = 'out_' + n,   info = { help: ph, name: pn, pos: 0 }
+                box.info.inputs.push(info)
+                box.ports.splice(nin0+i, 0, new OutputPort(info, box, n))
+            }
+            positionPorts()
+        }
+        box.redraw()
+    }
+    Box.prototype.resizeOutputPorts = function(nout) {
+        var box = this
+        box.cache = box.cache || {}
+        if (!box.cache.infoOut)
+            box.cache.infoOut = box.info.outputs[0]
+        var nout0 = box.info.outputs.length, nin = box.info.inputs.length
+        if (nout0 === nout)
+            // It's probably the case when we are loading previously saved box
+            return
+        function positionPorts() {
+            for (var i=0; i<nout; ++i)
+                box.info.outputs[i].pos = box.ports[nin+i].pos = 3 + (i+0.5)/nout
+        }
+        var d = nout - nout0, i, j
+        if (d < 0) {
+            var deadLinks = []
+            for (i=nout; i<nout0; ++i) {
+                var port = box.ports[nin+i], pc = port.connections
+                for (j=0; j<pc.length; ++j)
+                    deadLinks.push(box.editor.findLink(port, pc[j]))
+            }
+            for (i=0; i<deadLinks.length; ++i)
+                box.editor.deleteLink(deadLinks[i])
+            box.info.outputs.splice(nout, -d)
+            box.ports.splice(nin+nout, -d)
+            positionPorts()
+        }
+        else if (d > 0) {
+            var info0 = box.cache.infoOut
+            for (i=0; i<d; ++i) {
+                var n = nout0 + 1 + i
+                var ph = info0.help.match(/^(.*)\d+$/)[1] + n,
+                    pn = 'out_' + n,   info = { help: ph, name: pn, pos: 0 }
+                box.info.outputs.push(info)
+                box.ports.push(new OutputPort(info, box, n))
+            }
+            positionPorts()
+        }
+        box.redraw()
+    }
 
     equaresBox.canConnect = function(port1, port2) {
         return port1.canConnect(port2) && port2.canConnect(port1)
@@ -625,6 +705,42 @@ function propagateFormat(port1, iin, iout) {
     }
 }
 
+function propagateSameFormat() {
+    // Find common port format
+    var f = new PortFormat({}), i, n = this.ports.length, fp, allValid = true, port
+    for (i=0; i<n; ++i) {
+        fp = this.ports[i].getFormat(true)
+        if (fp.valid()) {
+            if (f.valid()) {
+                if (!fp.equals(f)) {
+                    // Incompatible formats, give up
+                    setBadPortStatus(this, 'Some ports have different formats')
+                    return
+                }
+            }
+            else
+                f = fp
+        }
+        else
+            allValid = false
+    }
+
+    if (allValid)
+        return  // Nothing to do
+    if (!f.valid()) {
+        setUnspecPortStatus(this, 'Format is unknown for some ports')
+        return
+    }
+
+    // Propagate common port format
+    for (i=0; i<n; ++i) {
+        port = this.ports[i]
+        if (!port.getFormat(true).valid())
+            setFormat(port, f)
+    }
+    setGoodStatus(this)
+}
+
 function propagateFormatDirected(port1, ifrom, ito)
 {
     if (port1.index != ifrom)
@@ -871,6 +987,29 @@ $.extend(equaresBox.rules, {
     RangeInput: {
         port: function(port) {
             propagateFormat.call(this, port, 1, 2)
+        }
+    },
+    Split: {
+        init: function() {
+            var portIds = [0]
+            for (var i=0; i<this.info.outputs.length; ++i)
+                portIds.push(i+1)
+            setUnspecPortStatus(this, portIds)
+        },
+        prop: function(name) {
+            var box = this
+            if (name === "outputPortCount") {
+                var MaxOutputPorts = 10
+                var nout = Math.floor(+box.props[name].value), nout0 = box.info.outputs.length
+                if (!(nout > 0 && nout <= MaxOutputPorts)) {
+                    box.props[name].value = nout0
+                    return errorMessage('Invalid number of output ports')
+                }
+                box.resizeOutputPorts(nout)
+            }
+        },
+        port: function(port) {
+            propagateSameFormat.call(this)
         }
     }
 })

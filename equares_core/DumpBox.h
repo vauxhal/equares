@@ -41,7 +41,7 @@ private:
 
     enum { DataLimit = 1000000 };
     bool dump();
-    void flush();
+    bool flush();
     QString fileName() const;
 
     FILE *m_cfile;
