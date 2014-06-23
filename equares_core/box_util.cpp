@@ -51,3 +51,17 @@ QString readFile(const QString& fileName, const Box *box)
     return QString::fromUtf8(file.readAll());
 }
 
+QStringList toNameList(const char *s)
+{
+    QStringList result;
+    if (!s)
+        return result;
+    QString qs = QString::fromUtf8(s);
+    if (qs.isEmpty())
+        return result;
+    result = qs.split(",", QString::KeepEmptyParts);
+    for (int i=0; i<result.size(); ++i)
+        result[i] = result[i].trimmed();
+    return result;
+}
+

@@ -34,8 +34,8 @@ EQUARES_LIB_EXPORT void prepare(void *p, const double *param) {
     CLASSNAME* x = reinterpret_cast<CLASSNAME*>(p);
     return x->prepare(param);
 }
-EQUARES_LIB_EXPORT void rhs(void *p, double *out, const double *param, const double *state) {
+EQUARES_LIB_EXPORT void nextState(void *p, double *out, const double *param, const double *state) {
     CLASSNAME* x = reinterpret_cast<CLASSNAME*>(p);
-    return x->rhs(out, param, state);
+    return x->nextState(out, param, state);
 }
 }

@@ -1,14 +1,4 @@
 #include "OdeCxxBox.h"
-#include "box_util.h"
-//#include "PerTypeStorage.h"
-//#include "check_lib.h"
-//#include <QFile>
-//#include <QDir>
-//#include <QFileInfo>
-//#include <QRegExp>
-//#include <QProcess>
-//#include <QCryptographicHash>
-//#include <QCoreApplication>
 
 REGISTER_BOX(OdeCxxBox, "CxxOde")
 
@@ -158,20 +148,6 @@ OdeCxxBox::OdeLibProxy::OdeLibProxy(const QLibraryPtr& lib, const Box *box) :
 OdeCxxBox::OdeLibProxy::~OdeLibProxy() {
     if (!m_lib.isNull())
         m_deleteInstance(m_inst);
-}
-
-QStringList OdeCxxBox::OdeLibProxy::toNameList(const char *s)
-{
-    QStringList result;
-    if (!s)
-        return result;
-    QString qs = QString::fromUtf8(s);
-    if (qs.isEmpty())
-        return result;
-    result = qs.split(",", QString::KeepEmptyParts);
-    for (int i=0; i<result.size(); ++i)
-        result[i] = result[i].trimmed();
-    return result;
 }
 
 

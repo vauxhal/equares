@@ -1,19 +1,19 @@
-#ifndef ODECXXBOX_H
-#define ODECXXBOX_H
+#ifndef FDECXXBOX_H
+#define FDECXXBOX_H
 
 #include "equares_core.h"
 #include "CxxBuildHelper.h"
 #include "box_util.h"
 #include <QLibrary>
 
-class EQUARES_CORESHARED_EXPORT OdeCxxBox : public Box
+class EQUARES_CORESHARED_EXPORT FdeCxxBox : public Box
 {
     Q_OBJECT
     Q_PROPERTY(QString src READ src WRITE setSrc)
     Q_PROPERTY(QString srcExample READ srcExample)
     Q_PROPERTY(bool useQmake READ useQmake WRITE setUseQmake)
 public:
-    explicit OdeCxxBox(QObject *parent = 0);
+    explicit FdeCxxBox(QObject *parent = 0);
 
     InputPorts inputPorts() const;
     OutputPorts outputPorts() const;
@@ -22,12 +22,12 @@ public:
     RuntimeBox *newRuntimeBox() const;
 
     QString src() const;
-    OdeCxxBox& setSrc(const QString& src);
+    FdeCxxBox& setSrc(const QString& src);
 
     QString srcExample() const;
 
     bool useQmake() const;
-    OdeCxxBox& setUseQmake(bool useQmake);
+    FdeCxxBox& setUseQmake(bool useQmake);
 
     int paramCount() const;
     QStringList paramNames() const;
@@ -36,11 +36,11 @@ public:
 
     using Box::engine;
 
-    class OdeLibProxy {
+    class FdeLibProxy {
     public:
-        OdeLibProxy() {}
-        explicit OdeLibProxy(const QLibraryPtr &lib, const Box *box);
-        ~OdeLibProxy();
+        FdeLibProxy() {}
+        explicit FdeLibProxy(const QLibraryPtr &lib, const Box *box);
+        ~FdeLibProxy();
 
         int paramCount() const {
             return m_paramCount(m_inst);
@@ -58,7 +58,7 @@ public:
             m_prepare(m_inst, param);
         }
         void rhs(double *out, const double *param, const double *state) const {
-            m_rhs(m_inst, out, param, state);
+            m_nextState(m_inst, out, param, state);
         }
         QString hash() const {
             return m_hash();
@@ -75,7 +75,7 @@ public:
         typedef int (*varCountFunc)(void*);
         typedef const char* (*varNamesFunc)(void*);
         typedef void (*prepareFunc)(void*, const double*);
-        typedef void (*rhsFunc)(void*, double*, const double*, const double*);
+        typedef void (*nextStateFunc)(void*, double*, const double*, const double*);
         typedef const char* (*hashFunc)();
 
         QLibraryPtr m_lib;
@@ -88,12 +88,12 @@ public:
         varCountFunc m_varCount;
         varNamesFunc m_varNames;
         prepareFunc m_prepare;
-        rhsFunc m_rhs;
+        nextStateFunc m_nextState;
         hashFunc m_hash;
 
         void *m_inst;
     };
-    const OdeLibProxy *odeLibProxy() const;
+    const FdeLibProxy *fdeLibProxy() const;
 
 public slots:
     QString buildDir(const QScriptValue& boxProps) const;
@@ -101,31 +101,31 @@ public slots:
 private:
     mutable InputPort m_param;
     mutable InputPort m_state;
-    mutable OutputPort m_rhs;
+    mutable OutputPort m_nextState;
     bool m_useQmake;
     QString m_src;
 
-    OdeLibProxy m_libProxy;
+    FdeLibProxy m_libProxy;
 };
 
-class OdeCxxRuntimeBox : public RuntimeBox
+class FdeCxxRuntimeBox : public RuntimeBox
 {
 public:
-    explicit OdeCxxRuntimeBox(const OdeCxxBox *box);
+    explicit FdeCxxRuntimeBox(const FdeCxxBox *box);
 
 private:
     RuntimeInputPort m_param;
     RuntimeInputPort m_state;
-    RuntimeOutputPort m_rhs;
+    RuntimeOutputPort m_nextState;
 
-    const OdeCxxBox::OdeLibProxy *m_odeLibProxy;
+    const FdeCxxBox::FdeLibProxy *m_fdeLibProxy;
 
     bool m_hasParamData;
     QVector<double> m_paramData;
-    QVector<double> m_rhsData;
+    QVector<double> m_nextStateData;
 
     bool setParameters(int);
     bool setState(int);
 };
 
-#endif // ODECXXBOX_H
+#endif // FDECXXBOX_H

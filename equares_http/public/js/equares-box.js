@@ -813,6 +813,60 @@ function checkRk4Ports(box)
     setGoodStatus(box)
 }
 
+function odeOrFdeRules(type) {
+    return {
+        init: function() {
+            // Backup port info
+            for (var i=0; i<this.ports.length; ++i) {
+                var port = this.ports[i]
+                port.info0 = port.info
+            }
+            setCxxOdeDefaultStatus.call(this)
+        },
+
+        prop: function(name) {
+            var box = this
+            if (name === "src") {
+                if (box.prop(name).length == 0) {
+                    setCxxOdeDefaultStatus.call(box)
+                    restoreCxxOdeDefaultPortFormat.call(box)
+                    box.editor.update()
+                    box.emit('critical')
+                    return
+                }
+                box.status = { level: "waiting", text: "Compiling..." }
+                box.editor.update()
+                equaresBox.infoEx({
+                    options: "ports",
+                    type: type,
+                    props: { src: box.prop(name) }
+                }, function(info) {
+                    // Update port format
+                    box.info.inputs = info.inputs
+                    box.info.outputs = info.outputs
+                    var i=0
+                    function upd(ports) {
+                        for (var j=0; j<ports.length; ++j, ++i) {
+                            box.ports[i].info = ports[j]
+                            setFormat(box.ports[i], ports[j])
+                        }
+                    }
+                    upd(info.inputs)
+                    upd(info.outputs)
+                    setGoodStatus(box)
+                    box.editor.update()
+                    box.emit('critical')
+                }, function(reply) {
+                    restoreCxxOdeDefaultPortFormat.call(box)
+                    box.status = { level: "error", text: reply.stderr || reply.message }
+                    box.editor.update()
+                    box.emit('critical')
+                })
+            }
+        }
+    }
+}
+
 $.extend(equaresBox.rules, {
     Param: {
         init: function() {
@@ -941,57 +995,8 @@ $.extend(equaresBox.rules, {
                 setUnspecPortStatus(this)
         }
     },
-    CxxOde: {
-        init: function() {
-            // Backup port info
-            for (var i=0; i<this.ports.length; ++i) {
-                var port = this.ports[i]
-                port.info0 = port.info
-            }
-            setCxxOdeDefaultStatus.call(this)
-        },
-
-        prop: function(name) {
-            var box = this
-            if (name === "src") {
-                if (box.prop(name).length == 0) {
-                    setCxxOdeDefaultStatus.call(box)
-                    restoreCxxOdeDefaultPortFormat.call(box)
-                    box.editor.update()
-                    box.emit('critical')
-                    return
-                }
-                box.status = { level: "waiting", text: "Compiling..." }
-                box.editor.update()
-                equaresBox.infoEx({
-                    options: "ports",
-                    type: "CxxOde",
-                    props: { src: box.prop(name) }
-                }, function(info) {
-                    // Update port format
-                    box.info.inputs = info.inputs
-                    box.info.outputs = info.outputs
-                    var i=0
-                    function upd(ports) {
-                        for (var j=0; j<ports.length; ++j, ++i) {
-                            box.ports[i].info = ports[j]
-                            setFormat(box.ports[i], ports[j])
-                        }
-                    }
-                    upd(info.inputs)
-                    upd(info.outputs)
-                    setGoodStatus(box)
-                    box.editor.update()
-                    box.emit('critical')
-                }, function(reply) {
-                    restoreCxxOdeDefaultPortFormat.call(box)
-                    box.status = { level: "error", text: reply.stderr || reply.message }
-                    box.editor.update()
-                    box.emit('critical')
-                })
-            }
-        }
-    },
+    CxxOde: odeOrFdeRules("CxxOde"),
+    CxxFde: odeOrFdeRules("CxxFde"),
     JsOde: {
         prop: function(name) {
             var box = this

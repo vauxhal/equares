@@ -4,6 +4,9 @@
         <file alias="OdeFileFooter.cpp">res/OdeFileFooter.cpp</file>
         <file alias="build_msvs.bat">res/build_msvs.bat</file>
         <file alias="ode.pro">res/ode.pro</file>
+        <file alias="FdeFileFooter.cpp">res/FdeFileFooter.cpp</file>
+        <file alias="FdeClass.cpp">res/FdeClass.cpp</file>
+        <file alias="fde.pro">res/fde.pro</file>
     </qresource>
     <qresource prefix="/box">
         <file alias="settings.ini">res/BoxSettings.ini</file>
