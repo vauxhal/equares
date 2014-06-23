@@ -4,13 +4,18 @@ REGISTER_BOX(ParamArrayBox, "ParamArray")
 
 ParamArrayBox::ParamArrayBox(QObject *parent) :
     Box(parent),
+    m_activator("activator", this),
     m_out("output", this),
-    m_flush("flush", this, PortFormat(0).setFixed())
+    m_flush("flush", this, PortFormat(0).setFixed()),
+    m_withActivator(false)
 {
 }
 
 InputPorts ParamArrayBox::inputPorts() const {
-    return InputPorts();
+    InputPorts result;
+    if (m_withActivator)
+        result << &m_activator;
+    return result;
 }
 
 OutputPorts ParamArrayBox::outputPorts() const {
@@ -53,11 +58,35 @@ Port *ParamArrayBox::getOut() const {
     return &m_out;
 }
 
+bool ParamArrayBox::withActivator() const {
+    return m_withActivator;
+}
+
+ParamArrayBox& ParamArrayBox::setWithActivator(bool withActivator) {
+    m_withActivator = withActivator;
+    if (context()) {
+        QScriptValue jsThis = thisObject();
+        if (m_withActivator)
+            addPortProperties(jsThis, inputPorts());
+        else
+            // TODO better
+            jsThis.setProperty("activator", QScriptValue());
+    }
+    return *this;
+}
 
 
-ParamArrayRuntimeBox::ParamArrayRuntimeBox(const ParamArrayBox *box)
+
+ParamArrayRuntimeBox::ParamArrayRuntimeBox(const ParamArrayBox *box) :
+    m_withActivator(box->withActivator())
 {
     setOwner(box);
+
+    if (m_withActivator) {
+        InputPorts in = box->inputPorts();
+        m_activator.init(this, in[0], toPortNotifier(&ParamArrayRuntimeBox::generate));
+        setInputPorts(RuntimeInputPorts() << &m_activator);
+    }
 
     OutputPorts out = box->outputPorts();
     m_frameSize = out[0]->format().dataSize();
@@ -70,7 +99,10 @@ ParamArrayRuntimeBox::ParamArrayRuntimeBox(const ParamArrayBox *box)
 
 RuntimeBox::PortNotifier ParamArrayRuntimeBox::generator() const
 {
-    return toPortNotifier(&ParamArrayRuntimeBox::generate);
+    if (m_withActivator)
+        return 0;
+    else
+        return toPortNotifier(&ParamArrayRuntimeBox::generate);
 }
 
 bool ParamArrayRuntimeBox::generate(int)

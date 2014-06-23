@@ -100,7 +100,7 @@ inline void addPortProperties(QScriptValue& result, const QList<PortType>& ports
     foreach(PortType port, ports) {
         Port *p = port;
         result.setProperty(p->name(), portToScriptValue(result.engine(), p),
-            QScriptValue::ReadOnly | QScriptValue::Undeletable);
+            QScriptValue::ReadOnly);
     }
 }
 

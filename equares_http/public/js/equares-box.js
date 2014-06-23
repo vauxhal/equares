@@ -322,8 +322,13 @@ var equaresBox = {};
             return null
         }
     }
-    Box.prototype.resizeInputPorts = function(nin) {
+    Box.prototype.resizeInputPorts = function(nin, options) {
         var box = this
+        options = options || {}
+        if (!(options.portName instanceof Function))
+            options.portName = function(info, idx) { return "in_" + (idx+1) }
+        if (!(options.portHelp instanceof Function))
+            options.portHelp = function(info, idx) { return info.help.match(/^(.*)\d+$/)[1] + (idx+1) }
         box.cache = box.cache || {}
         if (!box.cache.infoIn)
             box.cache.infoIn = box.info.inputs[0]
@@ -352,9 +357,12 @@ var equaresBox = {};
         else if (d > 0) {
             var info0 = box.cache.infoIn
             for (i=0; i<d; ++i) {
-                var n = nin0 + 1 + i
-                var ph = info0.help.match(/^(.*)\d+$/)[1] + n,
-                    pn = 'in_' + n,   info = { help: ph, name: pn, pos: 0 }
+                var n = nin0 + i,
+                    info = {
+                        help: options.portHelp(info0, n),
+                        name: options.portName(info0, n),
+                        pos: 0
+                    }
                 box.info.inputs.push(info)
                 box.ports.splice(nin0+i, 0, new InputPort(info, box, n))
             }
@@ -362,8 +370,13 @@ var equaresBox = {};
         }
         box.redraw()
     }
-    Box.prototype.resizeOutputPorts = function(nout) {
+    Box.prototype.resizeOutputPorts = function(nout, options) {
         var box = this
+        options = options || {}
+        if (!(options.portName instanceof Function))
+            options.portName = function(info, idx) { return "out_" + (idx+1) }
+        if (!(options.portHelp instanceof Function))
+            options.portHelp = function(info, idx) { return info.help.match(/^(.*)\d+$/)[1] + (idx+1) }
         box.cache = box.cache || {}
         if (!box.cache.infoOut)
             box.cache.infoOut = box.info.outputs[0]
@@ -392,11 +405,14 @@ var equaresBox = {};
         else if (d > 0) {
             var info0 = box.cache.infoOut
             for (i=0; i<d; ++i) {
-                var n = nout0 + 1 + i
-                var ph = info0.help.match(/^(.*)\d+$/)[1] + n,
-                    pn = 'out_' + n,   info = { help: ph, name: pn, pos: 0 }
+                var n = nout0 + i
+                var info = {
+                    help: options.portHelp(info0, n),
+                    name: options.portName(info0, n),
+                    pos: 0
+                }
                 box.info.outputs.push(info)
-                box.ports.push(new OutputPort(info, box, n))
+                box.ports.push(new OutputPort(info, box, nin + n))
             }
             positionPorts()
         }
@@ -815,19 +831,32 @@ $.extend(equaresBox.rules, {
     ParamArray: {
         init: function() {
             this.props["data"].toBoxProp = function(prop) {
-                var result = [], port = this.ports[0]
+                var result = [], port = this.ports[this.info.inputs.length]
                 for (var i=0, n=prop.value.length; i<n; ++i)
                     result = result.concat(port2value(prop.value[i], port))
                 return result
             }
             setUnspecPortStatus(this)
         },
+        prop: function(name) {
+            var box = this
+            if (name === "withActivator") {
+                var nin = box.props.withActivator.value? 1: 0
+                box.resizeInputPorts(nin, {
+                    portName: function() { return 'activator' },
+                    portHelp: function() { return 'Actovation port' }
+                })
+                box.emit('critical')
+            }
+        },
         port: function(port) {
-            var t = port2type(port)
-            this.props["data"].userType = [t]
-            ;(t === undefined ? setUnspecPortStatus : setGoodStatus)(this)
-            this.prop("data", [])
-            this.stateChanged("propset")
+            if (port.info.name == 'output') {
+                var t = port2type(port)
+                this.props["data"].userType = [t]
+                ;(t === undefined ? setUnspecPortStatus : setGoodStatus)(this)
+                this.prop("data", [])
+                this.stateChanged("propset")
+            }
         }
     },
     CrossSection: {
@@ -1040,6 +1069,15 @@ $.extend(equaresBox.rules, {
         },
         port: function(port) {
             propagateSameFormat.call(this)
+        }
+    },
+    Replicator: {
+        init: function() {
+            setUnspecPortStatus(this)
+        },
+        port: function(port) {
+            propagateFormat.call(this, port, 0, 2)
+            propagateFormat.call(this, port, 1, 3)
         }
     }
 })

@@ -1,5 +1,16 @@
 #include "box_util.h"
 
+bool propagateCommonFormat(Port& port1, Port& port2)
+{
+    if (port1.format().isValid() == port2.format().isValid())
+        return false;
+    if (port1.format().isValid())
+        port2.format() = port1.format();
+    else
+        port1.format() = port2.format();
+    return true;
+}
+
 bool propagateCommonFormat(const QList<Port*>& ports)
 {
     // Obtain the only valid format; determine if there are ports with an invalid format
