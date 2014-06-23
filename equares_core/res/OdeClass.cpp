@@ -1,3 +1,5 @@
+#include <cmath>
+
 struct pendulum {
     int paramCount() const {
         return 2;       // l, g

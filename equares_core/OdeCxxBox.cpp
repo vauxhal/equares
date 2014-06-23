@@ -347,7 +347,7 @@ QString OdeCxxBox::buildDirPriv(const QString& src, QString *className, QString*
 }
 
 QString OdeCxxBox::srcExample() const {
-    return "#include <cmath>\n\n" + readFile(":/cxx/OdeClass.cpp", this);
+    return readFile(":/cxx/OdeClass.cpp", this);
 }
 
 bool OdeCxxBox::useQmake() const {
