@@ -67,11 +67,15 @@ ReplicatorRuntimeBox::ReplicatorRuntimeBox(const ReplicatorBox *box)
 
 bool ReplicatorRuntimeBox::control(int)
 {
-    Q_ASSERT(m_controlIn.state().hasData());
     if (!m_valueIn.state().hasData())
         return false;
+
+    Q_ASSERT(m_controlIn.state().hasData());
+    m_controlOut.setData(m_controlIn.data());
+    m_controlOut.state().setValid();
     if (!m_controlOut.activateLinks())
         return false;
+
     m_valueOut.setData(m_valueIn.data());
     m_valueOut.state().setValid();
     return m_valueOut.activateLinks();
