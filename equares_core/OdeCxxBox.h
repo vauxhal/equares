@@ -2,8 +2,8 @@
 #define ODECXXBOX_H
 
 #include "equares_core.h"
+#include "CxxBuildHelper.h"
 #include <QLibrary>
-#include <QSharedPointer>
 
 class EQUARES_CORESHARED_EXPORT OdeCxxBox : public Box
 {
@@ -37,9 +37,8 @@ public:
 
     class OdeLibProxy {
     public:
-        typedef QSharedPointer<OdeLibProxy> Ptr;
-
-        explicit OdeLibProxy(const QString& libName, const Box *box);
+        OdeLibProxy() {}
+        explicit OdeLibProxy(const QLibraryPtr &lib, const Box *box);
         ~OdeLibProxy();
 
         int paramCount() const {
@@ -63,10 +62,11 @@ public:
         QString hash() const {
             return m_hash();
         }
-    private:
-        OdeLibProxy(const OdeLibProxy&);
-        OdeLibProxy& operator=(const OdeLibProxy&);
+        bool isNull() const {
+            return m_lib.isNull();
+        }
 
+    private:
         typedef void* (*newInstanceFunc)();
         typedef void (*deleteInstanceFunc)(void*);
         typedef int (*paramCountFunc)(void*);
@@ -77,7 +77,7 @@ public:
         typedef void (*rhsFunc)(void*, double*, const double*, const double*);
         typedef const char* (*hashFunc)();
 
-        QLibrary m_lib;
+        QLibraryPtr m_lib;
         const Box *m_box;
 
         newInstanceFunc m_newInstance;
@@ -106,10 +106,7 @@ private:
     bool m_useQmake;
     QString m_src;
 
-    OdeLibProxy::Ptr m_libProxy;
-
-    bool libUpToDate(const QString& libName, const QString& hashString);
-    QString buildDirPriv(const QString& src, QString *className = 0, QString* hashString = 0) const;
+    OdeLibProxy m_libProxy;
 };
 
 class OdeCxxRuntimeBox : public RuntimeBox

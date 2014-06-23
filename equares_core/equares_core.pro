@@ -53,7 +53,8 @@ SOURCES += equares_core.cpp \
     SlitBox.cpp \
     MergeBox.cpp \
     box_util.cpp \
-    ReplicatorBox.cpp
+    ReplicatorBox.cpp \
+    CxxBuildHelper.cpp
 
 HEADERS += equares_core.h\
         equares_core_global.h \
@@ -95,7 +96,8 @@ HEADERS += equares_core.h\
     SlitBox.h \
     MergeBox.h \
     box_util.h \
-    ReplicatorBox.h
+    ReplicatorBox.h \
+    CxxBuildHelper.h
 
 symbian {
     MMP_RULES += EXPORTUNFROZEN

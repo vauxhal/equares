@@ -42,3 +42,12 @@ bool propagateCommonFormat(const QList<Port*>& ports)
     return true;
 }
 
+QString readFile(const QString& fileName, const Box *box)
+{
+    QFile file(fileName);
+    file.open(QIODevice::ReadOnly);
+    if (!file.isOpen())
+        throw EquaresBoxException(box, QString("readFile(): failed to open file %1").arg(fileName));
+    return QString::fromUtf8(file.readAll());
+}
+
