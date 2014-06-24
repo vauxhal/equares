@@ -55,7 +55,9 @@ SOURCES += equares_core.cpp \
     box_util.cpp \
     ReplicatorBox.cpp \
     CxxBuildHelper.cpp \
-    FdeCxxBox.cpp
+    FdeCxxBox.cpp \
+    FdeIteratorBox.cpp \
+    JoinBox.cpp
 
 HEADERS += equares_core.h\
         equares_core_global.h \
@@ -99,7 +101,9 @@ HEADERS += equares_core.h\
     box_util.h \
     ReplicatorBox.h \
     CxxBuildHelper.h \
-    FdeCxxBox.h
+    FdeCxxBox.h \
+    FdeIteratorBox.h \
+    JoinBox.h
 
 symbian {
     MMP_RULES += EXPORTUNFROZEN

@@ -7,7 +7,7 @@ FdeCxxBox::FdeCxxBox(QObject *parent) :
     Box(parent),
     m_param("parameters", this, PortFormat(0).setFixed()),
     m_state("state", this, PortFormat(0).setFixed()),
-    m_nextState("next_state", this, PortFormat(0).setFixed()),
+    m_nextState("nextState", this, PortFormat(0).setFixed()),
     m_useQmake(true)
 {
 }
@@ -26,7 +26,7 @@ void FdeCxxBox::checkPortFormat() const {
     if (m_state.format() != PortFormat(varCount()))
         throwBoxException("FdeCxxBox: port 'state' has an invalid size");
     if (m_nextState.format() != PortFormat(varCount()))
-        throwBoxException("FdeCxxBox: port 'next_state' has an invalid size");
+        throwBoxException("FdeCxxBox: port 'nextState' has an invalid size");
 }
 
 bool FdeCxxBox::propagatePortFormat() {

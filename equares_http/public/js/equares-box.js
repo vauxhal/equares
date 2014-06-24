@@ -813,6 +813,29 @@ function checkRk4Ports(box)
     setGoodStatus(box)
 }
 
+function checkFdeIteratorPorts(box)
+{
+    var f = []
+    for (var i=0; i<7; ++i) f[i] = box.ports[i].getFormat()
+    var criticalPorts = [2,5]
+    for (i=0; i<criticalPorts.length; ++i) {
+        var n = criticalPorts[i], fn = f[n]
+        if (fn.format === undefined) {
+            setUnspecPortStatus(box, n)
+            return
+        }
+        if (fn.format.length != 1) {
+            setBadPortStatus(box, n, "expected 1D port data")
+            return
+        }
+    }
+    if (f[2].format[0] != f[5].format[0]) {
+        box.status = { level: "error", text: "Incompatible formats of ports 'fdeOut' and 'fdeIn'" }
+        return
+    }
+    setGoodStatus(box)
+}
+
 function odeOrFdeRules(type) {
     return {
         init: function() {
@@ -955,6 +978,14 @@ $.extend(equaresBox.rules, {
             checkRk4Ports(this)
         }
     },
+    FdeIterator: {
+        init: function() { checkFdeIteratorPorts(this) },
+        port: function(port) {
+            propagateFormatDirected.call(this, port, 5, [1,4])
+            checkFdeIteratorPorts(this)
+        }
+    },
+
     Canvas: {
         init: function() { setUnspecPortStatus(this) },
         prop: function(name) {
@@ -1083,6 +1114,36 @@ $.extend(equaresBox.rules, {
         port: function(port) {
             propagateFormat.call(this, port, 0, 2)
             propagateFormat.call(this, port, 1, 3)
+        }
+    },
+    Join: {
+        init: function() {
+            setUnspecPortStatus(this)
+        },
+        port: function(port) {
+            var fi = [this.ports[0].getFormat(true), this.ports[1].getFormat(true)],
+                out = this.ports[2],
+                fo = out.getFormat(true),
+                i, dataSize = 0, hints = []
+            for (i=0; i<2; ++i) {
+                if (!fi[i].valid())
+                    return setUnspecPortStatus(this, i)
+                if (fi[i].format.length != 1)
+                    return setBadPortStatus(this, i, '1D data was expected')
+                dataSize += fi[i].format[0]
+                if (hints)
+                    hints = fi[i].hints? hints.concat(fi[i].hints): undefined
+            }
+            if (fo.valid()) {
+                setFormat(out, {})
+                if (fo.format.length != 1)
+                    return setBadPortStatus(this, 2, '1D data was expected')
+                if (fo.format[0] != dataSize)
+                    return setBadPortStatus(this, 2, 'Invalid data size, must be ' + dataSize)
+            }
+            else
+                setFormat(out, {format: [dataSize], hints: hints})
+            setGoodStatus(this)
         }
     }
 })
