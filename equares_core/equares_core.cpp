@@ -225,11 +225,15 @@ void Runner::run()
 
     // Process enqueued boxes
     m_terminationRequested = 0;
+    int runFailures = 0;
     while (!m_queue.isEmpty()) {
         if (terminationRequested())
             break;
         try {
             if (!m_queue.first().activate()) {
+                const int BoxFailureLimit = 100;
+                if (++runFailures > m_rtboxes.size() + BoxFailureLimit)
+                    throw EquaresException("Failed to start simulation. Please check the scheme.");
                 foreach (const RuntimeBox::Ptr& box, m_rtboxes)
                     box->reset();
                 m_queue << m_queue.first();

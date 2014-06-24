@@ -167,6 +167,7 @@ Using workaround with bbox instead.
     background: url('drop_arrow.png') no-repeat right;
     text-indent: 0.01px;        /* Removes default arrow from firefox*/
     text-overflow: "";          /*Removes default arrow from firefox*/
+    width: 80%;
 }
 
 #scheme-box-props input[type=text] {

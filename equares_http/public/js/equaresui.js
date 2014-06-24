@@ -562,6 +562,28 @@ equaresui.setSceneSource = function() {
                     }
                 makeEditor(host, flagProp)
                 }
+                else if (t[0] == 'e') {
+                    // Edit an enumerated value
+                    var values = t.substr(1).match(/\w+/g)
+                    var editor = wrap("select").appendTo(host)
+                    function setEnumValues() {
+                        var index = -1
+                        var v = prop.getter()
+                        for(var i=0; i<values.length; ++i) {
+                            var vi = values[i]
+                            editor.append(wrap("option").attr("value", vi).html(vi))
+                            if (v == vi)
+                                index = i
+                        }
+                        return index
+                    }
+                    var edom = editor[0]
+                    edom.selectedIndex = setEnumValues()
+                    editor.change(function() {
+                        var v = this[edom.selectedIndex].value
+                        prop.setter(v)
+                    })
+                }
                 else
                     host.html("TODO: " + t)
                 break

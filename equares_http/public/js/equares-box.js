@@ -123,6 +123,12 @@ var equaresBox = {};
         else
             return "unspecified"
     }
+    PortFormat.prototype.dataSize = function() {
+        var result = 0
+        for (var i=0; i<this.format.length; ++i)
+            result += this.format[i]
+        return result
+    }
 
     var Port = equaresBox.Port = function (info, box, index) {
         if (arguments.length == 0)
@@ -1143,6 +1149,22 @@ $.extend(equaresBox.rules, {
             }
             else
                 setFormat(out, {format: [dataSize], hints: hints})
+            setGoodStatus(this)
+        }
+    },
+    Scalarize: {
+        init: function() {
+            setUnspecPortStatus(this, 0)
+        },
+        port: function(port) {
+            var fi = this.ports[0].getFormat(true),
+                fo = this.ports[1].getFormat(true)
+            if (fi.valid() && fi.dataSize() < 1)
+                return setBadPortStatus(this, 0, 'Data size must be positive')
+            if (fo.valid() && !(fo.format.length == 1 && fo.format[0] == 1))
+                return setBadPortStatus(this, 1, 'Must be scalar')
+            if (!fi.valid())
+                return setUnspecPortStatus(this, 0)
             setGoodStatus(this)
         }
     }
