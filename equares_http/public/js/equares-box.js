@@ -1167,6 +1167,14 @@ $.extend(equaresBox.rules, {
                 return setUnspecPortStatus(this, 0)
             setGoodStatus(this)
         }
+    },
+    ThresholdDetector: {
+        port: function(port) {
+            var f = port.getFormat(true);
+            if (f.valid() && !(f.format.length == 1 && f.format[0] == 1))
+                return setBadPortStatus(this, port.index, 'Must be scalar')
+            setGoodStatus(this)
+        }
     }
 })
 })()

@@ -19,6 +19,6 @@ struct logistics {
     }
 
     void nextState(double *out, const double *param, const double *state) const {
-        out[0] = state[0]*state[0] + c;
+        out[0] = c - state[0]*state[0];
     }
 };
