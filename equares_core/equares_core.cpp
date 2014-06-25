@@ -64,7 +64,9 @@ void Simulation::initPortFormat()
             break;
 
         // Propagate format inside unresolved boxes
-        foreach (Box *box, unresolvedBoxes)
+        // TODO
+        //foreach (Box *box, unresolvedBoxes)
+        foreach (Box *box, boxes())
             progress = box->propagatePortFormat() || progress;
 
         if (!progress)
