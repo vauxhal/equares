@@ -148,6 +148,9 @@ void Runner::start(const Simulation *sim)
         box2rt[box] = rtbox;
         m_rtboxes << RuntimeBox::Ptr(rtbox);
     }
+    m_rtboxvec.resize(m_rtboxes.size());
+    for (int i=0; i<m_rtboxes.size(); ++i)
+        m_rtboxvec[i] = m_rtboxes[i].data();
     foreach (const Link& link, sim->links()) {
         const Box
             *boxin = link.inputPort()->owner(),
@@ -282,6 +285,10 @@ void Runner::postPortActivation(RuntimeBox *box, RuntimeBox::PortNotifier notifi
     Q_ASSERT(box);
     if (notifier)
         m_queue << QueueItem(box, notifier, notifierArg);
+}
+
+const QVector<RuntimeBox *> &Runner::rtboxes() const {
+    return m_rtboxvec;
 }
 
 

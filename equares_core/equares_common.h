@@ -211,4 +211,18 @@ private:
     EntryCounter& m_ec;
 };
 
+template< int x0 >
+class InitializedInt
+{
+public:
+    InitializedInt(int initializer) : m_value(initializer) {}
+    InitializedInt() : m_value(x0) {}
+    int& value() { return m_value; }
+    int value() const { return m_value; }
+    operator int&() { return m_value; }
+    operator int() const { return m_value; }
+private:
+    int m_value;
+};
+
 #endif // EQUARES_COMMON_H

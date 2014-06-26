@@ -222,6 +222,7 @@ public:
     virtual ~ThreadManager();
 
     static ThreadManager *instance();
+    static void msleep(unsigned long msecs);
 
     virtual ThreadOutput::Ptr threadOutput() const = 0;
     virtual ThreadManager& setThreadOutput(ThreadOutput::Ptr threadOutput) = 0;
@@ -229,7 +230,7 @@ public:
     virtual ThreadManager& reportProgress(const ProgressInfo& pi) = 0;
 
     virtual int registerInput(InputInfo::Ptr inputInfo) = 0;
-    virtual QVector<double> readInput(int inputId, bool wait) = 0;
+    virtual bool readInput(QVector<double>& input, int inputId, bool wait) = 0;
 
 private:
     static QList<ThreadManager*> m_instances;
@@ -256,7 +257,7 @@ public:
     ThreadManager& reportProgress(const ProgressInfo& pi);
 
     int registerInput(InputInfo::Ptr inputInfo);
-    QVector<double> readInput(int inputId, bool wait);
+    bool readInput(QVector<double>& input, int inputId, bool wait);
 
 private:
     ThreadOutput::Ptr m_threadOutput;

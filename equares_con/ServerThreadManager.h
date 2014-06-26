@@ -58,7 +58,6 @@ class ServerThread : public QThread
 public:
     ServerThread(ServerThreadManager *threadMan, Runnable *runnable, int jobId);
     void requestTermination();
-    using QThread::msleep;  // Protected in Qt4
 
 protected:
     void run();
@@ -82,7 +81,7 @@ public:
     ThreadManager& start(Runnable *runnable);
     ThreadManager& reportProgress(const ProgressInfo& pi);
     int registerInput(InputInfo::Ptr inputInfo);
-    QVector<double> readInput(int inputId, bool wait);
+    bool readInput(QVector<double>& input, int inputId, bool wait);
     ThreadManager& endSync(int jobId);
     ThreadManager& requestTermination(int jobId);
     ThreadManager& requestTermination();

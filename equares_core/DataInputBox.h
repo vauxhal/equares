@@ -8,8 +8,6 @@
 class EQUARES_CORESHARED_EXPORT DataInputBox : public Box
 {
     Q_OBJECT
-    Q_PROPERTY(bool sync READ sync WRITE setSync)
-    Q_PROPERTY(bool loop READ loop WRITE setLoop)
 public:
 
     explicit DataInputBox(QObject *parent = 0);
@@ -18,15 +16,7 @@ public:
     void checkPortFormat() const;
     bool propagatePortFormat();
 
-    bool sync() const;
-    DataInputBox& setSync(bool sync);
-    bool loop() const;
-    DataInputBox& setLoop(bool loop);
-
 private:
-    bool m_sync;
-    bool m_loop;
-
     mutable InputPort m_activator;
     mutable InputPort m_in;
     mutable OutputPort m_out;
@@ -37,6 +27,7 @@ class EQUARES_CORESHARED_EXPORT DataInputRuntimeBox : public RuntimeBox
 public:
     explicit DataInputRuntimeBox(const DataInputBox *box);
     void registerInput();
+    void acquireInteractiveInput();
 
 protected:
     virtual void transformData(double *portData, const double *inputData) const = 0;
@@ -47,17 +38,15 @@ private:
     RuntimeInputPort m_in;
     RuntimeOutputPort m_out;
 
-    bool m_sync;
-    bool m_loop;
     QVector<double> m_data;
     bool m_dataValid;
     bool fetchInputPortData();
     QVector<double> m_iinputData;
     bool m_iinputDataValid;
     int m_inputId;
-    EntryCounter m_ec;
-    QTime m_time;
+    QTime m_inputFeedbackTime;
     bool m_unititializedInputPort;
+    QTime m_inputCheckTime;
 
     bool activate(int);
     bool processInput(int);

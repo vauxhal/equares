@@ -2,6 +2,7 @@
 #include "EquaresException.h"
 #include <QPainter>
 #include <QImage>
+#include <QThread>
 #include <iostream>
 
 DefaultOutputStream::DefaultOutputStream(FILE *os) : m_empty(true)
@@ -169,6 +170,15 @@ ThreadManager *ThreadManager::instance()
     return m_instances.last();
 }
 
+// In Qt4, QThread::msleep is protected
+struct ThreadHack : QThread {
+    using QThread::msleep;
+};
+
+void ThreadManager::msleep(unsigned long msecs) {
+    ThreadHack::msleep(msecs);
+}
+
 
 
 DefaultThreadManager::DefaultThreadManager() :
@@ -220,7 +230,7 @@ int DefaultThreadManager::registerInput(InputInfo::Ptr inputInfo)
     return result;
 }
 
-QVector<double> DefaultThreadManager::readInput(int inputId, bool wait)
+bool DefaultThreadManager::readInput(QVector<double>& input, int inputId, bool wait)
 {
     // TODO
     Q_ASSERT(inputId >= 0   &&   inputId < m_inputData.size());
@@ -230,11 +240,11 @@ QVector<double> DefaultThreadManager::readInput(int inputId, bool wait)
             // TODO: wait for input
             Q_ASSERT(false);
         }
-        return QVector<double>();
+        return false;
     }
     else {
-        QVector<double> result = buf.first();
+        input = buf.first();
         buf.removeFirst();
-        return result;
+        return true;
     }
 }

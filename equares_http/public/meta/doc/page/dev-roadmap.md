@@ -1,12 +1,12 @@
 # Hotlist
 * core: better port format resolution, see TODO in Simulation::initPortFormat().
 * web: simple input warning: missing ' at end.
-* web: range input: in sync mode, don't send input until users release slider.
+* ~~web: range input: don't send input until users release slider.~~
 * core, web: add RectInput interactive input box.
 * core: add new input ports (with 2D range data) to GridGenerator, Canvas PointInput.
 * core: add parameter to ThresholdDetector that suppresses the output of zero values.
 * core: Rename GridGenerator to Grid.
-* core: remove sync & loop interactive input parameters, add & use Pause box instead.
+* ~~core: remove sync & loop interactive input parameters, add & use Pause box instead.~~
 * core: clear-on-restart flag in canvas.
 * core: Override RunTimeBox::restart() in ValveBox and maybe others.
 * docs: Add section about port activation.
@@ -14,6 +14,13 @@
 * all: License file, add license text to all source files.
 * web: less strict port equality check (hints are optional)
 * docs: disclaimer; unstable format warning.
+* web: reinit box name system on clear/load simulation.
+* web: use name system when loading simulation.
+* core: decorate input consumer names.
+* core: check filenames for bitmap and canvas boxes.
+* web: don't store info (at least when there are no critical parameters).
+* web: validate simulation names against some pattern (e.g. disallow empty names).
+* web: validate user names against some pattern (e.g. disallow empty names).
 
 # Roadmap / TODO
 

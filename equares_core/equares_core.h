@@ -354,6 +354,8 @@ PropClass(WithRuntimeOutputPorts, RuntimeOutputPorts, const RuntimeOutputPorts&,
 PropClass(WithRunner, Runner*, Runner*, runner, setRunner)
 PropClass(WithBusyFlag, bool, bool, isBusy, setBusy)
 
+typedef InitializedInt<-1> InputId;
+
 class RuntimeBox :
     public OwnedBy<const Box>,
     public WithRuntimeInputPorts,
@@ -375,6 +377,7 @@ public:
         return 0;
     }
     virtual void reset() {}
+    virtual void acquireInteractiveInput() {}
 
 protected:
     template<class ThisClass>
@@ -567,10 +570,12 @@ public:
     bool terminationRequested() const;
 
     void postPortActivation(RuntimeBox *box, RuntimeBox::PortNotifier notifier, int notifierArg);
+    const QVector<RuntimeBox*>& rtboxes() const;
 
 private:
     QList< RuntimeBox::Ptr > m_rtboxes;
     QList< RuntimeLink > m_rtlinks;
+    QVector<RuntimeBox*> m_rtboxvec;
 
     class QueueItem {
     public:

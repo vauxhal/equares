@@ -6,8 +6,6 @@ REGISTER_BOX(SignalInputBox, "SignalInput")
 
 SignalInputBox::SignalInputBox(QObject *parent) :
     Box(parent),
-    m_sync(true),
-    m_loop(true),
     m_activator("activator", this),
     m_out("output", this, PortFormat(0).setFixed())
 {
@@ -42,30 +40,10 @@ SignalInputBox& SignalInputBox::setSignalName(const QString& signalName) {
     return *this;
 }
 
-bool SignalInputBox::sync() const {
-    return m_sync;
-}
-
-SignalInputBox& SignalInputBox::setSync(bool sync) {
-    m_sync = sync;
-    return *this;
-}
-
-bool SignalInputBox::loop() const {
-    return m_loop;
-}
-
-SignalInputBox& SignalInputBox::setLoop(bool loop) {
-    m_loop = loop;
-    return *this;
-}
-
 
 
 SignalInputRuntimeBox::SignalInputRuntimeBox(const SignalInputBox *box) :
-    m_signalName(box->signalName()),
-    m_sync(box->sync()),
-    m_loop(box->loop())
+    m_signalName(box->signalName())
 {
     setOwner(box);
 
@@ -78,7 +56,6 @@ SignalInputRuntimeBox::SignalInputRuntimeBox(const SignalInputBox *box) :
     setOutputPorts(RuntimeOutputPorts() << &m_out);
 
     m_inputId = -1;
-    m_iinputDataValid = false;
 }
 
 InputInfoList SignalInputRuntimeBox::inputInfo() const {
@@ -90,23 +67,19 @@ void SignalInputRuntimeBox::registerInput()
     m_inputId = ThreadManager::instance()->registerInput(inputInfo()[0]);
 }
 
+void SignalInputRuntimeBox::acquireInteractiveInput()
+{
+    QVector<double> input;
+    if (ThreadManager::instance()->readInput(input, m_inputId, false))
+        m_out.activateLinks();
+}
+
 bool SignalInputRuntimeBox::activate(int)
 {
-    forever {
-        if (!m_iinputDataValid) {
-            m_inputDataEmpty = ThreadManager::instance()->readInput(m_inputId, m_sync).isEmpty();
-            m_iinputDataValid = true;
-        }
-        if (m_inputDataEmpty) {
-            if (!m_sync)
-                m_iinputDataValid = false;
-            return true;
-        }
-        if (m_out.activateLinks())
-            m_iinputDataValid = false;
-        else
-            return false;
-        if (!(m_loop && m_sync))
-            return true;
+    const int InputCheckDelay = 100;
+    if (m_inputCheckTime.elapsed() > InputCheckDelay) {
+        m_inputCheckTime.restart();
+        acquireInteractiveInput();
     }
+    return true;
 }

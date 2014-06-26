@@ -222,7 +222,7 @@ int ServerThreadManager::registerInput(InputInfo::Ptr inputInfo)
     return result;
 }
 
-QVector<double> ServerThreadManager::readInput(int inputId, bool wait)
+bool ServerThreadManager::readInput(QVector<double>& input, int inputId, bool wait)
 {
     Q_ASSERT(m_threadData.hasLocalData());
     ThreadData *td = m_threadData.localData();
@@ -239,11 +239,12 @@ QVector<double> ServerThreadManager::readInput(int inputId, bool wait)
         if (threadInput.isEmpty()) {
             if (wait) {
                 lock.unlock();
-                td->thread->msleep(200);
+                const unsigned long InteractiveInputProcessingDelay = 200;
+                msleep(InteractiveInputProcessingDelay);
                 continue;
             }
             else
-                return QVector<double>();
+                return false;
         }
         QString s = threadInput.first();
         threadInput.removeFirst();
@@ -264,7 +265,8 @@ QVector<double> ServerThreadManager::readInput(int inputId, bool wait)
     // Pick item at the beginning of the buffer
     QVector<double> chunk = d.buf.first();
     d.buf.removeFirst();
-    return chunk;
+    input = chunk;
+    return true;
 }
 
 ThreadManager& ServerThreadManager::endSync(int jobId)

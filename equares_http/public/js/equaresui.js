@@ -966,19 +966,24 @@ equaresui.setSceneSource = function() {
                                     break
                                 case 'range':
                                     (function(ii) { // Closure for ii
-                                        var data = [], editors = [], i, dataLabel = []
+                                        var data = [], editors = [], i, dataLabel = [], dontsend = true
+                                        function updateLabels() {
+                                            for (i=0; i<ii.items.length; ++i)
+                                                dataLabel[i].text(data[i] = +editors[i].slider('value'))
+                                        }
                                         ii.acquirePortInput = function(data) {
+                                            dontsend = true
                                             var n = editors.length
                                             if (n > data.length)
                                                 n = data.length
-                                            for (i=0; i<n; ++i) {
+                                            for (i=0; i<n; ++i)
                                                 editors[i].slider('value', +data[i])
-                                                dataLabel[i].text(data[i])
-                                            }
+                                            updateLabels()
+                                            dontsend = false
                                         }
                                         function send() {
-                                            for (i=0; i<ii.items.length; ++i)
-                                                dataLabel[i].text(data[i] = +editors[i].slider('value'))
+                                            if (dontsend)
+                                                return
                                             $.ajax("cmd/input", {data: {cmd: inputPrefix + ii.consumer + ' ' + data.join(' ')}, type: "GET", cache: false})
                                                 .fail(function(error) {
                                                     errorMessage(error.responseText || error.statusText || ("Ajax error: " + error.status))
@@ -995,10 +1000,12 @@ equaresui.setSceneSource = function() {
                                                     min: +r.vmin,
                                                     max: +r.vmax,
                                                     step: (+r.vmax-r.vmin)/(r.resolution||1),
-                                                    slide: send
+                                                    slide: updateLabels,
+                                                    change: send
                                                 }))
                                             )
                                         }
+                                        dontsend = false
                                     })(ii)
                                     break
                                 }

@@ -3,13 +3,12 @@
 
 #include "equares_core.h"
 #include "equares_script.h"
+#include <QTime>
 
 class EQUARES_CORESHARED_EXPORT SignalInputBox : public Box
 {
     Q_OBJECT
     Q_PROPERTY(QString signalName READ signalName WRITE setSignalName)
-    Q_PROPERTY(bool sync READ sync WRITE setSync)
-    Q_PROPERTY(bool loop READ loop WRITE setLoop)
 public:
     explicit SignalInputBox(QObject *parent = 0);
 
@@ -21,15 +20,9 @@ public:
 
     QString signalName() const;
     SignalInputBox& setSignalName(const QString& signalName);
-    bool sync() const;
-    SignalInputBox& setSync(bool sync);
-    bool loop() const;
-    SignalInputBox& setLoop(bool loop);
 
 private:
     QString m_signalName;
-    bool m_sync;
-    bool m_loop;
     mutable InputPort m_activator;
     mutable OutputPort m_out;
 };
@@ -40,17 +33,15 @@ public:
     explicit SignalInputRuntimeBox(const SignalInputBox *box);
     InputInfoList inputInfo() const;
     void registerInput();
+    void acquireInteractiveInput();
 
 private:
     RuntimeInputPort m_activator;
     RuntimeOutputPort m_out;
 
     QString m_signalName;
-    bool m_sync;
-    bool m_loop;
-    bool m_iinputDataValid;
-    bool m_inputDataEmpty;
     int m_inputId;
+    QTime m_inputCheckTime;
 
     bool activate(int);
 };

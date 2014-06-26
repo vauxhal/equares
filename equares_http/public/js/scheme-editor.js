@@ -798,7 +798,7 @@ var ctmEquaresSchemeEditor = {};
                 for (var i=0; i<boxes.length; ++i) {
                     var b = boxes[i], box = editor.findBox(b.name)
                     for (var propName in b.props)
-                        if (box.props[propName].critical == critical)
+                        if (box.props[propName] && box.props[propName].critical == critical)
                             box.prop(propName, b.props[propName].value)
                 }
             }
