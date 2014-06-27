@@ -43,6 +43,7 @@ ThresholdDetectorBox::ThresholdDetectorBox(QObject *parent) :
     Box(parent),
     m_param(ThresholdLess),
     m_quiet(false),
+    m_thresholdValue(0),
     m_threshold("threshold", this, PortFormat(1).setFixed()),
     m_in("input", this, PortFormat(1).setFixed()),
     m_out("output", this, PortFormat(1).setFixed())
@@ -91,6 +92,15 @@ ThresholdDetectorBox& ThresholdDetectorBox::setQuiet(bool quiet) {
     return *this;
 }
 
+double ThresholdDetectorBox::thresholdValue() const {
+    return m_thresholdValue;
+}
+
+ThresholdDetectorBox& ThresholdDetectorBox::setThresholdValue(double thresholdValue) {
+    m_thresholdValue = thresholdValue;
+    return *this;
+}
+
 
 
 ThresholdDetectorRuntimeBox::ThresholdDetectorRuntimeBox(const ThresholdDetectorBox *box) :
@@ -121,11 +131,17 @@ ThresholdDetectorRuntimeBox::ThresholdDetectorRuntimeBox(const ThresholdDetector
     default:
         throwBoxException("Invalid threshold parameter");
     }
-    m_thresholdDataValid = false;
+    if (in[0]->link())
+        m_thresholdDataValid = false;
+    else {
+        m_thresholdDataValid = true;
+        m_thresholdData = box->thresholdValue();
+    }
 }
 
 bool ThresholdDetectorRuntimeBox::setThreshold(int)
 {
+    Q_ASSERT(m_threshold.state().hasData());
     m_thresholdData = m_threshold.data().data()[0];
     m_thresholdDataValid = true;
     return true;
@@ -134,8 +150,6 @@ bool ThresholdDetectorRuntimeBox::setThreshold(int)
 bool ThresholdDetectorRuntimeBox::processData(int)
 {
     if (!m_thresholdDataValid)
-        return false;
-    if (!m_threshold.state().hasData())
         return false;
     Q_ASSERT(m_in.state().hasData());
 
