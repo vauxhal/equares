@@ -377,6 +377,7 @@ public:
         return 0;
     }
     virtual void reset() {}
+    virtual void restart() {}
     virtual void acquireInteractiveInput() {}
 
 protected:

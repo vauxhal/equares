@@ -21,6 +21,10 @@
 * web: don't store info (at least when there are no critical parameters).
 * web: validate simulation names against some pattern (e.g. disallow empty names).
 * web: validate user names against some pattern (e.g. disallow empty names).
+* docs: tutorial, pitfalls
+* web: split examples to basic and advanced
+* ~~core, web: report simulation running time~~
+* ~~core: run unbound boxes with preproc and postproc~~
 
 # Roadmap / TODO
 

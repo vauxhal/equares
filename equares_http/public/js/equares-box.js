@@ -1175,6 +1175,14 @@ $.extend(equaresBox.rules, {
                 return setBadPortStatus(this, port.index, 'Must be scalar')
             setGoodStatus(this)
         }
+    },
+    Differentiate: {
+        init: function() {
+            setUnspecPortStatus(this, [0,1])
+        },
+        port: function(port) {
+            propagateFormat.call(this, port, 0, 1)
+        }
     }
 })
 })()

@@ -76,10 +76,6 @@ void SignalInputRuntimeBox::acquireInteractiveInput()
 
 bool SignalInputRuntimeBox::activate(int)
 {
-    const int InputCheckDelay = 100;
-    if (m_inputCheckTime.elapsed() > InputCheckDelay) {
-        m_inputCheckTime.restart();
-        acquireInteractiveInput();
-    }
+    acquireInteractiveInput();
     return true;
 }

@@ -18,6 +18,7 @@ class EQUARES_CORESHARED_EXPORT ThresholdDetectorBox : public Box
 {
     Q_OBJECT
     Q_PROPERTY(ThresholdDetectorBoxParam param READ param WRITE setParam)
+    Q_PROPERTY(bool quiet READ quiet WRITE setQuiet)
 public:
     explicit ThresholdDetectorBox(QObject *parent = 0);
 
@@ -31,9 +32,12 @@ public:
 
     Param param() const;
     ThresholdDetectorBox& setParam(const Param& param);
+    bool quiet() const;
+    ThresholdDetectorBox& setQuiet(bool quiet);
 
 private:
     Param m_param;
+    bool m_quiet;
     mutable InputPort m_threshold;
     mutable InputPort m_in;
     mutable OutputPort m_out;
@@ -43,9 +47,9 @@ class EQUARES_CORESHARED_EXPORT ThresholdDetectorRuntimeBox : public RuntimeBox
 {
 public:
     explicit ThresholdDetectorRuntimeBox(const ThresholdDetectorBox *box);
-    void reset();
 
 private:
+    bool m_quiet;
     RuntimeInputPort m_threshold;
     RuntimeInputPort m_in;
     RuntimeOutputPort m_out;

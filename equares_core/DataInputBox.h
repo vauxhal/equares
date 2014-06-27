@@ -46,7 +46,6 @@ private:
     int m_inputId;
     QTime m_inputFeedbackTime;
     bool m_unititializedInputPort;
-    QTime m_inputCheckTime;
 
     bool activate(int);
     bool processInput(int);

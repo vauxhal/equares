@@ -55,8 +55,6 @@ DataInputRuntimeBox::DataInputRuntimeBox(const DataInputBox *box)
     m_inputId = -1;
     m_dataValid = false;
     m_iinputDataValid = false;
-    m_inputFeedbackTime.start();
-    m_inputCheckTime.start();
     m_unititializedInputPort = true;
 }
 
@@ -102,11 +100,7 @@ bool DataInputRuntimeBox::fetchInputPortData()
 
 bool DataInputRuntimeBox::activate(int)
 {
-    const int InputCheckDelay = 100;
-    if (m_inputCheckTime.elapsed() > InputCheckDelay) {
-        m_inputCheckTime.restart();
-        acquireInteractiveInput();
-    }
+    acquireInteractiveInput();
     return true;
 }
 

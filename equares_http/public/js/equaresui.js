@@ -841,6 +841,7 @@ equaresui.setSceneSource = function() {
         var simulation = schemeEditor.exportSimulation()
         function dummyStopSim() {}
         equaresui.stopSimulation = dummyStopSim
+        equaresui.runningTime = undefined
         $.ajax("cmd/runSimulation", {data: {script: simProps.script, simulation: simulation}, type: "POST", cache: false})
             .done(function() {
                 var dlg = $("#running-simulation")
@@ -860,7 +861,10 @@ equaresui.setSceneSource = function() {
                 equaresStatEvent.onmessage = function(event) {
                     if (+event.data === 0) {
                         // Simulation has finished
-                        status.html("finished");
+                        var statusText = 'finished'
+                        if (equaresui.runningTime !== undefined)
+                            statusText += ' (' + equaresui.runningTime/1000 + ' s)'
+                        status.html(statusText);
                         running = false
                         stopButton.button("disable")
                         equaresui.stopSimulation = dummyStopSim
@@ -1098,6 +1102,11 @@ equaresui.setSceneSource = function() {
                             var consumer = inputInfo[m[1]]
                             if (consumer && (consumer.acquirePortInput instanceof Function))
                                 consumer.acquirePortInput(m[2].split(/\s+/))
+                        }
+                        m = str.match(/running time \[ms\]: (\d+)/)
+                        if (m) {
+                            equaresui.runningTime = +m[1]
+                            return
                         }
                         if (str === "finished") {
                             equaresui.stopSimulation()

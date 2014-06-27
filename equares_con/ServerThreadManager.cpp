@@ -1,5 +1,6 @@
 #include "ServerThreadManager.h"
 #include <QMutexLocker>
+#include <QTime>
 
 ServerOutputStream::ServerOutputStream(FILE *os) :
     DefaultOutputStream(os), m_bufLen(0)
@@ -121,7 +122,10 @@ void ServerThread::run()
     m_threadMan->initThread(this, m_jobId);
     try {
         EQUARES_COUT << "started" << endl;
+        QTime runningTime;
+        runningTime.start();
         m_runnable->run();
+        EQUARES_COUT << "running time [ms]: " << runningTime.elapsed() << endl;
         EQUARES_COUT << "finished" << endl;
     }
     catch (const std::exception& e) {

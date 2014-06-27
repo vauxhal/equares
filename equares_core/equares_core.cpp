@@ -247,6 +247,8 @@ void Runner::run()
         }
         catch(const BoxBreakException& bbx) {
             m_queue.clear();
+            foreach (const RuntimeBox::Ptr& box, m_rtboxes)
+                box->restart();
             RuntimeBox *box = bbx.rtbox();
             Q_ASSERT(box);
             if (box->generator()) {

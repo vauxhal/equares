@@ -42,6 +42,7 @@ REGISTER_SCRIPT_INIT_FUNC(scriptInit)
 ThresholdDetectorBox::ThresholdDetectorBox(QObject *parent) :
     Box(parent),
     m_param(ThresholdLess),
+    m_quiet(false),
     m_threshold("threshold", this, PortFormat(1).setFixed()),
     m_in("input", this, PortFormat(1).setFixed()),
     m_out("output", this, PortFormat(1).setFixed())
@@ -81,10 +82,19 @@ ThresholdDetectorBox& ThresholdDetectorBox::setParam(const Param& param) {
     m_param = param;
     return *this;
 }
+bool ThresholdDetectorBox::quiet() const {
+    return m_quiet;
+}
+
+ThresholdDetectorBox& ThresholdDetectorBox::setQuiet(bool quiet) {
+    m_quiet = quiet;
+    return *this;
+}
 
 
 
-ThresholdDetectorRuntimeBox::ThresholdDetectorRuntimeBox(const ThresholdDetectorBox *box)
+ThresholdDetectorRuntimeBox::ThresholdDetectorRuntimeBox(const ThresholdDetectorBox *box) :
+    m_quiet(box->quiet())
 {
     setOwner(box);
 
@@ -114,10 +124,6 @@ ThresholdDetectorRuntimeBox::ThresholdDetectorRuntimeBox(const ThresholdDetector
     m_thresholdDataValid = false;
 }
 
-void ThresholdDetectorRuntimeBox::reset() {
-    m_thresholdDataValid = true;
-}
-
 bool ThresholdDetectorRuntimeBox::setThreshold(int)
 {
     m_thresholdData = m_threshold.data().data()[0];
@@ -131,6 +137,8 @@ bool ThresholdDetectorRuntimeBox::processData(int)
         return false;
     Q_ASSERT(m_in.state().hasData());
     m_outData = (this->*m_thresholdFunc)(m_in.data().data()[0]);
+    if (m_quiet && !m_outData)
+        return true;
     m_out.setData(PortData(1, &m_outData));
     m_out.state().setValid();
     return m_out.activateLinks();

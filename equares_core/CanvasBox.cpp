@@ -45,6 +45,8 @@ REGISTER_SCRIPT_INIT_FUNC(canvasParamScriptInit)
 CanvasBox::CanvasBox(QObject *parent) :
     Box(parent),
     m_refreshInterval(0),
+    m_timeCheckCount(100),
+    m_clearOnRestart(false),
     m_in("input", this, PortFormat(2).setFixed()),
     m_flush("flush", this),
     m_clear("clear", this),
@@ -99,11 +101,30 @@ CanvasBox& CanvasBox::setRefreshInterval(int refreshInterval) {
     return *this;
 }
 
+int CanvasBox::timeCheckCount() const {
+    return m_timeCheckCount;
+}
+CanvasBox& CanvasBox::setTimeCheckCount(int timeCheckCount) {
+    m_timeCheckCount = timeCheckCount;
+    return *this;
+}
+
+bool CanvasBox::clearOnRestart() const {
+    return m_clearOnRestart;
+}
+
+CanvasBox& CanvasBox::setClearOnRestart(bool clearOnRestart) {
+    m_clearOnRestart = clearOnRestart;
+    return *this;
+}
+
 
 
 CanvasRuntimeBox::CanvasRuntimeBox(const CanvasBox *box) :
     m_param(box->param()),
-    m_refreshInterval(box->refreshInterval())
+    m_refreshInterval(box->refreshInterval()),
+    m_timeCheckCount(box->timeCheckCount()),
+    m_clearOnRestart(box->clearOnRestart())
 {
     setOwner(box);
 
@@ -118,7 +139,17 @@ CanvasRuntimeBox::CanvasRuntimeBox(const CanvasBox *box) :
     m_out.init(this, out[0], PortData(m_data.size(), m_data.data()));
     setOutputPorts(RuntimeOutputPorts() << &m_out);
 
+    m_timeCheckCounter = 0;
     m_time.start();
+}
+
+void CanvasRuntimeBox::reset() {
+    clear(0);
+}
+
+void CanvasRuntimeBox::restart() {
+    if (m_clearOnRestart)
+        clear(0);
 }
 
 bool CanvasRuntimeBox::processInput(int)
@@ -128,9 +159,12 @@ bool CanvasRuntimeBox::processInput(int)
     if (i >= 0) {
         double *data = m_out.data().data();
         data[i] = 1;
-        if (m_refreshInterval > 0   &&   m_time.elapsed() >= m_refreshInterval) {
-            flush(0);
-            m_time.restart();
+        if (++m_timeCheckCounter >= m_timeCheckCount) {
+            if (m_refreshInterval > 0   &&   m_time.elapsed() >= m_refreshInterval) {
+                flush(0);
+                m_time.restart();
+            }
+            m_timeCheckCounter = 0;
         }
     }
     return true;

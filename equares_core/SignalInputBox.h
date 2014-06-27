@@ -3,7 +3,6 @@
 
 #include "equares_core.h"
 #include "equares_script.h"
-#include <QTime>
 
 class EQUARES_CORESHARED_EXPORT SignalInputBox : public Box
 {
@@ -41,7 +40,6 @@ private:
 
     QString m_signalName;
     int m_inputId;
-    QTime m_inputCheckTime;
 
     bool activate(int);
 };
