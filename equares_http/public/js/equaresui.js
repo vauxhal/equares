@@ -952,7 +952,7 @@ equaresui.setSceneSource = function() {
                                             for (i=0; i<ii.items.length; ++i) {
                                                 var v = editors[i].val()
                                                 if (!v.match(rxNum))
-                                                    return errorMessage('Please enter a real number in field \'' + ii.items[i])
+                                                    return errorMessage('Please enter a real number in field \'' + ii.items[i] + '\'')
                                                 data[i] = +v
                                             }
                                             $.ajax("cmd/input", {data: {cmd: inputPrefix + ii.consumer + ' ' + data.join(' ')}, type: "GET", cache: false})

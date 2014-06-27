@@ -1,6 +1,8 @@
 #include "BitmapBox.h"
 #include <QPainter>
 #include <QImage>
+#include <QFileInfo>
+#include <QDir>
 
 REGISTER_BOX(BitmapBox, "Bitmap")
 
@@ -61,6 +63,8 @@ BitmapRuntimeBox::BitmapRuntimeBox(const BitmapBox *box)
     m_fileName = box->fileName();
     if (m_fileName.isEmpty())
         throwBoxException("BitmapRuntimeBox: no fileName is specified");
+    if (QFileInfo(m_fileName).absolutePath() != QDir::current().absolutePath())
+        throwBoxException(QString("DumpRuntimeBox: Output file name is not valid (parameter fileName)"));
 }
 
 OutputFileInfoList BitmapRuntimeBox::outputFileInfo() const

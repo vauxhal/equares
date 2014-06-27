@@ -1,4 +1,6 @@
 #include "DumpBox.h"
+#include <QFileInfo>
+#include <QDir>
 
 REGISTER_BOX(DumpBox, "Dump")
 
@@ -50,12 +52,15 @@ DumpRuntimeBox::DumpRuntimeBox(const DumpBox *box)
     m_dump.init(this, in[0], toPortNotifier(&DumpRuntimeBox::dump));
     m_flush.init(this, in[1], PortNotifier(&DumpRuntimeBox::flush));
     setInputPorts(RuntimeInputPorts() << &m_dump << &m_flush);
-    if (box->fileName().isEmpty())
+    QString fileName = box->fileName();
+    if (fileName.isEmpty())
         throwBoxException(QString("DumpRuntimeBox: Output file name is not specified (parameter fileName)"));
+    if (QFileInfo(fileName).absolutePath() != QDir::current().absolutePath())
+        throwBoxException(QString("DumpRuntimeBox: Output file name is not valid (parameter fileName)"));
     else {
-        m_cfile = fopen(box->fileName().toUtf8().data(), "w");
+        m_cfile = fopen(fileName.toUtf8().data(), "w");
         if(!m_cfile)
-            throwBoxException(QString("DumpRuntimeBox: Failed to open output file '%1'").arg(box->fileName()));
+            throwBoxException(QString("DumpRuntimeBox: Failed to open output file '%1'").arg(fileName));
     }
     m_totalDataWritten = 0;
 }
