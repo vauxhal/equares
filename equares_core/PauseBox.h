@@ -23,6 +23,7 @@ class EQUARES_CORESHARED_EXPORT PauseRuntimeBox : public RuntimeBox
 {
 public:
     explicit PauseRuntimeBox(const PauseBox *box);
+    PortNotifier postprocessor() const;
 
 private:
     RuntimeInputPort m_activator;

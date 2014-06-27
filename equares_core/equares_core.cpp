@@ -1,5 +1,6 @@
 #include "equares_core.h"
 #include <QSet>
+#include <QScriptEngine>
 
 void Box::throwBoxException(const QString& what) const
 {
@@ -17,10 +18,11 @@ void Simulation::initPortFormat()
         }
     }
 
+    BoxList allBoxes = boxes();
     forever {
         bool progress = false;
 
-        QSet<Box*> unresolvedBoxes;
+        bool hasUnresolvedBoxes = false;
 
         // Propagate all valid formats according to links
         foreach (const Link& link, m_links) {
@@ -57,25 +59,23 @@ void Simulation::initPortFormat()
                 progress = true;
             }
             else
-                unresolvedBoxes << link.outputPort()->owner() << link.inputPort()->owner();
+                hasUnresolvedBoxes = true;
         }
-        if (unresolvedBoxes.isEmpty())
+        if (!hasUnresolvedBoxes)
             // Done
             break;
 
-        // Propagate format inside unresolved boxes
-        // TODO
-        //foreach (Box *box, unresolvedBoxes)
-        foreach (Box *box, boxes())
+        // Propagate format through boxes
+        foreach (Box *box, allBoxes)
             progress = box->propagatePortFormat() || progress;
 
         if (!progress)
-            // Got stuck
-            throw EquaresException("Unable to resolve port format");
+            // Finished
+            break;
     }
 
     // Check final port formats
-    foreach (Box *box, boxes())
+    foreach (Box *box, allBoxes)
         box->checkPortFormat();
 }
 
@@ -92,6 +92,8 @@ void Simulation::setLinks(const LinkList& links)
     try {
         // Clear boxes' links; set simulation
         foreach (Box *box, linkBoxes(links)) {
+            if (!m_boxes.contains(box))
+                m_boxes << box;
             foreach (InputPort *port, box->inputPorts())
                 port->setLink(0);
             foreach (OutputPort *port, box->outputPorts())
@@ -108,6 +110,30 @@ void Simulation::setLinks(const LinkList& links)
     } catch(const EquaresException& e) {
         context()->throwError(e.what());
     }
+}
+
+void Simulation::setBoxes(const QScriptValue& boxes)
+{
+    BoxList newBoxes;
+    if (!boxes.isArray()) {
+        context()->throwError("Simulation::setBoxes: invalid argument (an array was expected)");
+        return;
+    }
+    int n = boxes.property("length").toInt32();
+    for (int i=0; i<n; ++i) {
+        QScriptValue jsbox = boxes.property(i);
+        if (jsbox.isQObject()) {
+            Box *box = qobject_cast<Box*>(jsbox.toQObject());
+            if (box) {
+                box->setSimulation(this);
+                newBoxes << box;
+                continue;
+            }
+        }
+        context()->throwError("Simulation::setBoxes: invalid argument (an array of boxes was expected)");
+        return;
+    }
+    m_boxes = newBoxes;
 }
 
 BoxList Simulation::linkBoxes(const LinkList& links)
@@ -215,6 +241,15 @@ void Runner::run()
 
     // Initiate process
     m_queue.clear();
+
+    // Enqueue preprocessors
+    foreach (RuntimeBox::Ptr box, m_rtboxes) {
+        RuntimeBox::PortNotifier preprocessor = box->preprocessor();
+        if (preprocessor)
+            postPortActivation(box.data(), preprocessor, 0);
+    }
+
+    // Enqueue regular sources
     foreach (const RuntimeBox::Ptr& box, m_rtboxes)
         if (!box->generator() && box->inputPorts().empty())
             foreach (const RuntimeOutputPort *port, box->outputPorts())
@@ -222,6 +257,8 @@ void Runner::run()
                     RuntimeInputPort *inport = link->inputPort();
                     postPortActivation(inport->owner(), inport->portNotifier(), inport->portId());
                 }
+
+    // Enqueue generators
     foreach (const RuntimeBox::Ptr& box, m_rtboxes)
         if (box->generator()) {
             Q_ASSERT(box->inputPorts().empty());
@@ -231,11 +268,13 @@ void Runner::run()
     // Process enqueued boxes
     m_terminationRequested = 0;
     int runFailures = 0;
+    bool postProcessorsQueued = false;
     while (!m_queue.isEmpty()) {
         if (terminationRequested())
             break;
         try {
-            if (!m_queue.first().activate()) {
+            bool ok = m_queue.first().activate();
+            if (!ok) {
                 const int BoxFailureLimit = 100;
                 if (++runFailures > m_rtboxes.size() + BoxFailureLimit)
                     throw EquaresException("Failed to start simulation. Please check the scheme.");
@@ -244,9 +283,19 @@ void Runner::run()
                 m_queue << m_queue.first();
             }
             m_queue.removeFirst();
+            if (ok && !postProcessorsQueued && m_queue.isEmpty()) {
+                // Enqueue postrocessors
+                postProcessorsQueued = true;
+                foreach (RuntimeBox::Ptr box, m_rtboxes) {
+                    RuntimeBox::PortNotifier postprocessor = box->postprocessor();
+                    if (postprocessor)
+                        postPortActivation(box.data(), postprocessor, 0);
+                }
+            }
         }
         catch(const BoxBreakException& bbx) {
             m_queue.clear();
+            postProcessorsQueued = false;
             foreach (const RuntimeBox::Ptr& box, m_rtboxes)
                 box->restart();
             RuntimeBox *box = bbx.rtbox();

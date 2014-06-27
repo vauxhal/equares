@@ -1,4 +1,5 @@
 #include "IntervalFilterBox.h"
+#include "box_util.h"
 #include <cmath>
 
 REGISTER_BOX(IntervalFilterBox, "IntervalFilter")
@@ -50,13 +51,7 @@ void IntervalFilterBox::checkPortFormat() const {
 }
 
 bool IntervalFilterBox::propagatePortFormat() {
-    if (m_in.format().isValid() == m_out.format().isValid())
-        return false;
-    if (m_in.format().isValid())
-        m_out.format() = m_in.format();
-    else
-        m_in.format() = m_out.format();
-    return true;
+    return propagateCommonFormat(m_in, m_out);
 }
 
 RuntimeBox *IntervalFilterBox::newRuntimeBox() const {

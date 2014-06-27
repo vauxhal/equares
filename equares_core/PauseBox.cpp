@@ -39,9 +39,18 @@ PauseRuntimeBox::PauseRuntimeBox(const PauseBox *box)
     setInputPorts(RuntimeInputPorts() << &m_activator);
 }
 
+RuntimeBox::PortNotifier PauseRuntimeBox::postprocessor() const {
+    if (m_activator.link())
+        return 0;
+    else
+        return toPortNotifier(&PauseRuntimeBox::activate);
+}
+
 bool PauseRuntimeBox::activate(int)
 {
     forever {
+        if (runner()->terminationRequested())
+            break;
         foreach (RuntimeBox *rtbox, runner()->rtboxes())
             rtbox->acquireInteractiveInput();
         const unsigned long InteractiveInputProcessingDelay = 100;

@@ -376,6 +376,12 @@ public:
     virtual PortNotifier generator() const {
         return 0;
     }
+    virtual PortNotifier preprocessor() const {
+        return 0;
+    }
+    virtual PortNotifier postprocessor() const {
+        return 0;
+    }
     virtual void reset() {}
     virtual void restart() {}
     virtual void acquireInteractiveInput() {}
@@ -490,7 +496,7 @@ class EQUARES_CORESHARED_EXPORT Simulation :
 public:
     explicit Simulation(QObject *parent = 0) : QObject(parent) {}
     BoxList boxes() const {
-        return linkBoxes(m_links);
+        return m_boxes;
     }
     const LinkList& links() const {
         return m_links;
@@ -541,10 +547,12 @@ public:
 
 public slots:
     void setLinks(const LinkList& links);
+    void setBoxes(const QScriptValue& boxes);
     void run() const;
 
 private:
     LinkList m_links;
+    BoxList m_boxes;
 
     static bool hasUnknownInputFormats(const Box *box);
     static BoxList linkBoxes(const LinkList& links);

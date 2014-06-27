@@ -1,4 +1,5 @@
 #include "LinOdeStabCheckerBox.h"
+#include "box_util.h"
 #include <cmath>
 
 REGISTER_BOX(LinOdeStabCheckerBox, "LinOdeStabChecker")
@@ -32,15 +33,8 @@ void LinOdeStabCheckerBox::checkPortFormat() const
         throwBoxException("LinOdeStabCheckerBox: different formats of ports 'initState' and 'solution'");
 }
 
-bool LinOdeStabCheckerBox::propagatePortFormat()
-{
-    if (m_solution.format().isValid() == m_initState.format().isValid())
-        return false;
-    if (m_solution.format().isValid())
-        m_initState.format() = m_solution.format();
-    else
-        m_solution.format() = m_initState.format();
-    return true;
+bool LinOdeStabCheckerBox::propagatePortFormat() {
+    return propagateCommonFormat(m_solution, m_initState);
 }
 
 RuntimeBox *LinOdeStabCheckerBox::newRuntimeBox() const {

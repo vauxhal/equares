@@ -70,9 +70,10 @@ bool ReplicatorRuntimeBox::control(int)
     if (!m_valueIn.state().hasData())
         return false;
 
-    Q_ASSERT(m_controlIn.state().hasData());
-    m_controlOut.setData(m_controlIn.data());
-    m_controlOut.state().setValid();
+    if(m_controlIn.state().hasData()) {
+        m_controlOut.setData(m_controlIn.data());
+        m_controlOut.state().setValid();
+    }
     if (!m_controlOut.activateLinks())
         return false;
 

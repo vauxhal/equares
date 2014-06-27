@@ -1,4 +1,5 @@
 #include "Rk4Box.h"
+#include "box_util.h"
 #include <limits>
 
 REGISTER_BOX(Rk4Box, "Rk4")
@@ -51,10 +52,11 @@ bool Rk4Box::propagatePortFormat()
         return false;
     PortFormat stfmt = rhsfmt;
     stfmt.setSize(0, rhsfmt.size(0)+1);
-    m_initState.format() = stfmt;
-    m_rhsState.format() = stfmt;
-    m_nextState.format() = stfmt;
-    return true;
+    bool result = false;
+    result = specifyFormat(m_initState.format(), stfmt) || result;
+    result = specifyFormat(m_rhsState.format(), stfmt) || result;
+    result = specifyFormat(m_nextState.format(), stfmt) || result;
+    return result;
 }
 
 RuntimeBox *Rk4Box::newRuntimeBox() const {

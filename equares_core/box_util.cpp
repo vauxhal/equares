@@ -33,12 +33,21 @@ bool propagateCommonFormat(const QList<Port*>& ports)
 
     if (!f.isValid() || allValid)
         // Nothing to do
-        return true;
+        return false;
 
     // Propagate the valid format to all ports
     foreach (Port *port, ports)
         if (!port->format().isValid())
             port->format() = f;
+    return true;
+}
+
+bool specifyFormat(PortFormat& dst, const PortFormat& src) {
+    if (!src.isValid())
+        return false;
+    if (dst.isValid()   &&   dst == src)
+        return false;
+    dst = src;
     return true;
 }
 

@@ -1,4 +1,5 @@
 #include "CrossSectionBox.h"
+#include "box_util.h"
 
 REGISTER_BOX(CrossSectionBox, "CrossSection")
 
@@ -66,13 +67,7 @@ void CrossSectionBox::checkPortFormat() const {
 }
 
 bool CrossSectionBox::propagatePortFormat() {
-    if (m_in.format().isValid() == m_out.format().isValid())
-        return false;
-    if (m_in.format().isValid())
-        m_out.format() = m_in.format();
-    else
-        m_in.format() = m_out.format();
-    return true;
+    return propagateCommonFormat(m_in, m_out);
 }
 
 RuntimeBox *CrossSectionBox::newRuntimeBox() const {

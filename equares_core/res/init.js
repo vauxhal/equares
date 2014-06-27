@@ -129,10 +129,10 @@ function nativeSim(sim) {
 //    printTree(sim)
 
     var i,   n = sim.boxes.length
-    var boxes = {}
+    var boxes = {}, boxArray = []
     for (i=0; i<n; ++i) {
         var bx = sim.boxes[i]
-        boxes[bx.name] = nativeBox(bx)
+        boxArray.push(boxes[bx.name] = nativeBox(bx))
     }
     var links = []
     for (i=0; i<sim.links.length; ++i) {
@@ -144,6 +144,7 @@ function nativeSim(sim) {
         links.push(l)
     }
     var s = new Simulation
+    s.setBoxes(boxArray);
     s.setLinks(links)
     return s
 }

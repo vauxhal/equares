@@ -1,4 +1,5 @@
 #include "JoinBox.h"
+#include "box_util.h"
 
 REGISTER_BOX(JoinBox, "Join")
 
@@ -33,8 +34,7 @@ bool JoinBox::propagatePortFormat() {
     PortFormat f1 = m_in1.format(), f2 = m_in2.format();
     if (f1.dimension() != 1   ||   f2.dimension() != 1)
         return false;
-    m_out.format() = PortFormat(f1.dataSize() + f2.dataSize());
-    return true;
+    return specifyFormat(m_out.format(), PortFormat(f1.dataSize() + f2.dataSize()));
 }
 
 RuntimeBox *JoinBox::newRuntimeBox() const {

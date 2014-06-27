@@ -1,4 +1,5 @@
 #include "InterpolatorBox.h"
+#include "box_util.h"
 
 REGISTER_BOX(InterpolatorBox, "Interpolator")
 
@@ -24,13 +25,7 @@ void InterpolatorBox::checkPortFormat() const {
 }
 
 bool InterpolatorBox::propagatePortFormat() {
-    if (m_in.format().isValid() == m_out.format().isValid())
-        return false;
-    if (m_in.format().isValid())
-        m_out.format() = m_in.format();
-    else
-        m_in.format() = m_out.format();
-    return true;
+    return propagateCommonFormat(m_in, m_out);
 }
 
 RuntimeBox *InterpolatorBox::newRuntimeBox() const {

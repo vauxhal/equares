@@ -1,4 +1,5 @@
 #include "FdeIteratorBox.h"
+#include "box_util.h"
 #include <limits>
 
 REGISTER_BOX(FdeIteratorBox, "FdeIterator")
@@ -47,10 +48,11 @@ bool FdeIteratorBox::propagatePortFormat()
     PortFormat fdefmt = m_fdeIn.format();
     if (!fdefmt.isValid())
         return false;
-    m_initState.format() = fdefmt;
-    m_fdeOut.format() = fdefmt;
-    m_nextState.format() = fdefmt;
-    return true;
+    bool result = false;
+    result = specifyFormat(m_initState.format(), fdefmt) || result;
+    result = specifyFormat(m_fdeOut.format(), fdefmt) || result;
+    result = specifyFormat(m_nextState.format(), fdefmt) || result;
+    return result;
 }
 
 RuntimeBox *FdeIteratorBox::newRuntimeBox() const {

@@ -1,4 +1,5 @@
 #include "CountedFilterBox.h"
+#include "box_util.h"
 
 REGISTER_BOX(CountedFilterBox, "CountedFilter")
 
@@ -26,13 +27,7 @@ void CountedFilterBox::checkPortFormat() const {
 }
 
 bool CountedFilterBox::propagatePortFormat() {
-    if (m_in.format().isValid() == m_out.format().isValid())
-        return false;
-    if (m_in.format().isValid())
-        m_out.format() = m_in.format();
-    else
-        m_in.format() = m_out.format();
-    return true;
+    return propagateCommonFormat(m_in, m_out);
 }
 
 RuntimeBox *CountedFilterBox::newRuntimeBox() const {
@@ -73,8 +68,9 @@ bool CountedFilterRuntimeBox::processInput(int)
     if (--m_c)
         return true;
     m_c = m_c0;
-    Q_ASSERT(m_in.outputPort()->state().hasData());
-    m_out.setData(m_in.outputPort()->data());
-    m_out.state().setValid();
+    if(m_in.outputPort()->state().hasData()) {
+        m_out.setData(m_in.outputPort()->data());
+        m_out.state().setValid();
+    }
     return m_out.activateLinks();
 }

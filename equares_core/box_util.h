@@ -5,6 +5,7 @@
 
 bool propagateCommonFormat(Port& port1, Port& port2);
 bool propagateCommonFormat(const QList<Port*>& ports);
+bool specifyFormat(PortFormat& dst, const PortFormat& src);
 QString readFile(const QString& fileName, const Box *box);
 QStringList toNameList(const char *s);
 

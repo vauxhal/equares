@@ -133,9 +133,18 @@ bool ThresholdDetectorRuntimeBox::setThreshold(int)
 
 bool ThresholdDetectorRuntimeBox::processData(int)
 {
+    if (!m_thresholdDataValid)
+        return false;
     if (!m_threshold.state().hasData())
         return false;
     Q_ASSERT(m_in.state().hasData());
+
+    // deBUG, TODO: Remove
+    double  din = m_in.data().data()[0],
+            dt = m_thresholdData;
+    Q_UNUSED(din);
+    Q_UNUSED(dt);
+
     m_outData = (this->*m_thresholdFunc)(m_in.data().data()[0]);
     if (m_quiet && !m_outData)
         return true;
