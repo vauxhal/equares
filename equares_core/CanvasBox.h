@@ -98,6 +98,7 @@ private:
     mutable InputPort m_in;
     mutable InputPort m_flush;
     mutable InputPort m_clear;
+    mutable InputPort m_range;
     mutable OutputPort m_out;
 };
 

@@ -49,6 +49,7 @@ private:
     enum { CountLimit = 100000 };
     Param m_param;
     mutable InputPort m_in;
+    mutable InputPort m_range;
     mutable OutputPort m_out;
     mutable OutputPort m_flush;
 };

@@ -391,6 +391,9 @@ var ctmEquaresSchemeEditor = {};
 
         // Clear modified flag
         this.modified = false
+
+        // Flag used during simulation import
+        this.visualizationDisabled = false
     }
     Editor.prototype.modify = function() {
         this.modified = true
@@ -514,6 +517,9 @@ var ctmEquaresSchemeEditor = {};
     }
 
     Editor.prototype.visualize = function() {
+        if (this.visualizationDisabled)
+            return this
+
         var thisEditor = this
 
         var boxUpd = this.maingroup.selectAll(".scheme-box")
@@ -652,6 +658,8 @@ var ctmEquaresSchemeEditor = {};
     }
 
     Editor.prototype.update = function() {
+        if (this.visualizationDisabled)
+            return this
         var boxUpd = this.maingroup.selectAll(".scheme-box")
             .data(this.boxes, this.dataKey)
         boxUpd.each(function(d) {
@@ -716,7 +724,7 @@ var ctmEquaresSchemeEditor = {};
         var i
         for (i=0; i<this.boxes.length; ++i) {
             var b = this.boxes[i],   bx = result.boxes[i] = {}
-            copyProps(bx, b, [ "name", "info/inputs", "info/outputs", "type", "props/*/value", "status", "x", "y", "ports/*/pos" ])
+            copyProps(bx, b, [ "name", "type", "props/*/value", "status", "x", "y", "ports/*/pos" ])
         }
         for (i=0; i<this.links.length; ++i) {
             var l = this.links[i],   lx = result.links[i] = {}
@@ -757,6 +765,7 @@ var ctmEquaresSchemeEditor = {};
             if (!(links instanceof Array))
                 throw { message: "boxes is missing or is not an array" }
             var editor = this
+            editor.visualizationDisabled = true
             editor.boxes = []
             editor.links = []
 
@@ -768,12 +777,9 @@ var ctmEquaresSchemeEditor = {};
                 var opt = {
                     offset: {left: b.x + rootOffset.left + t.x, top: rootOffset.top + b.y + t.y},
                     name: b.name,
-                    info: b.info
+                    info: equaresBox.boxInfo[b.type]
                 }
                 var newBox = editor.newBox(b.type, opt, true)
-                if (b.ports)
-                    for (j=0; j<b.ports.length; ++j)
-                        newBox.ports[j].pos = b.ports[j].pos
             }
 
             // Count the total number of critical parameters in all boxes;
@@ -805,11 +811,17 @@ var ctmEquaresSchemeEditor = {};
 
             // This is done as soon as all critical props are set
             function continueLoading() {
-                // Remove critical event listener from all boxes
-                var box, i
+                // Remove critical event listener from all boxes; position box ports
+                var box, newBox, i
                 for (i=0; i<editor.boxes.length; ++i) {
-                    box = editor.boxes[i]
-                    box.removeListener('critical', onSetCriticalProp)
+                    newBox = editor.boxes[i]
+                    box = boxes[i]
+                    newBox.removeListener('critical', onSetCriticalProp)
+                    if (newBox.ports && box.ports) {
+                        for (j=0; j<newBox.ports.length; ++j)
+                            if (box.ports[j])
+                                newBox.ports[j].pos = box.ports[j].pos
+                    }
                 }
 
                 // Create links
@@ -826,6 +838,7 @@ var ctmEquaresSchemeEditor = {};
                 setProps(false)
 
                 // Visualize scene
+                editor.visualizationDisabled = false
                 editor.visualize().update()
                 if (callback instanceof Function)
                     callback()
@@ -839,6 +852,7 @@ var ctmEquaresSchemeEditor = {};
         }
         catch(e) {
             errorMessage(e.message)
+            editor.visualizationDisabled = false
             if (callback instanceof Function)
                 callback()
         }

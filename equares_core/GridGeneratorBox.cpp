@@ -62,13 +62,14 @@ REGISTER_SCRIPT_INIT_FUNC(scriptInit)
 GridGeneratorBox::GridGeneratorBox(QObject *parent) :
     Box(parent),
     m_in("input", this),
+    m_range("range", this),
     m_out("output", this),
     m_flush("flush", this, PortFormat(0).setFixed())
 {
 }
 
 InputPorts GridGeneratorBox::inputPorts() const {
-    return InputPorts() << &m_in;
+    return InputPorts() << &m_in << &m_range;
 }
 
 OutputPorts GridGeneratorBox::outputPorts() const {

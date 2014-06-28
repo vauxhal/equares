@@ -50,12 +50,13 @@ CanvasBox::CanvasBox(QObject *parent) :
     m_in("input", this, PortFormat(2).setFixed()),
     m_flush("flush", this),
     m_clear("clear", this),
+    m_range("range", this, PortFormat(4).setFixed()),
     m_out("output", this, PortFormat(m_param[0].resolution, m_param[1].resolution).setFixed())
 {
 }
 
 InputPorts CanvasBox::inputPorts() const {
-    return InputPorts() << &m_in << &m_flush << &m_clear;
+    return InputPorts() << &m_in << &m_flush << &m_clear << &m_range;
 }
 
 OutputPorts CanvasBox::outputPorts() const {

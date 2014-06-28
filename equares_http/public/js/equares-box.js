@@ -997,7 +997,7 @@ $.extend(equaresBox.rules, {
         prop: function(name) {
             if (name === "param") {
                 var v = this.prop(name)
-                setFormat(this.ports[3], {format: [v.x.resolution, v.y.resolution]})
+                setFormat(this.ports[4], {format: [v.x.resolution, v.y.resolution]})
             }
         },
         port: function(port) {
@@ -1044,8 +1044,8 @@ $.extend(equaresBox.rules, {
         }
     },
     GridGenerator: {
-        init: function() { setUnspecPortStatus(this, [0, 1]) },
-        port: function(port) { propagateFormat.call(this, port, 0, 1) }
+        init: function() { setUnspecPortStatus(this, [0, 2]) },
+        port: function(port) { propagateFormat.call(this, port, 0, 2) }
     },
     LinOdeStabChecker: {
         port: function(port) {
