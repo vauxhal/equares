@@ -51,7 +51,9 @@ REGISTER_SCRIPT_INIT_FUNC(scriptInit)
 
 
 
-PointInputBox::PointInputBox(QObject *parent) : DataInputBox(parent)
+PointInputBox::PointInputBox(QObject *parent) :
+    DataInputBox(parent),
+    m_range("range", this, PortFormat(4).setFixed())
 {
 }
 
@@ -65,6 +67,10 @@ void PointInputBox::checkPortFormat() const
         if (m_transform[i].resolution <= 0)
             throwBoxException(QString("PointInputBox: Invalid grid resolution %1 - should be positive").arg(m_transform[i].resolution));
     }
+}
+
+InputPorts PointInputBox::inputPorts() const {
+    return DataInputBox::inputPorts() << &m_range;
 }
 
 RuntimeBox *PointInputBox::newRuntimeBox() const {

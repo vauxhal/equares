@@ -59,6 +59,7 @@ class EQUARES_CORESHARED_EXPORT PointInputBox : public DataInputBox
 public:
     explicit PointInputBox(QObject *parent = 0);
 
+    InputPorts inputPorts() const;
     RuntimeBox *newRuntimeBox() const;
     void checkPortFormat() const;
 
@@ -71,6 +72,7 @@ public:
     PointInputBox& setRefBitmap(const QString& refBitmap);
 
 private:
+    mutable InputPort m_range;
     Transform m_transform;
     QString m_refBitmap;
 };

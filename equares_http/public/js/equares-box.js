@@ -1054,7 +1054,7 @@ $.extend(equaresBox.rules, {
     },
     PointInput: {
         port: function(port) {
-            propagateFormat.call(this, port, 1, 2)
+            propagateFormat.call(this, port, 1, 3)
         }
     },
     SimpleInput: {
