@@ -106,6 +106,12 @@ PointInputRuntimeBox::PointInputRuntimeBox(const PointInputBox *box) :
     m_transform(box->transform()),
     m_refBitmap(box->refBitmap())
 {
+    InputPort *range = box->inputPorts()[0];
+    m_range.init(this, range, toPortNotifier(&PointInputRuntimeBox::setRange));
+    m_rangeValid = range->link() == 0;
+    RuntimeInputPorts inports = inputPorts();
+    inports << &m_range;
+    setInputPorts(inports);
 }
 
 InputInfoList PointInputRuntimeBox::inputInfo() const {
@@ -134,4 +140,21 @@ QVector<double> PointInputRuntimeBox::inputData(const double *portData) const
         result[i] = static_cast<double>(x);
     }
     return result;
+}
+
+bool PointInputRuntimeBox::setRange(int)
+{
+    Q_ASSERT(m_range.state().hasData());
+    PortData rd = m_range.data();
+    Q_ASSERT((rd.size() & 1) == 0);
+    int n = rd.size() >> 1;
+    if (n > 2)
+        n = 2;
+    const double *d = rd.data();
+    for (int i=0; i<n; ++i, d+=2) {
+        m_transform[i].vmin = d[0];
+        m_transform[i].vmax = d[1];
+    }
+    m_rangeValid = true;
+    return true;
 }

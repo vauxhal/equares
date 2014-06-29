@@ -88,10 +88,14 @@ protected:
     QVector<double> inputData(const double *portData) const;
 
 private:
+    RuntimeInputPort m_range;
+    bool m_rangeValid;
 
     typedef PointInputBoxTransform Transform;
     Transform m_transform;
     QString m_refBitmap;
+
+    bool setRange(int);
 };
 
 #endif // POINTINPUTBOX_H

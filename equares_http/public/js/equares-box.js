@@ -927,7 +927,7 @@ $.extend(equaresBox.rules, {
                 var nin = box.props.withActivator.value? 1: 0
                 box.resizeInputPorts(nin, {
                     portName: function() { return 'activator' },
-                    portHelp: function() { return 'Actovation port' }
+                    portHelp: function() { return 'Activation port' }
                 })
                 box.emit('critical')
             }
@@ -1182,6 +1182,19 @@ $.extend(equaresBox.rules, {
         },
         port: function(port) {
             propagateFormat.call(this, port, 0, 1)
+        }
+    },
+    RectInput: {
+        prop: function(name) {
+            var box = this
+            if (name === "withActivator") {
+                var nin = box.props.withActivator.value? 1: 0
+                box.resizeInputPorts(nin, {
+                    portName: function() { return 'activator' },
+                    portHelp: function() { return 'Activation port' }
+                })
+                box.emit('critical')
+            }
         }
     }
 })

@@ -61,11 +61,13 @@ public:
 
 private:
     RuntimeInputPort m_in;
+    RuntimeInputPort m_range;
     RuntimeOutputPort m_out;
     RuntimeOutputPort m_flush;
 
     GridGeneratorBox::Param m_param;
     QVector<double> m_data;
+    bool m_rangeValid;
 
     QVector<int> m_midx;
     int incMidx();
@@ -73,6 +75,7 @@ private:
     typedef GridGeneratorBoxParamItem ParamItem;
     typedef GridGeneratorBoxParam Param;
     bool processInput(int);
+    bool setRange(int);
 };
 
 #endif // GRIDGENERATORBOX_H

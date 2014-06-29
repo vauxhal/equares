@@ -61,7 +61,8 @@ SOURCES += equares_core.cpp \
     ScalarizeBox.cpp \
     ThresholdDetectorBox.cpp \
     PauseBox.cpp \
-    DifferentiateBox.cpp
+    DifferentiateBox.cpp \
+    RectInputBox.cpp
 
 HEADERS += equares_core.h\
         equares_core_global.h \
@@ -111,7 +112,8 @@ HEADERS += equares_core.h\
     ScalarizeBox.h \
     ThresholdDetectorBox.h \
     PauseBox.h \
-    DifferentiateBox.h
+    DifferentiateBox.h \
+    RectInputBox.h
 
 symbian {
     MMP_RULES += EXPORTUNFROZEN

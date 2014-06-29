@@ -113,6 +113,7 @@ private:
     RuntimeInputPort m_in;
     RuntimeInputPort m_flush;
     RuntimeInputPort m_clear;
+    RuntimeInputPort m_range;
     RuntimeOutputPort m_out;
 
     CanvasBox::Param m_param;
@@ -123,10 +124,12 @@ private:
     QVector<double> m_data;
     QTime m_time;
     int m_timeCheckCounter;
+    bool m_rangeValid;
 
     bool processInput(int);
     bool flush(int);
     bool clear(int);
+    bool setRange(int);
 };
 
 #endif // CANVASBOX_H

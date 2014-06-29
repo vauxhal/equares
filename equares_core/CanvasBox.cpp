@@ -132,8 +132,10 @@ CanvasRuntimeBox::CanvasRuntimeBox(const CanvasBox *box) :
     InputPorts in = box->inputPorts();
     m_in.init(this, in[0], toPortNotifier(&CanvasRuntimeBox::processInput));
     m_flush.init(this, in[1], PortNotifier(&CanvasRuntimeBox::flush));
-    m_clear.init(this, in[1], PortNotifier(&CanvasRuntimeBox::clear));
-    setInputPorts(RuntimeInputPorts() << &m_in << &m_flush << &m_clear);
+    m_clear.init(this, in[2], PortNotifier(&CanvasRuntimeBox::clear));
+    m_range.init(this, in[3], PortNotifier(&CanvasRuntimeBox::setRange));
+    m_rangeValid = in[3]->link() == 0;
+    setInputPorts(RuntimeInputPorts() << &m_in << &m_flush << &m_clear << &m_range);
 
     OutputPorts out = box->outputPorts();
     m_data = QVector<double>(out[0]->format().dataSize(), 0);
@@ -155,6 +157,8 @@ void CanvasRuntimeBox::restart() {
 
 bool CanvasRuntimeBox::processInput(int)
 {
+    if (!m_rangeValid)
+        return false;
     Q_ASSERT(m_in.state().hasData());
     int i = m_param.index(m_in.outputPort()->data().data());
     if (i >= 0) {
@@ -180,5 +184,23 @@ bool CanvasRuntimeBox::flush(int)
 bool CanvasRuntimeBox::clear(int)
 {
     m_data.fill(0);
+    return true;
+}
+
+bool CanvasRuntimeBox::setRange(int)
+{
+    Q_ASSERT(m_range.state().hasData());
+    PortData rd = m_range.data();
+    Q_ASSERT((rd.size() & 1) == 0);
+    int n = rd.size() >> 1;
+    if (n > 2)
+        n = 2;
+    const double *d = rd.data();
+    for (int i=0; i<n; ++i, d+=2) {
+        m_param[i].vmin = d[0];
+        m_param[i].vmax = d[1];
+    }
+    m_rangeValid = true;
+    clear(0);
     return true;
 }

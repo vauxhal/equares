@@ -123,7 +123,9 @@ GridGeneratorRuntimeBox::GridGeneratorRuntimeBox(const GridGeneratorBox *box) :
 
     InputPorts in = box->inputPorts();
     m_in.init(this, in[0], toPortNotifier(&GridGeneratorRuntimeBox::processInput));
-    setInputPorts(RuntimeInputPorts() << &m_in);
+    m_range.init(this, in[1], toPortNotifier(&GridGeneratorRuntimeBox::setRange));
+    m_rangeValid = in[1]->link() == 0;
+    setInputPorts(RuntimeInputPorts() << &m_in << &m_range);
 
     OutputPorts out = box->outputPorts();
     m_data = QVector<double>(out[0]->format().dataSize(), 0);
@@ -149,6 +151,8 @@ int GridGeneratorRuntimeBox::incMidx() {
 
 bool GridGeneratorRuntimeBox::processInput(int)
 {
+    if (!m_rangeValid)
+        return false;
     Q_ASSERT(m_in.state().hasData());
     if (m_data.isEmpty())
         return true;
@@ -167,4 +171,21 @@ bool GridGeneratorRuntimeBox::processInput(int)
         }
     }
     return m_flush.activateLinks();
+}
+
+bool GridGeneratorRuntimeBox::setRange(int)
+{
+    Q_ASSERT(m_range.state().hasData());
+    PortData rd = m_range.data();
+    Q_ASSERT((rd.size() & 1) == 0);
+    int n = rd.size() >> 1;
+    if (n > m_param.size())
+        n = m_param.size();
+    const double *d = rd.data();
+    for (int i=0; i<n; ++i, d+=2) {
+        m_param[i].vmin = d[0];
+        m_param[i].vmax = d[1];
+    }
+    m_rangeValid = true;
+    return processInput(0);
 }

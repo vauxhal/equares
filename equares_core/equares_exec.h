@@ -161,12 +161,35 @@ public:
     };
     ImageInputInfo(const QString& consumerId, const QString& refImage, Method method = ClickImage) :
         InputInfo(consumerId),
-        m_refImage(refImage), m_method(method) {}
+        m_refImage(refImage),
+        m_method(method) {}
     QString toString() const;
 private:
     QString m_refImage;
     Method m_method;
     static QString methodToString(Method method);
+};
+
+class EQUARES_CORESHARED_EXPORT ImageRectInputInfo : public InputInfo
+{
+public:
+    struct Range {
+        double xmin, xmax, ymin, ymax;
+        template< class R2 > Range(const R2& r2) :
+            xmin(r2.xmin), xmax(r2.xmax), ymin(r2.ymin), ymax(r2.ymax) {}
+    };
+
+    ImageRectInputInfo(const QString& consumerId, const QString& refImage, const Range& initRect, bool keepAspectRatio) :
+        InputInfo(consumerId),
+        m_refImage(refImage),
+        m_initRect(initRect),
+        m_keepAspectRatio(keepAspectRatio) {}
+    QString toString() const;
+
+private:
+    QString m_refImage;
+    Range m_initRect;
+    bool m_keepAspectRatio;
 };
 
 class EQUARES_CORESHARED_EXPORT SimpleInputInfo : public InputInfo

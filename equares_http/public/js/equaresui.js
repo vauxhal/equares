@@ -921,6 +921,7 @@ equaresui.setSceneSource = function() {
                                 inputInfo[ii.consumer] = ii
                                 switch (ii.type) {
                                 case 'image':
+                                case 'imgrect':
                                     irefs = inputRefs[ii.refImage];
                                     if (!irefs)
                                         irefs = inputRefs[ii.refImage] = [];
@@ -1030,8 +1031,18 @@ equaresui.setSceneSource = function() {
                                     irefs = inputRefs[i]
                                     function inputMethods(irefs) {
                                         var methods = {}
-                                        for (var j in irefs)
-                                            methods[irefs[j].method] = 1
+                                        for (var j in irefs) {
+                                            var method
+                                            switch (irefs[j].type) {
+                                            case 'image':
+                                                method = irefs[j].method
+                                                break
+                                            case 'imgrect':
+                                                method = 'pan/zoom'
+                                                break
+                                            }
+                                            methods[method] = 1
+                                        }
                                         var m = []
                                         for (j in methods)
                                             m.push(j)
@@ -1049,13 +1060,77 @@ equaresui.setSceneSource = function() {
                                         outfiles.append("<br/>")
                                         for (j in irefs) {
                                             (function(iref) {  // Provide closure for irefs
-                                                fi.jq.on(iref.method, function(e) {
-                                                    $.ajax("cmd/input", {data: {cmd: inputPrefix + iref.consumer + ' ' + e.offsetX + ' ' + e.offsetY}, type: "GET", cache: false})
-                                                    .fail(function(error) {
-                                                        errorMessage(error.responseText || error.statusText || ("Ajax error: " + error.status))
+                                                switch (iref.type) {
+                                                case 'image':
+                                                    fi.jq.on(iref.method, function(e) {
+                                                        $.ajax("cmd/input", {data: {cmd: inputPrefix + iref.consumer + ' ' + e.offsetX + ' ' + e.offsetY}, type: "GET", cache: false})
+                                                        .fail(function(error) {
+                                                            errorMessage(error.responseText || error.statusText || ("Ajax error: " + error.status))
+                                                        })
                                                     })
-                                                return
-                                                })
+                                                    break
+                                                case 'imgrect':
+                                                    var lastEventTime, timeoutId
+                                                    iref.range = { x: {v1: iref.xmin, v2: iref.xmax}, y: {v1: iref.ymin, v2: iref.ymax} }
+                                                    function zoomRange(r, t, f) {
+                                                        var d = r.v2 - r.v1, z = Math.exp(-f*Math.log(1.2)), dz = d*z, vc = r.v1 + d*t
+                                                        r.v1 = vc - t*dz
+                                                        r.v2 = r.v1 + dz
+                                                    }
+                                                    function moveRange(r, t) {
+                                                        var d = r.v2 - r.v1, dt = d*t
+                                                        r.v1 -= dt
+                                                        r.v2 -= dt
+                                                    }
+                                                    function sendUpdatedRange() {
+                                                        if (lastEventTime && (new Date()).valueOf() - lastEventTime.valueOf() >= 1000) {
+                                                            $.ajax("cmd/input", {data: {cmd: inputPrefix + [iref.consumer, iref.range.x.v1, iref.range.x.v2, iref.range.y.v1, iref.range.y.v2].join(' ')}, type: "GET", cache: false})
+                                                            .fail(function(error) {
+                                                                errorMessage(error.responseText || error.statusText || ("Ajax error: " + error.status))
+                                                            })
+                                                            lastEventTime = timeoutId = undefined
+                                                        }
+                                                        else
+                                                            timeoutId = setTimeout(sendUpdatedRange, 300)
+                                                    }
+                                                    fi.jq.mousewheel(function(e) {
+                                                        e.preventDefault()
+                                                        if (e.shiftKey)
+                                                            // reset range
+                                                            iref.range = { x: {v1: iref.xmin, v2: iref.xmax}, y: {v1: iref.ymin, v2: iref.ymax} }
+                                                        else {
+                                                            zoomRange(iref.range.x, e.offsetX/this.width, e.deltaY)
+                                                            zoomRange(iref.range.y, 1-e.offsetY/this.height, e.deltaY)
+                                                        }
+                                                        if (timeoutId)
+                                                            clearTimeout(timeoutId)
+                                                        lastEventTime = new Date()
+                                                        timeoutId = setTimeout(sendUpdatedRange, 300)
+                                                    })
+                                                    fi.jq.mousedown(function(e) {
+                                                        e.preventDefault()
+                                                        function release(eup) {
+                                                            $(window).unbind('mouseup', release)
+                                                            if (e.shiftKey)
+                                                                // reset range
+                                                                iref.range = { x: {v1: iref.xmin, v2: iref.xmax}, y: {v1: iref.ymin, v2: iref.ymax} }
+                                                            else {
+                                                                var img = fi.jq[0]
+                                                                moveRange(iref.range.x, (eup.pageX-e.pageX)/img.width)
+                                                                moveRange(iref.range.y, (e.pageY-eup.pageY)/img.height)
+                                                            }
+                                                            if (timeoutId)
+                                                                clearTimeout(timeoutId)
+                                                            lastEventTime = new Date()
+                                                            timeoutId = setTimeout(sendUpdatedRange, 300)
+                                                        }
+                                                        $(window).mouseup(release)
+                                                    })
+
+                                                    break
+                                                default:
+                                                    errorMessage('Unknown interactive input type ' + iref.type)
+                                                }
                                             })(irefs[j])
                                         }
                                         break

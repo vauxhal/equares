@@ -113,6 +113,16 @@ QString ImageInputInfo::methodToString(Method method) {
     }
 }
 
+QString ImageRectInputInfo::toString() const {
+    return QString("{\"consumer\": \"%1\", \"type\": \"imgrect\", \"refImage\": \"%2\", \"xmin\": %3, \"xmax\": %4, \"ymin\": %5, \"ymax\": %6, \"keepAspectRatio\": %7}")
+        .arg(consumerId(), m_refImage,
+             QString::number(m_initRect.xmin),
+             QString::number(m_initRect.xmax),
+             QString::number(m_initRect.ymin),
+             QString::number(m_initRect.ymax),
+             QString(m_keepAspectRatio? "true": "false"));
+}
+
 QString SimpleInputInfo::toString() const
 {
     QString result = QString("{\"consumer\": \"%1\", \"type\": \"simple\", \"items\": [")
