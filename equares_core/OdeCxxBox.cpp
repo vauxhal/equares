@@ -127,6 +127,28 @@ OdeCxxBox::OdeLibProxy::OdeLibProxy(const QLibraryPtr& lib, const Box *box) :
     m_lib(lib),
     m_box(box)
 {
+    init();
+}
+
+OdeCxxBox::OdeLibProxy::OdeLibProxy(const OdeLibProxy& arg) :
+    m_lib(arg.m_lib),
+    m_box(arg.m_box)
+{
+    init();
+}
+
+OdeCxxBox::OdeLibProxy& OdeCxxBox::OdeLibProxy::operator=(const OdeLibProxy& arg)
+{
+    if (&arg != this) {
+        m_box = arg.m_box;
+        m_lib = arg.m_lib;
+        init();
+    }
+    return *this;
+}
+
+void OdeCxxBox::OdeLibProxy::init()
+{
     Q_ASSERT(m_lib->isLoaded());
 #define RESOLVE_SYMBOL(name) \
     m_##name = reinterpret_cast<name##Func>(m_lib->resolve(#name)); \

@@ -40,6 +40,8 @@ public:
     public:
         OdeLibProxy() {}
         explicit OdeLibProxy(const QLibraryPtr &lib, const Box *box);
+        OdeLibProxy(const OdeLibProxy& arg);
+        OdeLibProxy& operator=(const OdeLibProxy& arg);
         ~OdeLibProxy();
 
         int paramCount() const {
@@ -92,6 +94,7 @@ public:
         hashFunc m_hash;
 
         void *m_inst;
+        void init();
     };
     const OdeLibProxy *odeLibProxy() const;
 

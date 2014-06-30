@@ -58,6 +58,10 @@ void checkLib(const QString& libName)
         if (rx.indexIn(line) != 0)
             throw EquaresException(QObject::tr("Command\n%1\nfailed: unrecognized output").arg(cmd));
         QString s = rx.capturedTexts()[0];
+#ifdef QT_DEBUG
+        if (s.contains("::"))
+            continue;   // Skip c++ symbols (TODO better)
+#endif // QT_DEBUG
         if (!whiteList.contains(s))
             prohibitedSymbols << s;
     }

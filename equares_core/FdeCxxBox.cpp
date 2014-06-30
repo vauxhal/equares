@@ -124,6 +124,28 @@ FdeCxxBox::FdeLibProxy::FdeLibProxy(const QLibraryPtr& lib, const Box *box) :
     m_lib(lib),
     m_box(box)
 {
+    init();
+}
+
+FdeCxxBox::FdeLibProxy::FdeLibProxy(const FdeLibProxy& arg) :
+    m_lib(arg.m_lib),
+    m_box(arg.m_box)
+{
+    init();
+}
+
+FdeCxxBox::FdeLibProxy& FdeCxxBox::FdeLibProxy::operator=(const FdeLibProxy& arg)
+{
+    if (&arg != this) {
+        m_box = arg.m_box;
+        m_lib = arg.m_lib;
+        init();
+    }
+    return *this;
+}
+
+void FdeCxxBox::FdeLibProxy::init()
+{
     Q_ASSERT(m_lib->isLoaded());
 #define RESOLVE_SYMBOL(name) \
     m_##name = reinterpret_cast<name##Func>(m_lib->resolve(#name)); \

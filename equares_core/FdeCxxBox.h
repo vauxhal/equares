@@ -40,6 +40,8 @@ public:
     public:
         FdeLibProxy() {}
         explicit FdeLibProxy(const QLibraryPtr &lib, const Box *box);
+        FdeLibProxy(const FdeLibProxy& arg);
+        FdeLibProxy& operator=(const FdeLibProxy& arg);
         ~FdeLibProxy();
 
         int paramCount() const {
@@ -92,6 +94,8 @@ public:
         hashFunc m_hash;
 
         void *m_inst;
+
+        void init();
     };
     const FdeLibProxy *fdeLibProxy() const;
 
