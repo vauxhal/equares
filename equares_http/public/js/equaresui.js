@@ -1027,8 +1027,12 @@ equaresui.setSceneSource = function() {
                             // Process file annouuncement
                             if (str === "end file announcement") {
                                 // Create elements for displaying announced files
-                                for(i in outFileInfo) {
-                                    irefs = inputRefs[i]
+                                function reallyClicked(emd, emu) {
+                                    var clickMaxTime = 200, clickMaxLength = 3
+                                    return emu.timeStamp - emd.timeStamp <= clickMaxTime &&
+                                        Math.abs(emu.pageX - emd.pageX) + Math.abs(emu.pageY - emd.pageY) <= clickMaxLength
+                                }
+                                for(i in outFileInfo) (function(irefs, fi) {
                                     function inputMethods(irefs) {
                                         var methods = {}
                                         for (var j in irefs) {
@@ -1049,7 +1053,6 @@ equaresui.setSceneSource = function() {
                                         return m.join(', ')
                                     }
                                     outfiles.append('<span>'+i+(irefs? ' (interactive: '+inputMethods(irefs)+')': '')+'</span><br/>' )
-                                    fi = outFileInfo[i]
                                     switch(fi.type) {
                                     case "image":
                                         fi.jq = $('<img src="' + "user/" + i + '" alt="' + i + '"/>')
@@ -1062,12 +1065,30 @@ equaresui.setSceneSource = function() {
                                             (function(iref) {  // Provide closure for irefs
                                                 switch (iref.type) {
                                                 case 'image':
-                                                    fi.jq.on(iref.method, function(e) {
+                                                    function sendPointInput(e) {
                                                         $.ajax("cmd/input", {data: {cmd: inputPrefix + iref.consumer + ' ' + e.offsetX + ' ' + e.offsetY}, type: "GET", cache: false})
                                                         .fail(function(error) {
                                                             errorMessage(error.responseText || error.statusText || ("Ajax error: " + error.status))
                                                         })
-                                                    })
+                                                    }
+                                                    switch(iref.method) {
+                                                    case 'hover':
+                                                        fi.jq.hover(sendPointInput)
+                                                        break
+                                                    case 'click':
+                                                        fi.jq.mousedown(function(e) {
+                                                            e.preventDefault()
+                                                            function release(eup) {
+                                                                $(window).unbind('mouseup', release)
+                                                                if (reallyClicked(eup, e))
+                                                                    sendPointInput(e)
+                                                            }
+                                                            $(window).mouseup(release)
+                                                        })
+                                                        break
+                                                    default:
+                                                        errorMessage('Point input method \'' + iref.method + '\' is not supported')
+                                                    }
                                                     break
                                                 case 'imgrect':
                                                     var lastEventTime, timeoutId
@@ -1111,6 +1132,8 @@ equaresui.setSceneSource = function() {
                                                         e.preventDefault()
                                                         function release(eup) {
                                                             $(window).unbind('mouseup', release)
+                                                            if (reallyClicked(eup, e))
+                                                                return
                                                             if (e.shiftKey)
                                                                 // reset range
                                                                 iref.range = { x: {v1: iref.xmin, v2: iref.xmax}, y: {v1: iref.ymin, v2: iref.ymax} }
@@ -1140,7 +1163,7 @@ equaresui.setSceneSource = function() {
                                     default:
                                         fi.jq = wrap('div').addClass("outputFile").appendTo(outfiles).html("UNKNOWN FILE TYPE")
                                     }
-                                }
+                                })(inputRefs[i], outFileInfo[i])
                                 faFinished = true
                             }
                             else {
