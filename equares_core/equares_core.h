@@ -606,6 +606,8 @@ private:
 
     QList<QueueItem> m_queue;
     QAtomicInt m_terminationRequested;
+
+    void initQueue();
 };
 
 inline bool RuntimeInputPort::activate() const {

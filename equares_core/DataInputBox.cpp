@@ -5,7 +5,8 @@ DataInputBox::DataInputBox(QObject *parent) :
     Box(parent),
     m_activator("activator", this),
     m_in("input", this),
-    m_out("output", this)
+    m_out("output", this),
+    m_restartOnInput(false)
 {
 }
 
@@ -31,9 +32,19 @@ bool DataInputBox::propagatePortFormat() {
     return propagateCommonFormat(m_in, m_out);
 }
 
+bool DataInputBox::restartOnInput() const {
+    return m_restartOnInput;
+}
+
+DataInputBox& DataInputBox::setRestartOnInput(bool restartOnInput) {
+    m_restartOnInput = restartOnInput;
+    return *this;
+}
 
 
-DataInputRuntimeBox::DataInputRuntimeBox(const DataInputBox *box)
+
+DataInputRuntimeBox::DataInputRuntimeBox(const DataInputBox *box) :
+    m_restartOnInput(box->restartOnInput())
 {
     setOwner(box);
 
@@ -65,7 +76,7 @@ void DataInputRuntimeBox::acquireInteractiveInput()
     if (ThreadManager::instance()->readInput(m_iinputData, m_inputId, false)) {
         transformData(m_data.data(), m_iinputData.data());
         m_iinputDataValid = true;
-        throw BoxBreakException(this);
+        throw BoxBreakException(m_restartOnInput? 0: this);
     }
 }
 
@@ -81,10 +92,8 @@ bool DataInputRuntimeBox::fetchInputPortData()
     m_dataValid = true;
 
     // Report input data corresponding to new port data
-    const int DataInputFeedbackDelay = 1000;
-    if (m_unititializedInputPort || m_inputFeedbackTime.elapsed() >= DataInputFeedbackDelay) {
+    if (m_unititializedInputPort) {
         m_unititializedInputPort = false;
-        m_inputFeedbackTime.restart();
         QStringList input;
         foreach (double d, inputData(m_data.data()))
             input << QString::number(d);

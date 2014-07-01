@@ -3,11 +3,11 @@
 
 #include "equares_core.h"
 #include "equares_script.h"
-#include <QTime>
 
 class EQUARES_CORESHARED_EXPORT DataInputBox : public Box
 {
     Q_OBJECT
+    Q_PROPERTY(bool restartOnInput READ restartOnInput WRITE setRestartOnInput)
 public:
 
     explicit DataInputBox(QObject *parent = 0);
@@ -16,10 +16,14 @@ public:
     void checkPortFormat() const;
     bool propagatePortFormat();
 
+    bool restartOnInput() const;
+    DataInputBox& setRestartOnInput(bool restartOnInput);
+
 private:
     mutable InputPort m_activator;
     mutable InputPort m_in;
     mutable OutputPort m_out;
+    bool m_restartOnInput;
 };
 
 class EQUARES_CORESHARED_EXPORT DataInputRuntimeBox : public RuntimeBox
@@ -37,6 +41,7 @@ private:
     RuntimeInputPort m_activator;
     RuntimeInputPort m_in;
     RuntimeOutputPort m_out;
+    bool m_restartOnInput;
 
     QVector<double> m_data;
     bool m_dataValid;
@@ -44,7 +49,6 @@ private:
     QVector<double> m_iinputData;
     bool m_iinputDataValid;
     int m_inputId;
-    QTime m_inputFeedbackTime;
     bool m_unititializedInputPort;
 
     bool activate(int);

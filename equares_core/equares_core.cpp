@@ -239,31 +239,8 @@ void Runner::run()
         out << "end file announcement" << endl;
     }
 
-    // Initiate process
-    m_queue.clear();
-
-    // Enqueue preprocessors
-    foreach (RuntimeBox::Ptr box, m_rtboxes) {
-        RuntimeBox::PortNotifier preprocessor = box->preprocessor();
-        if (preprocessor)
-            postPortActivation(box.data(), preprocessor, 0);
-    }
-
-    // Enqueue regular sources
-    foreach (const RuntimeBox::Ptr& box, m_rtboxes)
-        if (!box->generator() && box->inputPorts().empty())
-            foreach (const RuntimeOutputPort *port, box->outputPorts())
-                foreach (const RuntimeLink *link, port->links()) {
-                    RuntimeInputPort *inport = link->inputPort();
-                    postPortActivation(inport->owner(), inport->portNotifier(), inport->portId());
-                }
-
-    // Enqueue generators
-    foreach (const RuntimeBox::Ptr& box, m_rtboxes)
-        if (box->generator()) {
-            Q_ASSERT(box->inputPorts().empty());
-            postPortActivation(box.data(), box->generator(), 0);
-        }
+    // Initialize box queue
+    initQueue();
 
     // Process enqueued boxes
     m_terminationRequested = 0;
@@ -299,24 +276,56 @@ void Runner::run()
             foreach (const RuntimeBox::Ptr& box, m_rtboxes)
                 box->restart();
             RuntimeBox *box = bbx.rtbox();
-            Q_ASSERT(box);
-            if (box->generator()) {
-                Q_ASSERT(box->inputPorts().empty());
-                postPortActivation(box, box->generator(), 0);
+            if(box) {
+                if (box->generator()) {
+                    Q_ASSERT(box->inputPorts().empty());
+                    postPortActivation(box, box->generator(), 0);
+                }
+                else {
+                    foreach (const RuntimeOutputPort *port, box->outputPorts())
+                        foreach (const RuntimeLink *link, port->links()) {
+                            RuntimeInputPort *inport = link->inputPort();
+                            postPortActivation(inport->owner(), inport->portNotifier(), inport->portId());
+                        }
+                }
             }
-            else {
-                foreach (const RuntimeOutputPort *port, box->outputPorts())
-                    foreach (const RuntimeLink *link, port->links()) {
-                        RuntimeInputPort *inport = link->inputPort();
-                        postPortActivation(inport->owner(), inport->portNotifier(), inport->portId());
-                    }
-            }
+            else
+                initQueue();
         }
     }
 
     // Report final state of output files
     foreach(const OutputFileInfo& info, ofi)
         out << "file: " << info.name() << endl;
+}
+
+void Runner::initQueue()
+{
+    // clear queue
+    m_queue.clear();
+
+    // Enqueue preprocessors
+    foreach (RuntimeBox::Ptr box, m_rtboxes) {
+        RuntimeBox::PortNotifier preprocessor = box->preprocessor();
+        if (preprocessor)
+            postPortActivation(box.data(), preprocessor, 0);
+    }
+
+    // Enqueue regular sources
+    foreach (const RuntimeBox::Ptr& box, m_rtboxes)
+        if (!box->generator() && box->inputPorts().empty())
+            foreach (const RuntimeOutputPort *port, box->outputPorts())
+                foreach (const RuntimeLink *link, port->links()) {
+                    RuntimeInputPort *inport = link->inputPort();
+                    postPortActivation(inport->owner(), inport->portNotifier(), inport->portId());
+                }
+
+    // Enqueue generators
+    foreach (const RuntimeBox::Ptr& box, m_rtboxes)
+        if (box->generator()) {
+            Q_ASSERT(box->inputPorts().empty());
+            postPortActivation(box.data(), box->generator(), 0);
+        }
 }
 
 void Runner::requestTermination() {
