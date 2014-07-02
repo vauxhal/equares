@@ -40,7 +40,8 @@ RectInputBox::RectInputBox(QObject *parent) :
     m_activator("activator", this),
     m_out("output", this, PortFormat(4).setFixed()),
     m_keepAspectRatio(false),
-    m_withActivator(false)
+    m_withActivator(false),
+    m_restartOnInput(false)
 {
 }
 
@@ -102,6 +103,14 @@ RectInputBox& RectInputBox::setWithActivator(bool withActivator) {
     return *this;
 }
 
+bool RectInputBox::restartOnInput() const {
+    return m_restartOnInput;
+}
+
+RectInputBox& RectInputBox::setRestartOnInput(bool restartOnInput) {
+    m_restartOnInput = restartOnInput;
+    return *this;
+}
 QString RectInputBox::refBitmap() const {
     return m_refBitmap;
 }
@@ -117,6 +126,7 @@ RectInputRuntimeBox::RectInputRuntimeBox(const RectInputBox *box) :
     m_initRect(box->initRect()),
     m_keepAspectRatio(box->keepAspectRatio()),
     m_withActivator(box->withActivator()),
+    m_restartOnInput(box->restartOnInput()),
     m_refBitmap(box->refBitmap())
 {
     setOwner(box);
@@ -153,12 +163,12 @@ void RectInputRuntimeBox::registerInput()
 void RectInputRuntimeBox::acquireInteractiveInput()
 {
     if (!m_initRectSent) {
-        if (sendRect())
-            m_initRectSent = true;
+        sendRect(false);
+        m_initRectSent = true;
     }
     else if (ThreadManager::instance()->readInput(m_data, m_inputId, false)) {
         Q_ASSERT(m_data.size() == 4);
-        sendRect();
+        sendRect(true);
     }
 }
 
@@ -173,18 +183,20 @@ RuntimeBox::PortNotifier RectInputRuntimeBox::generator() const
 bool RectInputRuntimeBox::activate(int)
 {
     if (!m_initRectSent) {
-        bool result = sendRect();
-        if (result)
-            m_initRectSent = true;
-        return result;
+        m_initRectSent = true;
+        return sendRect(false);
     }
     acquireInteractiveInput();
     return true;
 }
 
-bool RectInputRuntimeBox::sendRect()
+bool RectInputRuntimeBox::sendRect(bool allowRestart)
 {
     m_out.setData(PortData(4, m_data.data()));
     m_out.state().setValid();
-    return m_out.activateLinks();
+    bool result = m_out.activateLinks();
+    if (allowRestart && m_restartOnInput)
+        throw BoxBreakException(0);
+    else
+        return result;
 }

@@ -2,8 +2,8 @@
 * ~~core: better port format resolution, see TODO in Simulation::initPortFormat().~~
 * ~~web: simple input warning: missing ' at end.~~
 * ~~web: range input: don't send input until users release slider.~~
-* core, web: add RectInput interactive input box.
-* core: add new input ports (with 2D range data) to GridGenerator, Canvas PointInput.
+* ~~core, web: add RectInput interactive input box.~~
+* ~~core: add new input ports (with 2D range data) to GridGenerator, Canvas PointInput.~~
 * ~~core: add parameter to ThresholdDetector that suppresses the output of zero values.~~
 * core: Rename GridGenerator to Grid.
 * ~~core: remove sync & loop interactive input parameters, add & use Pause box instead.~~
@@ -19,7 +19,7 @@
 * core: decorate input consumer names.
 * core: validate number of interactive input values.
 * ~~core: check filenames for bitmap and canvas boxes.~~
-* web: don't store info (at least when there are no critical parameters).
+* ~~web: don't store info (at least when there are no critical parameters).~~
 * web: validate simulation names against some pattern (e.g. disallow empty names).
 * web: validate user names against some pattern (e.g. disallow empty names).
 * docs: tutorial, pitfalls

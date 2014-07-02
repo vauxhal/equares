@@ -25,6 +25,7 @@ class EQUARES_CORESHARED_EXPORT RectInputBox : public Box
     Q_PROPERTY(RectInputBoxRange initRect READ initRect WRITE setInitRect)
     Q_PROPERTY(bool keepAspectRatio READ keepAspectRatio WRITE setKeepAspectRatio)
     Q_PROPERTY(bool withActivator READ withActivator WRITE setWithActivator)
+    Q_PROPERTY(bool restartOnInput READ restartOnInput WRITE setRestartOnInput)
     Q_PROPERTY(QString refBitmap READ refBitmap WRITE setRefBitmap)
 public:
     explicit RectInputBox(QObject *parent = 0);
@@ -41,6 +42,8 @@ public:
     RectInputBox& setKeepAspectRatio(bool keepAspectRatio);
     bool withActivator() const;
     RectInputBox& setWithActivator(bool withActivator);
+    bool restartOnInput() const;
+    RectInputBox& setRestartOnInput(bool restartOnInput);
     QString refBitmap() const;
     RectInputBox& setRefBitmap(const QString& refBitmap);
 
@@ -50,6 +53,7 @@ private:
     RectInputBoxRange m_initRect;
     bool m_keepAspectRatio;
     bool m_withActivator;
+    bool m_restartOnInput;
     QString m_refBitmap;
 
 };
@@ -69,6 +73,7 @@ private:
     RectInputBoxRange m_initRect;
     bool m_keepAspectRatio;
     bool m_withActivator;
+    bool m_restartOnInput;
     QString m_refBitmap;
 
     int m_inputId;
@@ -77,7 +82,7 @@ private:
     bool m_initRectSent;
 
     bool activate(int);
-    bool sendRect();
+    bool sendRect(bool allowRestart);
 };
 
 #endif // RECTINPUTBOX_H
