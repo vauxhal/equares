@@ -222,6 +222,7 @@ public:
     virtual RuntimeBox *newRuntimeBox() const = 0;
 
     Box& loadSettings(QSettings& settings);
+    QString decoratedName() const;
 
 protected:
     void throwBoxException(const QString& what) const;
@@ -543,6 +544,8 @@ public:
 
     void initPortFormat();
 
+    QString decoratedBoxName(const Box *box) const;
+
     using QScriptable::engine;
 
 public slots:
@@ -553,6 +556,11 @@ public slots:
 private:
     LinkList m_links;
     BoxList m_boxes;
+    typedef QMap<const Box*, QString> BoxDecoratedNameMap;
+    typedef QMap<QString, const Box*> BoxDecoratedNameIMap;
+    mutable BoxDecoratedNameMap m_decoratedBoxNames;
+    mutable BoxDecoratedNameIMap m_idecoratedBoxNames;
+
 
     static bool hasUnknownInputFormats(const Box *box);
     static BoxList linkBoxes(const LinkList& links);

@@ -2,6 +2,10 @@
 #include <QSet>
 #include <QScriptEngine>
 
+QString Box::decoratedName() const {
+    return simulation()->decoratedBoxName(this);
+}
+
 void Box::throwBoxException(const QString& what) const
 {
     throw EquaresBoxException(this, what);
@@ -79,6 +83,25 @@ void Simulation::initPortFormat()
         box->checkPortFormat();
 }
 
+QString Simulation::decoratedBoxName(const Box *box) const {
+    BoxDecoratedNameMap::const_iterator it = m_decoratedBoxNames.find(box);
+    if (it == m_decoratedBoxNames.end()) {
+        QString baseName = box->name();
+        baseName.replace(QRegExp("\\s+"), "_");
+        QString  name = baseName;
+        int n = 1;
+        while(m_idecoratedBoxNames.contains(name)) {
+            name = baseName + "_" + QString::number(n);
+            ++n;
+        }
+        m_idecoratedBoxNames[name] = box;
+        m_decoratedBoxNames[box] = name;
+        return name;
+    }
+    else
+        return it.value();
+}
+
 bool Simulation::hasUnknownInputFormats(const Box *box)
 {
     foreach (InputPort* port, box->inputPorts())
@@ -133,6 +156,8 @@ void Simulation::setBoxes(const QScriptValue& boxes)
         context()->throwError("Simulation::setBoxes: invalid argument (an array of boxes was expected)");
         return;
     }
+    m_decoratedBoxNames.clear();
+    m_idecoratedBoxNames.clear();
     m_boxes = newBoxes;
 }
 

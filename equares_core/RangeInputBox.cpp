@@ -90,7 +90,7 @@ InputInfoList RangeInputRuntimeBox::inputInfo() const {
     RangeInputInfo::Ranges ranges;
     foreach (const ParamItem& p, m_param)
         ranges << RangeInputInfo::Range(p.name, p.vmin, p.vmax, p.resolution);
-    return InputInfoList() << InputInfo::Ptr(new RangeInputInfo(owner()->name(), ranges));
+    return InputInfoList() << InputInfo::Ptr(new RangeInputInfo(owner()->decoratedName(), ranges));
 }
 
 void RangeInputRuntimeBox::transformData(double *portData, const double *inputData) const

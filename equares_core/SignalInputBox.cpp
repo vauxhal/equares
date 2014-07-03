@@ -59,7 +59,7 @@ SignalInputRuntimeBox::SignalInputRuntimeBox(const SignalInputBox *box) :
 }
 
 InputInfoList SignalInputRuntimeBox::inputInfo() const {
-    return InputInfoList() << InputInfo::Ptr(new SignalInputInfo(owner()->name(), m_signalName));
+    return InputInfoList() << InputInfo::Ptr(new SignalInputInfo(owner()->decoratedName(), m_signalName));
 }
 
 void SignalInputRuntimeBox::registerInput()

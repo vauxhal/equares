@@ -152,7 +152,7 @@ RectInputRuntimeBox::RectInputRuntimeBox(const RectInputBox *box) :
 }
 
 InputInfoList RectInputRuntimeBox::inputInfo() const {
-    return InputInfoList() << InputInfo::Ptr(new ImageRectInputInfo(owner()->name(), m_refBitmap, m_initRect, m_keepAspectRatio));
+    return InputInfoList() << InputInfo::Ptr(new ImageRectInputInfo(owner()->decoratedName(), m_refBitmap, m_initRect, m_keepAspectRatio));
 }
 
 void RectInputRuntimeBox::registerInput()

@@ -14,9 +14,9 @@
 * all: License file, add license text to all source files.
 * web: less strict port equality check (hints are optional)
 * docs: disclaimer; unstable format warning.
-* web: reinit box name system on clear/load simulation.
-* web: use name system when loading simulation.
-* core: decorate input consumer names.
+* ~~web: reinit box name system on clear/load simulation.~~
+* ~~web: use name system when loading simulation.~~
+* ~~core: decorate input consumer names.~~
 * core: validate number of interactive input values.
 * ~~core: check filenames for bitmap and canvas boxes.~~
 * ~~web: don't store info (at least when there are no critical parameters).~~
@@ -26,6 +26,7 @@
 * web: split examples to basic and advanced
 * ~~core, web: report simulation running time~~
 * ~~core: run unbound boxes with preproc and postproc~~
+* web: collections of ODE, FDE, or whatever
 
 # Roadmap / TODO
 

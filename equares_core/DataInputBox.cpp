@@ -97,7 +97,7 @@ bool DataInputRuntimeBox::fetchInputPortData()
         QStringList input;
         foreach (double d, inputData(m_data.data()))
             input << QString::number(d);
-        EQUARES_COUT << "input: " << owner()->name() << " " << input.join(" ") << endl;
+        EQUARES_COUT << "input: " << owner()->decoratedName() << " " << input.join(" ") << endl;
     }
     return true;
 }

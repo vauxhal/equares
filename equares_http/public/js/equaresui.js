@@ -634,7 +634,8 @@ equaresui.setSceneSource = function() {
                     userType: 's',
                     getter: function() { return box.name },
                     setter: function(newName) {
-                        box.rename(newName)
+                        if (box.rename(newName) === false)
+                            errorMessage('Unable to rename box: name is already in use')
                         propsDiv.children('h1').first().html(box.name)
                     }
                 },

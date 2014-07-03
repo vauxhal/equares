@@ -115,7 +115,7 @@ PointInputRuntimeBox::PointInputRuntimeBox(const PointInputBox *box) :
 }
 
 InputInfoList PointInputRuntimeBox::inputInfo() const {
-    return InputInfoList() << InputInfo::Ptr(new ImageInputInfo(owner()->name(), m_refBitmap));
+    return InputInfoList() << InputInfo::Ptr(new ImageInputInfo(owner()->decoratedName(), m_refBitmap));
 }
 
 void PointInputRuntimeBox::transformData(double *portData, const double *inputData) const

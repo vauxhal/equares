@@ -9,6 +9,8 @@ var ctmEquaresSchemeEditor = {};
     var unuseBoxName
     var boxNameExists
     var renameBox
+    var useBoxName
+    var clearBoxNames
     (function(){
         var boxNames = {}   // Set of used box names
         var counters = {}   // Key = box type, value = index of last generated instance name
@@ -41,6 +43,13 @@ var ctmEquaresSchemeEditor = {};
             boxNames[box.name = newName] = true
             box.editor.visualize().update().modify()
         }
+        useBoxName = function(name) {
+            boxNames[name] = true
+        }
+        clearBoxNames = function(name) {
+            boxNames = {}
+            counters = {}
+        }
     })()
 
     // Some helper functions
@@ -65,6 +74,8 @@ var ctmEquaresSchemeEditor = {};
     function Box(boxType, options) {
         var opt = options || {}
         var name = opt.name || nameBox(boxType)
+        if (opt.name)
+            useBoxName(opt.name)
         equaresBox.Box.call(this, name, boxType, opt)
         var pos = opt.pos || {}
         this.x = pos.x || 0
@@ -768,6 +779,7 @@ var ctmEquaresSchemeEditor = {};
             editor.visualizationDisabled = true
             editor.boxes = []
             editor.links = []
+            clearBoxNames()
 
             // Create boxes (no param values so far)
             var rootOffset = $(editor.root).offset()
@@ -861,6 +873,7 @@ var ctmEquaresSchemeEditor = {};
         this.boxes = []
         this.links = []
         this.modified = false
+        clearBoxNames()
         this.visualize()
     }
 

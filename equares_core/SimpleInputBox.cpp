@@ -84,7 +84,7 @@ InputInfoList SimpleInputRuntimeBox::inputInfo() const {
     QStringList names;
     foreach (const ParamItem& paramItem, m_param)
         names << paramItem.name;
-    return InputInfoList() << InputInfo::Ptr(new SimpleInputInfo(owner()->name(), names));
+    return InputInfoList() << InputInfo::Ptr(new SimpleInputInfo(owner()->decoratedName(), names));
 }
 
 void SimpleInputRuntimeBox::transformData(double *portData, const double *inputData) const
