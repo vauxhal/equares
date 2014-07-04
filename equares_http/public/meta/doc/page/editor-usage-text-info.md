@@ -12,7 +12,8 @@ It's good to keep in mind the following things about the **info** property.
 2. You can use ?[TeX](http://tug.org/) formulas. In-line formulas should be enclosed in dollar signs (\$), and
    displayed formulas should be enclosed in double-dollar sequences (\$\$). This makes entering formulas like $$\ddot\varphi+\sin\varphi=0$$ quite an easy job &mdash;
    just type<br/> \$\$```\ddot\varphi+\sin\varphi=0```\$\$.
-3. For hyperlinks, use this syntax: ```?[label](url)```. The **?** prefix will force the link to open in a new browser tab, which seems to be appropriate in the =[editor](/editor).
+3. For hyperlinks, use this syntax: ```?[label](url)```. The **?** prefix will force the link to open in a new browser tab, which seems to be appropriate in the =[editor](/editor) in most cases.
+   To open link in the same browser tab, use either ```=[label](url)``` or ```[label](url)```.
 4. For images, use this syntax: ```![alt](url)``` or ```![alt](url "title")```. You can upload images to our server &mdash; see =[Adding images](/doc#page/editor-usage-images).
 5. If you show the info pane when editing the **info** property, you will see it formatted immediately as you type.
 6. Don't forget to click the **Ok** button when finished!

@@ -38,7 +38,10 @@ module.exports = function(app) {
         res.render('doc')
     })
     app.get('/doc-menu-pane', function(req, res) {
-        res.render('doc-menu-pane')
+        boxInfo(req, 'boxTypes', function(box, info) {
+            info = eval(JSON.parse(info).stdout)
+            res.render('doc-menu-pane', {boxTypes: info})
+        })
     })
 
     function boxItemHelpText(item, caption) {

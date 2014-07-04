@@ -12,3 +12,4 @@ This pane is located at the center of the =[editor](/editor). It is an interacti
 * Viewing box status messages (hover status icon  &mdash;
   ![ok](/images/status-ok.png), ![waiting](/images/status-waiting.png), ![warning](/images/status-warning.png), or ![error](/images/status-error.png) &mdash; on the box)
 * Viewing port names and formats (hover box port &mdash; ![input port](/meta/doc/page/editorpane-scheme-port-in.png) or ![output port](/meta/doc/page/editorpane-scheme-port-out.png))
+* Moving box ports (hold ```Ctrl``` key and drag box port &mdash; ![input port](/meta/doc/page/editorpane-scheme-port-in.png) or ![output port](/meta/doc/page/editorpane-scheme-port-out.png))

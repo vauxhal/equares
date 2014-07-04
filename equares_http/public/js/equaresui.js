@@ -693,6 +693,8 @@ equaresui.setSceneSource = function() {
     function loadSimInfo(info) {
         if (arguments.length < 1)
             info = simProps.info
+        if (!info)
+            info = 'Advice: Add simulation description to ?[simulation info property](/doc#page/editor-usage-text-info)'
         formatInfo.update(info)
     }
 

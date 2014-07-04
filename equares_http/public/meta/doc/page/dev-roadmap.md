@@ -20,13 +20,15 @@
 * core: validate number of interactive input values.
 * ~~core: check filenames for bitmap and canvas boxes.~~
 * ~~web: don't store info (at least when there are no critical parameters).~~
-* web: validate simulation names against some pattern (e.g. disallow empty names).
-* web: validate user names against some pattern (e.g. disallow empty names).
+* ~~web: validate simulation names against some pattern (e.g. disallow empty names).~~
+* ~~web: validate user names against some pattern (e.g. disallow empty names).~~
 * docs: tutorial, pitfalls
 * web: split examples to basic and advanced
 * ~~core, web: report simulation running time~~
 * ~~core: run unbound boxes with preproc and postproc~~
 * web: collections of ODE, FDE, or whatever
+* core: specific value on canvas
+* core: color map box
 
 # Roadmap / TODO
 
@@ -89,5 +91,4 @@
 3. Make functionality of equares-box.js and partially of scheme-editor.js available in equares_core
    in order to make it possible to run JSON-files stored in the DB. This will also fix potentially
    buggy behavior of buildDirs().
-4. Get rid of hard-coded box list in page ```equares_http/views/doc-menu-pane.txt```
-5. Unit tests
+4. Unit tests

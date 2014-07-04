@@ -455,6 +455,8 @@ commands['savesim'] = function(req, res) {
     if (!ensureAuth(req, res))
         return
     var sim = JSON.parse(req.body.simulation)
+    if (typeof sim.name !== 'string'   ||   !sim.name.match(/\S/))
+        return res.send(400, 'Please enter a non-empty simulation name')
     sim.date = new Date()
     sim.user = req.user.id
     if (typeof sim.public != 'boolean')

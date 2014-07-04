@@ -54,42 +54,8 @@ script.
     h3#doc-menu-box Boxes
     div
         ul
-            li: a(href='/doc#box/Bitmap') Bitmap
-            li: a(href='/doc#box/Canvas') Canvas
-            li: a(href='/doc#box/CountedFilter') CountedFilter
-            li: a(href='/doc#box/CrossSection') CrossSection
-            li: a(href='/doc#box/CxxFde') CxxFde
-            li: a(href='/doc#box/CxxOde') CxxOde
-            li: a(href='/doc#box/Differentiate') Differentiate
-            li: a(href='/doc#box/DoublePendulum') DoublePendulum
-            li: a(href='/doc#box/Dump') Dump
-            li: a(href='/doc#box/FdeIterator') FdeIterator
-            li: a(href='/doc#box/GridGenerator') GridGenerator
-            li: a(href='/doc#box/Interpolator') Interpolator
-            li: a(href='/doc#box/IntervalFilter') IntervalFilter
-            li: a(href='/doc#box/Join') Join
-            li: a(href='/doc#box/JsOde') JsOde
-            li: a(href='/doc#box/LinOdeStabChecker') LinOdeStabChecker
-            li: a(href='/doc#box/Mathieu') Mathieu
-            li: a(href='/doc#box/Merge') Merge
-            li: a(href='/doc#box/Param') Param
-            li: a(href='/doc#box/ParamArray') ParamArray
-            li: a(href='/doc#box/Pause') Pause
-            li: a(href='/doc#box/Pendulum') Pendulum
-            li: a(href='/doc#box/PointInput') PointInput
-            li: a(href='/doc#box/Projection') Projection
-            li: a(href='/doc#box/RangeInput') RangeInput
-            li: a(href='/doc#box/RectInput') RectInput
-            li: a(href='/doc#box/Replicator') Replicator
-            li: a(href='/doc#box/Rk4') Rk4
-            li: a(href='/doc#box/Rk4ParamAdjust') Rk4ParamAdjust
-            li: a(href='/doc#box/Scalarize') Scalarize
-            li: a(href='/doc#box/SignalInput') SignalInput
-            li: a(href='/doc#box/SimpleInput') SimpleInput
-            li: a(href='/doc#box/Split') Split
-            li: a(href='/doc#box/ThresholdDetector') ThresholdDetector
-            li: a(href='/doc#box/Valve') Valve
-            li: a(href='/doc#box/VibratingPendulum') VibratingPendulum
+            each box in boxTypes
+                li: a(href='/doc#box/' + box) #{box}
     h3#doc-menu-dev Development
     div
         ul

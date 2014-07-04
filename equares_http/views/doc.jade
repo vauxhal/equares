@@ -2,17 +2,7 @@ extends page
 block vars
     - var title = 'Equares documentation'
 block otherCss
-    style.
-        .doc-page {
-            background-color: #ffd;
-            padding: 5px 10px;
-            height: 100%;
-            overflow: auto;
-        }
-        .normal_container h1 {
-            margin-top: 0px;
-            margin-bottom: 5px;
-        }
+    link(rel='stylesheet', href='stylesheets/doc-page.css')
 block otherScripts
     script(type='text/javascript' src='https://c328740.ssl.cf1.rackcdn.com/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML')
     script(type='text/javascript' src='js-3rd/marked.min.js')
