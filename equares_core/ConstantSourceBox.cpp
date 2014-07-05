@@ -3,6 +3,22 @@
 
 REGISTER_BOX(ConstantSourceBox, "Param")
 
+
+
+class ConstantSourceBox2 : public ConstantSourceBox
+{
+public:
+    explicit ConstantSourceBox2(QObject *parent = 0) : ConstantSourceBox(parent) {}
+    void setData(const QVector<double>& data) {
+        ConstantSourceBox::setData(data);
+        m_outputPort.format() = PortFormat(data.size()).setFixed();
+    }
+};
+
+REGISTER_BOX(ConstantSourceBox2, "Const")
+
+
+
 ConstantSourceBox::ConstantSourceBox(QObject *parent) :
     Box(parent),
     m_outputPort("output", this)

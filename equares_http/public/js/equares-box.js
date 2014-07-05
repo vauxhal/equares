@@ -911,6 +911,18 @@ $.extend(equaresBox.rules, {
             this.stateChanged("propset")
         }
     },
+    Const: {
+        init: function() {
+            // TODO better (equares_con -d Const returns incorrect default value for data property)
+            this.info.properties[0].defaultValue = []
+            this.props.data.value = []
+        },
+        prop: function(name) {
+            if (name === "data") {
+                setFormat(this.ports[0], {format: [this.prop("data").length]})
+            }
+        }
+    },
     ParamArray: {
         init: function() {
             this.props["data"].toBoxProp = function(prop) {

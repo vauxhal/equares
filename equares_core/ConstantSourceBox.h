@@ -21,10 +21,10 @@ public:
     double *data() const;
 
     const QVector<double>& getData() const;
-    void setData(const QVector<double>& data);
+    virtual void setData(const QVector<double>& data);
     Port *getOut() const;
 
-private:
+protected:
     mutable OutputPort m_outputPort;
     mutable QVector<double> m_data;
 };

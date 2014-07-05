@@ -1,5 +1,5 @@
-#ifndef SLITBOX_H
-#define SLITBOX_H
+#ifndef SPLITBOX_H
+#define SPLITBOX_H
 
 #include "equares_core.h"
 #include "equares_script.h"
@@ -39,4 +39,4 @@ private:
     bool processInput(int);
 };
 
-#endif // SLITBOX_H
+#endif // SPLITBOX_H

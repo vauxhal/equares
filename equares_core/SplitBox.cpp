@@ -1,4 +1,4 @@
-#include "SlitBox.h"
+#include "SplitBox.h"
 #include "box_util.h"
 
 REGISTER_BOX(SplitBox, "Split")
