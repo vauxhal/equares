@@ -68,6 +68,7 @@ class EQUARES_CORESHARED_EXPORT CanvasBox : public Box
     Q_PROPERTY(int refreshInterval READ refreshInterval WRITE setRefreshInterval)
     Q_PROPERTY(int timeCheckCount READ timeCheckCount WRITE setTimeCheckCount)
     Q_PROPERTY(bool clearOnRestart READ clearOnRestart WRITE setClearOnRestart)
+    Q_PROPERTY(bool withInputValue READ withInputValue WRITE setWithInputValue)
 public:
     explicit CanvasBox(QObject *parent = 0);
 
@@ -88,6 +89,8 @@ public:
     CanvasBox& setTimeCheckCount(int timeCheckCount);
     bool clearOnRestart() const;
     CanvasBox& setClearOnRestart(bool clearOnRestart);
+    bool withInputValue() const;
+    CanvasBox& setWithInputValue(bool withInputValue);
 
 private:
     enum { ResolutionLimit = 5000 };
@@ -95,6 +98,7 @@ private:
     int m_refreshInterval;      // Refresh interval, in milliseconds
     int m_timeCheckCount;
     bool m_clearOnRestart;
+    bool m_withInputValue;
     mutable InputPort m_in;
     mutable InputPort m_flush;
     mutable InputPort m_clear;
@@ -126,7 +130,8 @@ private:
     int m_timeCheckCounter;
     bool m_rangeValid;
 
-    bool processInput(int);
+    bool processInputNoValue(int);
+    bool processInputWithValue(int);
     bool flush(int);
     bool clear(int);
     bool setRange(int);

@@ -235,6 +235,10 @@ equaresui.setSceneSource = function() {
             ok = /^[+-]?[0-9]+$/.test(s)
             value = +s
             break
+        case 'c':
+            ok = /^[0-9a-fA-F]{1,6}$/.test(s)
+            value = parseInt(s, 16)
+            break
         case 'd':
             // TODO: remove validation for doubles since we are going to allow expressions
             // Regexp is copied from here: http://regexlib.com/REDetails.aspx?regexp_id=185
@@ -333,11 +337,18 @@ equaresui.setSceneSource = function() {
         switch(t) {
         case 's': case 't': case 'T': case 'M': return ''
         case 'BoxType': return 'Param'
-        case 'i': case 'd': return 0
+        case 'i': case 'c': case 'd': return 0
         case 'b': return false
         case 'i:*': case 's:*': return []
         default: return undefined
         }
+    }
+
+    function toColor(value) {
+        var c = (+value).toString(16)
+        for (var n=6-c.length; n>0; --n)
+            c = '0' + c
+        return c
     }
 
     function makeEditor(host, prop) {
@@ -441,6 +452,37 @@ equaresui.setSceneSource = function() {
                         $(this).addClass('modified')
                     })
                     .appendTo(host)
+                break
+            case 'c':
+                var hexColor = toColor(prop.getter())
+                var colorEditor = $('<input type="text" class="color-editor">')
+                    .attr("value", hexColor)
+                    .change(function() {
+                        var e = this
+                        validateBoxProp(this.value, t, function(value, ok) {
+                            if (ok)
+                                prop.setter(value)
+                            e.value = toColor(prop.getter())
+                            $(e).removeClass('modified')
+                        })
+                    })
+                    .keypress(function() {
+                        $(this).addClass('modified')
+                    })
+                    .appendTo(host)
+                var colorPreview = wrap('span').html('&nbsp;').addClass('color-preview').css('background-color','#'+hexColor).appendTo(host)
+                colorEditor.colpick({
+                        layout:'hex',
+                        submit:0,
+                        colorScheme:'light',
+                        onChange:function(hsb,hex,rgb,el,bySetColor) {
+                            colorPreview.css('background-color','#'+hex)
+                            // Fill the text box just if the color was set using the picker, and not the colpickSetColor function.
+                                     if(!bySetColor) $(el).val(hex).change()
+                        }
+                    }).keyup(function(){
+                        $(this).colpickSetColor(this.value)
+                    }).colpickSetColor(hexColor, true)
                 break
             case 'i:*':
                 $('<input type="text">')
@@ -719,7 +761,7 @@ equaresui.setSceneSource = function() {
                     case 'b':
                         v = false
                         break
-                    case 'd': case 'i':
+                    case 'd': case 'i': case 'c':
                         v = 0
                         break
                     case 'i:*':   case 's:*':

@@ -995,20 +995,26 @@ $.extend(equaresBox.rules, {
     Canvas: {
         init: function() { setUnspecPortStatus(this) },
         prop: function(name) {
-            if (name === "param") {
-                var v = this.prop(name)
+            var v = this.prop(name)
+            switch(name) {
+            case "param":
                 setFormat(this.ports[4], {format: [v.x.resolution, v.y.resolution]})
+                break
+            case "withInputValue":
+                setFormat(this.ports[0], {format: [v? 3: 2]})
+                break
             }
         },
         port: function(port) {
             if (port.info.name === "input") {
                 var f = port.getFormat()
+                var nin = this.prop("withInputValue") ?   3:   2
                 if (f.valid()) {
                     if (f.format.length == 1) {
-                        if (f.format[0] == 2)
+                        if (f.format[0] == nin)
                             setGoodStatus(this)
                         else
-                            setBadPortStatus(this, 0, "expected 1D vector of 2 elements")
+                            setBadPortStatus(this, 0, 'expected 1D vector of ' + nin + ' elements')
                     }
                     else
                         setBadPortStatus(this, 0, "expected 1D port data")

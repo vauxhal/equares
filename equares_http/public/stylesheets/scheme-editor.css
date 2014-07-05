@@ -180,6 +180,16 @@ Using workaround with bbox instead.
     background-color: #ffd;
 }
 
+#scheme-box-props input[type=text].color-editor {
+    width: 50%;
+}
+
+#scheme-box-props .color-preview {
+    width: 50%;
+    background-color: red;
+    display: inline-block;
+}
+
 #scheme-box-props input[type=button] {
     border: 1px solid #bbb;
     border-radius: 3px;

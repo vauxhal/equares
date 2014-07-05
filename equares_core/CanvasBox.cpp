@@ -47,7 +47,8 @@ CanvasBox::CanvasBox(QObject *parent) :
     m_refreshInterval(0),
     m_timeCheckCount(100),
     m_clearOnRestart(false),
-    m_in("input", this, PortFormat(2).setFixed()),
+    m_withInputValue(false),
+    m_in("input", this),
     m_flush("flush", this),
     m_clear("clear", this),
     m_range("range", this, PortFormat(4).setFixed()),
@@ -65,7 +66,7 @@ OutputPorts CanvasBox::outputPorts() const {
 
 void CanvasBox::checkPortFormat() const
 {
-    if (m_in.format() != PortFormat(2))
+    if (m_in.format() != PortFormat(m_withInputValue? 3: 2))
         throwBoxException("CanvasBox: Invalid input port format");
     if (m_out.format() != PortFormat(m_param[0].resolution, m_param[1].resolution))
         throwBoxException("CanvasBox: Invalid output port format");
@@ -119,6 +120,15 @@ CanvasBox& CanvasBox::setClearOnRestart(bool clearOnRestart) {
     return *this;
 }
 
+bool CanvasBox::withInputValue() const {
+    return m_withInputValue;
+}
+
+CanvasBox& CanvasBox::setWithInputValue(bool withInputValue) {
+    m_withInputValue = withInputValue;
+    return *this;
+}
+
 
 
 CanvasRuntimeBox::CanvasRuntimeBox(const CanvasBox *box) :
@@ -130,7 +140,10 @@ CanvasRuntimeBox::CanvasRuntimeBox(const CanvasBox *box) :
     setOwner(box);
 
     InputPorts in = box->inputPorts();
-    m_in.init(this, in[0], toPortNotifier(&CanvasRuntimeBox::processInput));
+    m_in.init(this, in[0], toPortNotifier(
+        box->withInputValue() ?
+            &CanvasRuntimeBox::processInputWithValue :
+            &CanvasRuntimeBox::processInputNoValue));
     m_flush.init(this, in[1], PortNotifier(&CanvasRuntimeBox::flush));
     m_clear.init(this, in[2], PortNotifier(&CanvasRuntimeBox::clear));
     m_range.init(this, in[3], PortNotifier(&CanvasRuntimeBox::setRange));
@@ -155,15 +168,36 @@ void CanvasRuntimeBox::restart() {
         clear(0);
 }
 
-bool CanvasRuntimeBox::processInput(int)
+bool CanvasRuntimeBox::processInputNoValue(int)
 {
     if (!m_rangeValid)
         return false;
     Q_ASSERT(m_in.state().hasData());
-    int i = m_param.index(m_in.outputPort()->data().data());
+    int i = m_param.index(m_in.data().data());
     if (i >= 0) {
         double *data = m_out.data().data();
         data[i] = 1;
+        if (++m_timeCheckCounter >= m_timeCheckCount) {
+            if (m_refreshInterval > 0   &&   m_time.elapsed() >= m_refreshInterval) {
+                flush(0);
+                m_time.restart();
+            }
+            m_timeCheckCounter = 0;
+        }
+    }
+    return true;
+}
+
+bool CanvasRuntimeBox::processInputWithValue(int)
+{
+    if (!m_rangeValid)
+        return false;
+    Q_ASSERT(m_in.state().hasData());
+    const double *dataIn = m_in.data().data();
+    int i = m_param.index(dataIn);
+    if (i >= 0) {
+        double *dataOut = m_out.data().data();
+        dataOut[i] = dataIn[2];
         if (++m_timeCheckCounter >= m_timeCheckCount) {
             if (m_refreshInterval > 0   &&   m_time.elapsed() >= m_refreshInterval) {
                 flush(0);
