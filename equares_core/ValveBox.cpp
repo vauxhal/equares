@@ -54,6 +54,10 @@ ValveRuntimeBox::ValveRuntimeBox(const ValveBox *box)
     setOutputPorts(RuntimeOutputPorts() << &m_out);
 }
 
+void ValveRuntimeBox::restart() {
+    m_hasValve = m_hasData = false;
+}
+
 bool ValveRuntimeBox::setValve(int)
 {
     Q_ASSERT(m_valve.outputPort()->state().hasData());

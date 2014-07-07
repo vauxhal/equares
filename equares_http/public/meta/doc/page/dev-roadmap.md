@@ -1,34 +1,21 @@
 # Hotlist
-* ~~core: better port format resolution, see TODO in Simulation::initPortFormat().~~
-* ~~web: simple input warning: missing ' at end.~~
-* ~~web: range input: don't send input until users release slider.~~
-* ~~core, web: add RectInput interactive input box.~~
-* ~~core: add new input ports (with 2D range data) to GridGenerator, Canvas PointInput.~~
-* ~~core: add parameter to ThresholdDetector that suppresses the output of zero values.~~
 * core: Rename GridGenerator to Grid.
-* ~~core: remove sync & loop interactive input parameters, add & use Pause box instead.~~
-* ~~core: clear-on-restart flag in canvas.~~
-* core: Override RunTimeBox::restart() in ValveBox and maybe others.
 * docs: Add section about port activation.
 * core, web: Indicate ports that are activators.
 * all: License file, add license text to all source files.
-* web: less strict port equality check (hints are optional)
+* web: less strict port equality check (hints are optional).
 * docs: disclaimer; unstable format warning.
-* ~~web: reinit box name system on clear/load simulation.~~
-* ~~web: use name system when loading simulation.~~
-* ~~core: decorate input consumer names.~~
 * core: validate number of interactive input values.
-* ~~core: check filenames for bitmap and canvas boxes.~~
-* ~~web: don't store info (at least when there are no critical parameters).~~
-* ~~web: validate simulation names against some pattern (e.g. disallow empty names).~~
-* ~~web: validate user names against some pattern (e.g. disallow empty names).~~
-* docs: tutorial, pitfalls
-* web: split examples to basic and advanced
-* ~~core, web: report simulation running time~~
-* ~~core: run unbound boxes with preproc and postproc~~
-* web: collections of ODE, FDE, or whatever
-* core: specific value on canvas
-* core: color map box
+* docs: tutorial, pitfalls.
+* web: split examples to basic and advanced.
+* web: collections of ODE, FDE, or whatever.
+---
+* Correct equations for logistic mapping and Mandelbrot set.
+* Canvas box update when withInputValue property changs.
+* User profile page.
+* Email address validation.
+* Forgotten password.
+* Change password.
 
 # Roadmap / TODO
 

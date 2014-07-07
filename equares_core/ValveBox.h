@@ -26,6 +26,7 @@ class EQUARES_CORESHARED_EXPORT ValveRuntimeBox : public RuntimeBox
 {
 public:
     explicit ValveRuntimeBox(const ValveBox *box);
+    void restart();
 
 private:
     RuntimeInputPort m_valve;
