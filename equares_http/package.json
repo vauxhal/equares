@@ -16,6 +16,8 @@
     "passport": "*",
     "passport-local": "*",
     "connect-flash": "*",
-    "marked": "0.3.2"
+    "marked": "0.3.2",
+    "nodemailer": "0.7.0",
+    "activator": "0.2.8"
   }
 }
