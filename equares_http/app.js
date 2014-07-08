@@ -45,6 +45,7 @@ app.use(captcha({ url: '/captcha.png' })); // captcha params
 app.use(flash());
 
 require('./auth')(app)
+require('./userprofile')(app)
 
 app.use(app.router);
 app.use(express.static(path.join(__dirname, 'public')));

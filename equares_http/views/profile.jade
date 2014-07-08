@@ -1,6 +1,49 @@
-if user.firstName
-	h1 #{user.firstName}'s Profile
-else
-	h1 #{user.email}'s Profile
+extends page
+block vars
+    - var title = 'User profile'
+block otherCss
+    style.
+        .mymain {
+            padding: 10px;
+        }
+        #userprofile {
+            margin-left: 10px;
+        }
+        #userprofile td {
+            padding: 10px;
+        }
+        #userprofileactions {
+            margin-left: 20px;
+            width: 250px;
+        }
+        #message{
+            color: #c00;
+            font-weight: bold;
+            margin-left: 20px;
+        }
 
-a(href="/logout") Logout
+block otherScripts
+    script.
+        ctm.initPage.push(function(c1, c2, c3) {
+            $('#userprofileactions').menu()
+        })
+block content
+    h1 Account details
+    table#userprofile
+        tr
+            td: b Username:
+            td #{user.username}
+        tr
+            td: b Email:
+            td #{user.email}
+        tr
+            td: b Activated?
+            td TODO
+    if message
+        h1 Important information
+        p#message= message
+    h1 Actions
+    ul#userprofileactions
+        li: a(href='/profile/changepassword') Change password
+        li: a(href='/profile/changeemail') Change email address
+        li: a(href='/profile/deleteaccount') Delete account

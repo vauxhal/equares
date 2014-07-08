@@ -95,10 +95,7 @@ script.
                                     var dlg = $(this)
                                     $.post("/signup", dlg.find('form').serialize())
                                         .done(function() {
-                                            dlg.dialog('close')
-                                            loadLoginForm(loginDiv)
-                                            loadMenu()
-                                            $('#after_login_action').click()
+                                            window.location.pathname = '/profile'
                                         })
                                         .fail(function() {
                                             $.get('/errormsg').done(function(text) {

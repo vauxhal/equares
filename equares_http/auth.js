@@ -261,6 +261,7 @@ function auth(app) {
                     if (err)
                         return next(err)
                     completeLogin(req)
+                    req.flash('accountactivationrequired', 'A message has been sent to your email address. Please activate your account by following the link in the message.')
                     res.send(200)
                 })
             else {
