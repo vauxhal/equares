@@ -5,6 +5,7 @@ var LocalStrategy = require('passport-local').Strategy
 var express = require('express')
 var path = require('path')
 var fs = require('fs')
+var activator = require('activator');
 
 // Based on this: https://github.com/visionmedia/node-pwd
 
@@ -51,7 +52,10 @@ UserSchema = mongoose.Schema({
     username:   String,
     email:      String,
     salt:       String,
-    hash:       String
+    hash:       String,
+    activation_code: String,
+    password_reset_code: String,
+    password_reset_time: String
 });
 
 UserSchema.statics.findUser = function(usernameOrEmail, done) {
@@ -133,6 +137,45 @@ passport.deserializeUser(function(id, done) {
         done(err, user)
     })
 })
+
+// Configure activator
+
+var activatorConfig = {
+    user: {
+        find: function (id, cb) {
+            User.findById(id, function(err, user) {
+                console.log('activatorConfig.user.find():')
+                console.log(id)
+                console.log(err)
+                console.log(user)
+                console.log('---')
+                err = err || null
+                user = user || null
+                cb(err, user)
+            })
+        },
+        save: function(id, data, cb) {
+            User.update(
+                { _id: id },
+                { $set: data },
+                function(err) {
+                    console.log('activatorConfig.save():')
+                    console.log(err)
+                    console.log(id)
+                    console.log(data)
+                    console.log('---')
+                    err = err || null
+                    cb(err)
+                })
+        },
+        emailProperty: 'email',
+        url: 'smtp://equares.mailer:multiEquares@smtp.gmail.com:25/gmail.com/' + escape('Equares mailer <equares.mailer@gmail.com>') + '?secureConnection=true',
+        templates: path.join(__dirname, 'email-templates'),
+        id: '_id'
+    }
+}
+
+activator.init(activatorConfig);
 
 function auth(app) {
 
@@ -262,7 +305,11 @@ function auth(app) {
                         return next(err)
                     completeLogin(req)
                     req.flash('accountactivationrequired', 'A message has been sent to your email address. Please activate your account by following the link in the message.')
-                    res.send(200)
+                    req.activator = {
+                        id: req.user.id,
+                        body: ''
+                    }
+                    activator.createActivate(req, res)
                 })
             else {
                 for (var n in messages)
@@ -270,6 +317,12 @@ function auth(app) {
                 fail()
             }
         })
+    })
+
+    app.get('/activate_account', function(req, res) {
+        // TODO
+        console.log('completeActivate')
+        activator.completeActivate(req, res)
     })
 
     app.post('/logout', function(req, res) {

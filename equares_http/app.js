@@ -10,17 +10,15 @@ var http = require('http');
 var path = require('path');
 var url = require('url');
 var captcha = require('./mycaptcha');
-
 var mongoose = require('mongoose');
 var flash = require('connect-flash');
 var MongoStore = require('connect-mongo')(express);
 
-
 var env = process.env.NODE_ENV || 'development',
   config = require('./config/config')[env];
 
-
 mongoose.connect(config.db);
+
 var app = express();
 
 // all environments

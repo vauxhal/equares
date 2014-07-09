@@ -1,0 +1,14 @@
+Equares user account activation
+
+Your email address has been specified when creating a new account, named <%= request.user.username %> in
+<a href="<%= request.protocol %><%= request.headers.host %>">Equares</a>. If you are the one who've done that,
+please activate your account. To do so, follow this link:
+
+<%= request.protocol %><%= request.headers.host %>/activate_account?user=<%= id %>&code=<%= code %>
+
+Notice that simulations are only allowed for users who have activated their accounts.
+
+Please do not reply to this email, as your reply will be ignored anyway.
+
+Best regards,
+Equares mailer
