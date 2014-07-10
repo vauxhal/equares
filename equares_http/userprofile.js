@@ -2,10 +2,8 @@ var auth = require('./auth')
 
 module.exports = function(app) {
     app.get('/profile', function(req, res) {
-        if (!req.isAuthenticated()) {
-            res.send(401, 'You are not logged in')
-            return false
-        }
+        if (!req.isAuthenticated())
+            return res.render('profile', {message: req.flash('accountactivationrequired').join('\n')})
         auth.User.findUser(req.user.username, function(err, user) {
             if (err) {
                 console.log(err)

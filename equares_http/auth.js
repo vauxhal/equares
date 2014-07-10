@@ -144,11 +144,6 @@ var activatorConfig = {
     user: {
         find: function (id, cb) {
             User.findById(id, function(err, user) {
-                console.log('activatorConfig.user.find():')
-                console.log(id)
-                console.log(err)
-                console.log(user)
-                console.log('---')
                 err = err || null
                 user = user || null
                 cb(err, user)
@@ -159,20 +154,15 @@ var activatorConfig = {
                 { _id: id },
                 { $set: data },
                 function(err) {
-                    console.log('activatorConfig.save():')
-                    console.log(err)
-                    console.log(id)
-                    console.log(data)
-                    console.log('---')
                     err = err || null
                     cb(err)
                 })
         },
-        emailProperty: 'email',
-        url: 'smtp://equares.mailer:multiEquares@smtp.gmail.com:25/gmail.com/' + escape('Equares mailer <equares.mailer@gmail.com>') + '?secureConnection=true',
-        templates: path.join(__dirname, 'email-templates'),
-        id: '_id'
-    }
+    },
+    emailProperty: 'email',
+    url: 'smtp://equares.mailer:multiEquares@smtp.gmail.com:25/gmail.com/' + escape('Equares mailer <equares.mailer@gmail.com>'),// + '?secureConnection=true',
+    templates: path.join(__dirname, 'email-templates'),
+    id: '_id'
 }
 
 activator.init(activatorConfig);
@@ -319,10 +309,27 @@ function auth(app) {
         })
     })
 
-    app.get('/activate_account', function(req, res) {
-        // TODO
-        console.log('completeActivate')
-        activator.completeActivate(req, res)
+    app.get('/activate_account', activator.completeActivateNext, function(req, res) {
+        User.findById(req.param('user'), function(err, user) {
+            var username,   msg = 'Account activation has failed, reason: '
+            if (err) {
+                console.log(err)
+                msg += 'invalid user id'
+            }
+            else if (!user)
+                msg += 'no such user'
+            else
+                username = user.username
+            if (req.activator.code === 200) {
+                msg = 'You have successfully activated your account \'' + username + '\'.'
+                if (!req.isAuthenticated())
+                    msg += ' Please log in to continue.'
+            }
+            else if (user)
+                msg += req.activator.message || 'unknown'
+            req.flash('accountactivationrequired', msg)
+            res.redirect('/profile')
+        })
     })
 
     app.post('/logout', function(req, res) {

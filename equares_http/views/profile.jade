@@ -26,24 +26,40 @@ block otherScripts
     script.
         ctm.initPage.push(function(c1, c2, c3) {
             $('#userprofileactions').menu()
+
+            var reload = location.reload.bind(location)
+            $('#after_login_action').click(reload)
+            $('#after_logout_action').click(reload)
         })
+
 block content
-    h1 Account details
-    table#userprofile
-        tr
-            td: b Username:
-            td #{user.username}
-        tr
-            td: b Email:
-            td #{user.email}
-        tr
-            td: b Activated?
-            td TODO
     if message
         h1 Important information
         p#message= message
-    h1 Actions
-    ul#userprofileactions
-        li: a(href='/profile/changepassword') Change password
-        li: a(href='/profile/changeemail') Change email address
-        li: a(href='/profile/deleteaccount') Delete account
+    if user
+        h1 Account details
+        table#userprofile
+            tr
+                td: b Username:
+                td #{user.username}
+            tr
+                td: b Email:
+                td #{user.email}
+            if user.activation_code !== 'X'
+                tr
+                    td: b Activated?
+                    if message
+                        td No
+                    else
+                        td(style='color: #c00;') No! To activate your account, please follow the link in the message sent to your email address.
+        h1 Actions
+        ul#userprofileactions
+            li: a(href='/profile/changepassword') Change password
+            li: a(href='/profile/changeemail') Change email address
+            li: a(href='/profile/deleteaccount') Delete account
+    else
+        h1 You are not logged in
+
+block extras
+    #after_login_action(display='none')
+    #after_logout_action(display='none')
