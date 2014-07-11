@@ -97,10 +97,15 @@ script.
                                         .done(function() {
                                             window.location.pathname = '/profile'
                                         })
-                                        .fail(function() {
-                                            $.get('/errormsg').done(function(text) {
-                                                dlg.find('#errormsg').html(text)
-                                            })
+                                        .fail(function(xhr) {
+                                            var code = xhr.status
+                                            $.get('/errormsg')
+                                                .done(function(text) {
+                                                    dlg.find('#errormsg').html(text || 'Unknown error, code ' + code)
+                                                })
+                                                .fail(function() {
+                                                    dlg.find('#errormsg').html('Unable to retrieve error message, code ' + code)
+                                                })
                                             dlg.find('#newcaptcha').click()
                                         })
                                 },

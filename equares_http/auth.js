@@ -160,7 +160,10 @@ var activatorConfig = {
         },
     },
     emailProperty: 'email',
-    url: 'smtp://equares.mailer:multiEquares@smtp.gmail.com:25/gmail.com/' + escape('Equares mailer <equares.mailer@gmail.com>'),// + '?secureConnection=true',
+    url: (function() {
+        var settings = JSON.parse(fs.readFileSync('email-settings.json', {encoding: 'utf8'}))
+        return settings.url.replace('<email>', escape(settings.email))
+    })(),
     templates: path.join(__dirname, 'email-templates'),
     id: '_id'
 }
@@ -342,7 +345,10 @@ function auth(app) {
         var msg = req.flash('message')
         if(!msg || (msg instanceof Array) && msg.length == 0)
             msg = req.flash('error')
-        res.render('errormsg', {message: msg})
+        if(!msg || (msg instanceof Array) && msg.length == 0)
+            res.send('')
+        else
+            res.render('errormsg', {message: msg})
     })
 }
 
