@@ -41,7 +41,7 @@ function User(name, auth) {
 
 equares.users = {};
 equares.user = function(req) {
-    var auth = req.isAuthenticated()
+    var auth = req.isAuthenticated()   &&   req.user.activation_code === 'X'
     var name = auth? req.user.username: ''  // TODO: session id
     return equares.users[name] || (equares.users[name] = new User(name, auth))
 }
@@ -152,6 +152,10 @@ var commands = {}
 function ensureAuth(req, res) {
     if (!req.isAuthenticated()) {
         res.send(401, 'You are not logged in')
+        return false
+    }
+    if (req.user.activation_code !== 'X') {
+        res.send(401, 'Your account is not activated yet.<br/> Please activate it to access Equares functionality')
         return false
     }
     return true
@@ -393,7 +397,7 @@ commands['quickload'] = function(req, res) {
             })
     }
 
-    if (req.isAuthenticated()) {
+    if (req.isAuthenticated()   &&   req.user.activation_code === 'X') {
         simulation.RecentSim.get(req, function(sim) {
             if (typeof sim !== 'string')
                 sim = sessionRecentSim()
