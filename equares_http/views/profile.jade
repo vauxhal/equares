@@ -21,6 +21,15 @@ block otherCss
             font-weight: bold;
             margin-left: 20px;
         }
+        .profiledlg form > * {
+            display: block;
+        }
+        .profiledlg form > input[type=text] {
+            width: 100%;
+        }
+        .errormsg {
+            color: #c00;
+        }
 
 block otherScripts
     script.
@@ -30,6 +39,131 @@ block otherScripts
             var reload = location.reload.bind(location)
             $('#after_login_action').click(reload)
             $('#after_logout_action').click(reload)
+
+            function formData(form) {
+                var e = form.elements, d = {}
+                for (var i=0, n=e.length; i<n; ++i) {
+                    var x = e[i]
+                    switch (x.type) {
+                    case 'text':
+                        if (x.value.length > 0)
+                            d[x.name] = x.value
+                        break
+                    case 'checkbox':
+                        d[x.name] = x.checked
+                        break
+                    default:
+                        if (x.name)
+                            d[x.name] = x.value
+                    }
+                }
+                return d
+            }
+            function clearFormData(form) {
+                var e = form.elements
+                for (var i=0, n=e.length; i<n; ++i) {
+                    var x = e[i]
+                    if (x.type === 'checkbox')
+                        x.checked = false
+                    else
+                        x.value = ''
+                }
+            }
+            function validationError(dlg, err, name) {
+                errorMessage(err)
+                dlg.find('input[name=' + name + ']').focus()
+                return false
+            }
+            function validateEmail(dlg, d, name) {
+                var err, v = d[name]
+                if (!v)
+                    err = 'Email address is missing'
+                else if (!v.match(/^([0-9a-zA-Z]([-\.\w]*[0-9a-zA-Z])*@([0-9a-zA-Z][-\w]*[0-9a-zA-Z]\.)+[a-zA-Z]{2,9})$/))
+                    err = 'Email address is malformed'
+                if (err)
+                    return validationError(dlg, err, name)
+                else
+                    return true
+            }
+            function validatePass(dlg, d, name, errMsg) {
+                if (!d[name])
+                    return validationError(dlg, errMsg || 'Password is missing', name)
+                return true
+            }
+            function validateSame(dlg, d, name, refname, errMsg) {
+                if (d[name] !== d[refname])
+                    return validationError(dlg, errMsg, name)
+                return true
+            }
+            function validateChecked(dlg, d, name, errMsg) {
+                if (!d[name])
+                    return validationError(dlg, errMsg, name)
+                return true
+            }
+            function completeAction(dlg, reloadOnSuccess) {
+                var subj = dlg.attr('id').substr(4),
+                    f = dlg.find('form')[0]
+                $.post('/profile/' + subj, $(f).serialize())
+                    .done(function(response) {
+                        clearFormData(f)
+                        dlg.find('.errormsg').html('')
+                        dlg.dialog("close")
+                        if (response) {
+                            infoMessage(response)
+                            if (reloadOnSuccess)
+                                setTimeout(reload, 1500)
+                        }
+                        else if (reloadOnSuccess)
+                            reload()
+                    })
+                    .fail(function(xhr) {
+                        dlg.find('.errormsg').html(xhr.responseText || xhr.statusText || xhr.status)
+                    })
+            }
+
+            var actions = {
+                changepassword: function(dlg) {
+                    var f = dlg.find('form')[0]
+                    var d = formData(f)
+                    if (!(validatePass(dlg, d, 'current_pass', 'Current password is missing') &&
+                        validatePass(dlg, d, 'new_pass', 'New password is missing') &&
+                        validateSame(dlg, d, 'confirm_new_pass', 'new_pass', 'Two copies of the new password differ')))
+                        return
+                    completeAction(dlg)
+                },
+                changeemail: function(dlg) {
+                    var d = formData(dlg.find('form')[0])
+                    if (!(validateEmail(dlg, d, 'new_email') &&
+                        validatePass(dlg, d, 'pass')))
+                        return
+                    completeAction(dlg, true)
+                },
+                deleteaccount: function(dlg) {
+                    var d = formData(dlg.find('form')[0])
+                    if (!(validatePass(dlg, d, 'pass') &&
+                        validateChecked(dlg, d, 'sure', 'You\'re not sure to delete your account')))
+                        return
+                    completeAction(dlg, true)
+                }
+            }
+            $('#userprofileactions a').click(function(e) {
+                e.preventDefault()
+                var subj = this.href.match(/\/(\w+)$/)[1]
+                var dlg = $('#dlg_' + subj)
+                dlg.dialog({
+                    resizable: false,
+                    width: 400,
+                    modal: true,
+                    buttons: {
+                        Ok: actions[subj].bind(null, dlg),
+                        Cancel: function() {
+                            clearFormData(dlg.find('form')[0])
+                            dlg.find('.errormsg').html('')
+                            dlg.dialog("close")
+                        }
+                    }
+                })
+            })
         })
 
 block content
@@ -51,15 +185,44 @@ block content
                     if message
                         td No
                     else
-                        td(style='color: #c00;') No! To activate your account, please follow the link in the message sent to your email address.
+                        td(style='color: #c00;') No! To activate your account, please follow the link in the message sent to your email address.<br/>
+                            | Notice that you have to activate your account in order to run simulations.
         h1 Actions
         ul#userprofileactions
-            li: a(href='/profile/changepassword') Change password
-            li: a(href='/profile/changeemail') Change email address
-            li: a(href='/profile/deleteaccount') Delete account
+            li: a#changepassword(href='/profile/changepassword') Change password
+            li: a#changeemail(href='/profile/changeemail') Change email address
+            li: a#deleteaccount(href='/profile/deleteaccount') Delete account
     else
         h1 You are not logged in
 
 block extras
     #after_login_action(display='none')
     #after_logout_action(display='none')
+
+    if user
+        .profiledlg#dlg_changepassword(title='Change password' style='display: none;')
+            .errormsg
+            form
+                label(for='current_pass') Current password
+                input(type='password' name='current_pass')
+                label(for='new_pass') New password
+                input(type='password' name='new_pass')
+                label(for='confirm_new_pass') Confirm new password
+                input(type='password' name='confirm_new_pass')
+        .profiledlg#dlg_changeemail(title='Change email address' style='display: none;')
+            .errormsg
+            if user.activation_code === 'X'
+                p Changing email address will reset your account activation.
+            form
+                label(for='pass') Password
+                input(type='password' name='pass')
+                label(for='new_email') New email address
+                input(type='text' name='new_email')
+        .profiledlg#dlg_deleteaccount(title='Delete account' style='display: none;')
+            .errormsg
+            form
+                p This will remove all your simulations stored on the server.
+                label(for='pass') Password
+                input(type='password' name='pass')
+                label(for='sure') I'm sure
+                input(type='checkbox' name='sure')

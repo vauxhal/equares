@@ -44,13 +44,14 @@ var hash = (function() {
     }
 })()
 
+var rxEmail = /^([0-9a-zA-Z]([-\.\w]*[0-9a-zA-Z])*@([0-9a-zA-Z][-\w]*[0-9a-zA-Z]\.)+[a-zA-Z]{2,9})$/
 
 
 // Describe user schema
 
 UserSchema = mongoose.Schema({
-    username:   String,
-    email:      String,
+    username:   { type: String, index: { unique: true } },
+    email:      { type: String, index: { unique: true } },
     salt:       String,
     hash:       String,
     activation_code: String,
@@ -271,7 +272,7 @@ function auth(app) {
 
         function validate() {
             if (!(validateField('username', 'Name', /^\w+$/) &&
-                  validateField('email', 'Email', /^([0-9a-zA-Z]([-\.\w]*[0-9a-zA-Z])*@([0-9a-zA-Z][-\w]*[0-9a-zA-Z]\.)+[a-zA-Z]{2,9})$/) &&
+                  validateField('email', 'Email', rxEmail) &&
                   validateField('password', 'Password', /.+/)   // TODO
                   ))
                 return false
@@ -353,6 +354,8 @@ function auth(app) {
 }
 
 auth.User = User
+auth.hash = hash
+auth.rxEmail = rxEmail
 
 module.exports = auth
 
