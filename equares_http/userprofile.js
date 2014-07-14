@@ -69,7 +69,7 @@ module.exports = function(app) {
             user.email = req.body.new_email
             user.save(function(err) {
                 if (err && err.code === 11001)
-                    return res.send(403, 'New email has already been specified for another account')
+                    return res.send(403, 'New email address has already been specified for another account')
                 if (err) {
                     console.log(err)
                     return res.send(500, 'Failed to change email: ' + err.toString())

@@ -64,6 +64,7 @@ else
         input#password(type='password', name='password')
         input(type='submit', value='Log in')
 a#signup(href='/signup') Sign up
+a#resetpassword(href='/profile/resetpassword' title='Click here if you have forgotten your password') Forgot password
 script.
     (function() {
         var loginDiv = $('#login')
@@ -118,5 +119,36 @@ script.
                             }
                         })
                 })
+        })
+        $('a#resetpassword').click(function(e) {
+            e.preventDefault()
+            $.get('/resetpassworddlg').done(function(text) {
+            $('<div id="resetpassdlg" title="Reset password"></div>')
+                .appendTo('body')
+                .html(text)
+                .dialog({
+                    modal: true,
+                    buttons: {
+                        "Proceed": function() {
+                            var dlg = $(this)
+                            $.post("/resetpassword", dlg.find('form').serialize())
+                                .done(function(responseText) {
+                                    dlg.dialog('close')
+                                    infoMessage(responseText, 10000)
+                                })
+                                .fail(function(xhr) {
+                                    dlg.find('#resetpassworddlg-errormsg').html(xhr.responseText || 'Unknown error, code ' + xhr.code)
+                                    dlg.find('#resetpassworddlg-newcaptcha').click()
+                                })
+                        },
+                        "Cancel": function() {
+                            $(this).dialog('close')
+                        }
+                    },
+                    close: function() {
+                        $(this).remove()
+                    }
+                })
+            })
         })
     })()

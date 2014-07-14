@@ -151,13 +151,30 @@ var activatorConfig = {
             })
         },
         save: function(id, data, cb) {
-            User.update(
-                { _id: id },
-                { $set: data },
-                function(err) {
-                    err = err || null
-                    cb(err)
+            function save() {
+                User.update(
+                    { _id: id },
+                    { $set: data },
+                    function(err) {
+                        err = err || null
+                        cb(err)
+                    })
+            }
+            if (data.password) {
+                User.findById(id, function(err, user) {
+                    if (err)
+                        return cb(err)
+                    hash(data.password, user.salt, function(err, hash) {
+                        if (err)
+                            cb(err)
+                        data.hash = hash.toString()
+                        delete data.password
+                        save()
+                    })
                 })
+            }
+            else
+                save()
         },
     },
     emailProperty: 'email',
@@ -166,7 +183,8 @@ var activatorConfig = {
         return settings.url.replace('<email>', escape(settings.email))
     })(),
     templates: path.join(__dirname, 'email-templates'),
-    id: '_id'
+    id: '_id',
+    resetExpire: 60 // Password reset code expiration time, in minutes
 }
 
 activator.init(activatorConfig);
@@ -351,6 +369,67 @@ function auth(app) {
         else
             res.render('errormsg', {message: msg})
     })
+
+    app.get('/resetpassworddlg', function(req, res) {
+        res.render("resetpassworddlg", {message: req.flash('error')})
+    })
+
+    app.post('/resetpassword', function(req, res, next) {
+        if (!(typeof req.body.email == 'string'   &&   req.body.email.match(auth.rxEmail)))
+            return res.send(400, 'Email address is missing or malformed')
+        var captcha = req.session.captcha
+        req.session.captcha = undefined
+        if (req.body.captcha !== captcha)
+            return res.send(401, 'Human test failed')
+        auth.User.findOne({email: req.body.email}, function(err, user) {
+            if (err) {
+                console.log(err)
+                return res.send(500)
+            }
+            if (user) {
+                if (user.activation_code === 'X') {
+                    req.user = user                 // used in passwordreset email template
+                    req.params.user = user._id      // used by activator
+                    next()
+                }
+                else
+                    res.send(401, 'Your account has not been activated yet.\nPlease activate it first by following the link in the message that was sent to you right after the creation of your account')
+            }
+            else
+                res.send(404, 'The email address is not found in the Equares user database.')
+        })
+    },
+    activator.createPasswordResetNext,
+    function(req, res) {
+        if (req.activator.code >= 400)
+            res.send(req.activator.code, req.activator.message)
+        else
+            res.send('A message has been sent to email address ' + req.body.email + '<br/>Please follow the link in the message to change your password.')
+    })
+
+    app.get('/resetpassword-complete', function(req, res) {
+        if (!(req.query.user && req.query.code))
+            return res.send(400)
+        User.findById(req.query.user, function(err, user) {
+            if (err) {
+                console.log(err)
+                return res.send(400)
+            }
+            if (!(user   &&   user.password_reset_code === req.query.code))
+                return res.send(404)
+            if (+user.password_reset_time < (new Date).valueOf())
+                return res.send(400, 'Password reset code has expired')
+            res.render('resetpassword', {user: req.query.user, code: req.query.code})
+        })
+    })
+    app.post('/resetpassword-complete',
+        activator.completePasswordResetNext,
+        function(req, res) {
+            if (req.activator.code >= 400)
+                res.send(req.activator.code, req.activator.message)
+            else
+                res.send('Your password has been changed.<br/>Please login.')
+        })
 }
 
 auth.User = User
