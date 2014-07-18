@@ -11,11 +11,7 @@
 * web: collections of ODE, FDE, or whatever.
 ---
 * Correct equations for logistic mapping and Mandelbrot set.
-* Canvas box update when withInputValue property changs.
-* User profile page.
-* Email address validation.
-* Forgotten password.
-* Change password.
+* Canvas box update when withInputValue property changes.
 
 # Roadmap / TODO
 

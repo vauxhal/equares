@@ -18,6 +18,7 @@ class EQUARES_CORESHARED_EXPORT DataInputBox : public Box
 {
     Q_OBJECT
     Q_PROPERTY(bool restartOnInput READ restartOnInput WRITE setRestartOnInput)
+    Q_PROPERTY(bool activateBeforeRestart READ activateBeforeRestart WRITE setActivateBeforeRestart)
 public:
 
     explicit DataInputBox(QObject *parent = 0);
@@ -28,12 +29,15 @@ public:
 
     bool restartOnInput() const;
     DataInputBox& setRestartOnInput(bool restartOnInput);
+    bool activateBeforeRestart() const;
+    DataInputBox& setActivateBeforeRestart(bool activateBeforeRestart);
 
 private:
     mutable InputPort m_activator;
     mutable InputPort m_in;
     mutable OutputPort m_out;
     bool m_restartOnInput;
+    bool m_activateBeforeRestart;
 };
 
 class EQUARES_CORESHARED_EXPORT DataInputRuntimeBox : public RuntimeBox
@@ -52,6 +56,7 @@ private:
     RuntimeInputPort m_in;
     RuntimeOutputPort m_out;
     bool m_restartOnInput;
+    bool m_activateBeforeRestart;
 
     QVector<double> m_data;
     bool m_dataValid;

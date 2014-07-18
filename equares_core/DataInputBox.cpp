@@ -16,7 +16,8 @@ DataInputBox::DataInputBox(QObject *parent) :
     m_activator("activator", this),
     m_in("input", this),
     m_out("output", this),
-    m_restartOnInput(false)
+    m_restartOnInput(false),
+    m_activateBeforeRestart(false)
 {
 }
 
@@ -51,10 +52,19 @@ DataInputBox& DataInputBox::setRestartOnInput(bool restartOnInput) {
     return *this;
 }
 
+bool DataInputBox::activateBeforeRestart() const {
+    return m_activateBeforeRestart;
+}
+DataInputBox& DataInputBox::setActivateBeforeRestart(bool activateBeforeRestart) {
+    m_activateBeforeRestart = activateBeforeRestart;
+    return *this;
+}
+
 
 
 DataInputRuntimeBox::DataInputRuntimeBox(const DataInputBox *box) :
-    m_restartOnInput(box->restartOnInput())
+    m_restartOnInput(box->restartOnInput()),
+    m_activateBeforeRestart(box->activateBeforeRestart())
 {
     setOwner(box);
 
@@ -86,6 +96,8 @@ void DataInputRuntimeBox::acquireInteractiveInput()
     if (ThreadManager::instance()->readInput(m_iinputData, m_inputId, false)) {
         transformData(m_data.data(), m_iinputData.data());
         m_iinputDataValid = true;
+        if (m_restartOnInput && m_activateBeforeRestart)
+            m_out.activateLinks();
         throw BoxBreakException(m_restartOnInput? 0: this);
     }
 }
