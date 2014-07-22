@@ -272,14 +272,13 @@ equaresui.setSceneSource = function() {
             .trigger('input')
     }
 
-    var lastEditedTextPropName = ''
+    var originalSimInfo
     function loadTextProp(prop) {
         extrasDiv.html('')
-        if (lastEditedTextPropName == 'info')
-            loadSimInfo() // In the case we haven't saved edited info text
+        if (originalSimInfo)
+            loadSimInfo(originalSimInfo) // In the case we haven't saved edited text with docs
         if (arguments.length == 0)
-            return lastEditedTextPropName = ''
-        lastEditedTextPropName = prop.name
+            return originalSimInfo = ''
         var textarea, tools, okbtn
         wrap("div").attr("id", "scheme-box-extras-hdr")
             .append(wrap("h1").html(prop.name))
@@ -290,6 +289,8 @@ equaresui.setSceneSource = function() {
                  (okbtn = $('<input type="button" value="Ok">'))
                     .click(function() {
                         prop.setter(textarea[0].value)
+                        if (prop.doc instanceof Function)
+                            originalSimInfo = prop.doc(textarea[0].value)
                         textarea.removeClass('modified')
                     })
             )
@@ -312,11 +313,13 @@ equaresui.setSceneSource = function() {
         }
 
         textarea[0].value = prop.getter()
+        if (prop.doc instanceof Function)
+            originalSimInfo = prop.doc(textarea[0].value)
         var firstInput = true
         textarea.on('input', function() {
             $(this).addClass('modified')
-            if (prop.name == 'info') {
-                loadSimInfo(this.value)
+            if (prop.doc instanceof Function) {
+                loadSimInfo(prop.doc(this.value))
             }
             if (firstInput) {
                 firstInput = false
@@ -666,7 +669,8 @@ equaresui.setSceneSource = function() {
                 name: pname,
                 userType: userType,
                 getter: p.getter instanceof Function ?   p.getter :   makeGetter(pname, props),
-                setter: p.setter instanceof Function ?   p.setter :   makeSetter(pname, props)
+                setter: p.setter instanceof Function ?   p.setter :   makeSetter(pname, props),
+                doc: p.doc
             }
             makeEditor(wrap("td").appendTo(row), prop)
         }
@@ -699,17 +703,37 @@ equaresui.setSceneSource = function() {
                     }
                 }
             }
-            for (pname in box.props)
+            for (pname in box.props) {
                 props[pname] = { userType: box.propType(pname) }
+                var snippet = box.props[pname].snippet
+                if (snippet) (function(pname) {
+                    props[pname].snippet = snippet
+                    props[pname].doc = function(value) {
+                        return equaresBox.Box.snippetDoc(value, pname)
+                    }
+                })(pname)
+            }
             loadProps(box.name, props, {
                 makeGetter: function(pname, props) { return function() { return box.prop(pname) } },
-                makeSetter: function(pname, props) { return function(value) { box.prop(pname, value) } }
+                makeSetter: function(pname, props) {
+                    return function(value) {
+                        box.prop(pname, value)
+                        if (box.props[pname].snippet)
+                            loadSimInfo(box.snippetDoc(pname))
+                    }
+                }
             })
+            var doc = box.snippetDoc()
+            if (doc)
+                loadSimInfo(doc)
+            else
+                loadSimInfo()
         }
         else {
             props = {}
             for (pname in simPropFields)
                 props[pname] = {userType: simPropFields[pname]}
+            props.info.doc = function(value) { return simProps.getInfo(value) }
             loadProps("Simulation properties", props, {
                 makeGetter: function(pname, props) { return function() { return simProps[pname] } },
                 makeSetter: function(pname, props) { return function(value) {
@@ -722,6 +746,7 @@ equaresui.setSceneSource = function() {
                         loadSimInfo()
                 } }
             })
+            loadSimInfo()
         }
     }
     equaresui.selectedBox = null
@@ -735,19 +760,26 @@ equaresui.setSceneSource = function() {
             info: '',
             keywords: [],
             script: '',
-            public: false
+            public: false,
+            getInfo: function(info) {
+                if (arguments.length < 1)
+                    info = this.info
+                return info? info: 'Advice: Add simulation description to ?[simulation info property](/doc#page/editor-usage-text-info)'
+            }
         }
     }
     var simProps = defaultSimProps()
     var checkOverwrite = true
     equaresui.selectBox(null)
 
+    var lastUsedSimInfo
     function loadSimInfo(info) {
         if (arguments.length < 1)
-            info = simProps.info
-        if (!info)
-            info = 'Advice: Add simulation description to ?[simulation info property](/doc#page/editor-usage-text-info)'
+            info = simProps.getInfo()
+        if (info === lastUsedSimInfo)
+            return
         formatInfo.update(info)
+        lastUsedSimInfo = info
     }
 
     function beforeLoadSimulation()

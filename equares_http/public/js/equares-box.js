@@ -243,6 +243,7 @@ var equaresBox = {};
         addPorts(this, info.inputs, InputPort)
         addPorts(this, info.outputs, OutputPort)
         this.props = {}
+        var snippetProp, multipleSnippetProp
         for(var i in info.properties) {
             var pi = info.properties[i]
             var p = this.props[pi.name] = {}
@@ -261,7 +262,18 @@ var equaresBox = {};
                 else
                     p.value = d
             }
+            if (pi.snippet) {
+                p.snippet = pi.snippet
+                if (snippetProp) {
+                    snippetProp = undefined
+                    multipleSnippetProp = true
+                }
+                else
+                    snippetProp = pi.name
+            }
         }
+        if (snippetProp)
+            this.snippetProp = snippetProp
         this.callbacks = []
         this.status = { level: "ok", text: "Ok" }
         this.stateChanged("init")
@@ -433,6 +445,51 @@ var equaresBox = {};
             positionPorts()
         }
         box.redraw()
+    }
+    Box.snippetDoc = function(value, propName) {
+        if (typeof value != 'string')
+            return ''
+        var v = value.split('\n'), inDoc = false
+        var doc = []
+        for (var i=0; i<v.length; ++i) {
+            var line = v[i]
+            if (!inDoc && line === '/*#') {
+                inDoc = true
+                continue
+            }
+            if (inDoc) {
+                if (line === '*/') {
+                    inDoc = false
+                    continue
+                }
+                if (line.match(/^\s*(keywords|title):/))
+                    continue
+                doc.push(line)
+            }
+        }
+        if (doc.length < 1)
+            return 'Advice: Add description for property ```' + propName + '``` by adding ?[markdown text](http://daringfireball.net/projects/markdown/)' +
+                    ' (you can also use ?[gfm](https://help.github.com/articles/github-flavored-markdown) and ?[TeX](http://tug.org/) formulas) as follows:<br/>' +
+                    '<pre>```/*#```\n' +
+                    '```title:``` Snippet title\n' +
+                    '```keywords:``` Snippet keywords\n' +
+                    '```#``` Snippet title\n' +
+                    'Snippet description\n' +
+                    '...\n' +
+                    '```*/```\n' +
+                    'Rest of property text' +
+                    '</pre>\n' +
+                    'See also ?[simulation info property](/doc#page/editor-usage-text-info)'
+        return doc.join('\n')
+    }
+    Box.prototype.snippetDoc = function(propName) {
+        if (arguments.length < 1)
+            propName = this.snippetProp
+        if (!(typeof propName == 'string' && propName in this.props))
+            return
+        if (!this.props[propName].snippet)
+            return
+        return Box.snippetDoc(this.prop(propName), propName)
     }
 
     equaresBox.canConnect = function(port1, port2) {

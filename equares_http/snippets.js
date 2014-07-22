@@ -51,9 +51,13 @@ function snippetFromText(text) {
     var rxKeywords = /^\s*keywords:\s*(.*)$/, rxTitle = /^\s*title:\s*(.*)$/
     for (var i=0; i<lines.length; ++i) {
         var line = lines[i]
-        if (out === dataLines) {
-            if (line === '/*#') {
-                out = docLines
+        if (out === dataLines && line === '/*#') {
+            out = docLines
+            continue
+        }
+        else if (out === docLines) {
+            if (line === '*/') {
+                out = dataLines
                 continue
             }
             var m = line.match(rxKeywords)
@@ -73,10 +77,6 @@ function snippetFromText(text) {
                 continue
             }
         }
-        else if (out === docLines && line === '*/') {
-            out = dataLines
-            continue
-        }
         out.push(line)
     }
 
@@ -86,6 +86,23 @@ function snippetFromText(text) {
         title: title,
         keywords: keywords
     }
+}
+
+function snippetToText(snippet) {
+    var lines = []
+    if (snippet.title)
+        lines.push('title: ' + snippet.title)
+    if (snippet.keywords)
+        lines.push('keywords: ' + snippet.keywords.join(', '))
+    if (snippet.doc)
+        lines.push(snippet.doc)
+    if (lines.length > 0) {
+        lines.splice(0, 0, '/*#')
+        lines.push('*/')
+    }
+    if (snippet.data)
+        lines.push(snippet.data)
+    return lines.join('\n')
 }
 
 function pickSnippet(req, res) {
@@ -126,7 +143,7 @@ function snippetSelection (req, res) {
     })
 }
 
-function getSnippet(req, res) {
+function getSnippet(req, res, transform) {
     var a = req.path.split('/')
     if(a.length != 4)
         return res.send(404, 'Snippet is not found')
@@ -138,8 +155,11 @@ function getSnippet(req, res) {
                 console.log(err)
                 res.send(500)
             }
-            else if (snippet)
-                res.send(snippet.data)
+            else if (snippet) {
+                snippet = snippet.toObject()
+                snippet.username = user
+                res.send(transform(snippet))
+            }
             else
                 res.send(404, 'Snippet is not found')
         })
@@ -162,15 +182,58 @@ function getSnippet(req, res) {
         })
 }
 
+
+function getSnippetText(req, res) {
+    return getSnippet(req, res, function(snippet) {
+        return snippetToText(snippet)
+    })
+}
+
+function getSnippetObj(req, res) {
+    return getSnippet(req, res, function(snippet) {
+        return {
+            name:       snippet.name,
+            title:      snippet.title,
+            date:       snippet.date,
+            keywords:   snippet.keywords,
+            type:       snippet.type,
+            data:       snippet.data,
+            user:       snippet.username
+        }
+    })
+}
+
+function checkName(name, res, options) {
+    function errmsg() {
+        options = options || {}
+        return options.errmsg || 'Bad name'
+    }
+    if (!(typeof name == 'string')) {
+        res.send(400, errmsg() + ' - value is missing or has an invalid type')
+        return false
+    }
+    if (name.indexOf('/') === -1) {
+        res.send(400, errmsg() + ' - must contain no slashes')
+        return false
+    }
+    return true
+}
+
 function uploadSnippet(req, res) {
     if (!req.isAuthenticated())
         return res.send(401, 'You are not logged in')
-    var snippet = JSON.parse(req.body.snippet)
-    snippet.date = new Date()
+    var snippet = snippetFromText(req.body.text)
+    snippet.name = req.body.name
+    snippet.type = req.body.type
     snippet.user = req.user.id
+    snippet.date = new Date()
+
+    if (!checkName(snippet.name, res, {errmsg: 'Bad snippet name'}))
+        return
+    if (!checkName(snippet.type, res, {errmsg: 'Bad snippet type'}))
+        return
 
     function save() {
-        delete snippet.overwrite
         Snippet.upsert(snippet, function(err, doc) {
             if (err) {
                 console.log(err)
@@ -181,7 +244,7 @@ function uploadSnippet(req, res) {
         })
     }
 
-    if (snippet.overwrite)
+    if (req.body.overwrite)
         save()
     else
         Snippet.have(snippet, function(err, count) {
@@ -256,33 +319,28 @@ function removeSnippet(req, res) {
 
 function refreshSnippets() {
     var dir = 'public/meta/snippets'
-    var types = fs.readdirSync(dir)// + 'snippets.json', {encoding: 'utf8'})
+    var types = fs.readdirSync(dir)
+    console.log('Loading snippets ...')
+    var date = new Date(2014, 7, 21)
     for (var it=0; it<types.length; ++it) {
         var type = types[it], subdir = path.join(dir, type)
         var snippets = fs.readdirSync(subdir)
-        //console.log(type + ': ' + snippets.join(', '))
         for (var is=0; is<snippets.length; ++is) {
             var name = snippets[is],
-                    text = fs.readFileSync(path.join(subdir, name), 'utf8')
-            // console.log(text)
+                text = fs.readFileSync(path.join(subdir, name), 'utf8'),
+                snippet = snippetFromText(text)
+            console.log('  ' + type + '/' + name + ': ' + snippet.title)
+            snippet.type = type
+            snippet.name = name
+            snippet.user = null
+            snippet.date = date
+            Snippet.upsert(snippet, function(err, doc) {
+                if (err)
+                    console.log(err)
+            })
         }
     }
-
-    // TODO
-
-    /*
-    var date = new Date(2014, 7, 21)
-    snippets = JSON.parse(snippets)
-    for (var i=0; i<snippets.length; ++i) {
-        var snippet = snippets[i]
-        snippet.date = date
-        snippet.user = null
-        Snippet.upsert(snippet, function(err, doc) {
-            if (err)
-                console.log(err)
-        })
-    }
-    */
+    console.log('... Finished loading snippets')
 }
 
 refreshSnippets()
@@ -290,7 +348,8 @@ refreshSnippets()
 module.exports = function(app) {
     app.get('/pick-snippet', pickSnippet)
     app.get('/snippet-selection', snippetSelection)
-    app.use('/snippet', getSnippet)
+    app.use('/snippet', getSnippetText)
+    app.use('/snippet-obj', getSnippetObj)
     app.post('/upload-snippet', uploadSnippet)
     app.post('/edit-snippet', editSnippet)
     app.get('/remove-snippet', removeSnippet)
