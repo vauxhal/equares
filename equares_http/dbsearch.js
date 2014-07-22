@@ -54,6 +54,7 @@ function pageNumbers(page, pages) {
 }
 
 function dbsearch(req, options, cb) {
+    options = options || {}
     var records = []
     var processed = false, count = 0, finished = false
     var total
@@ -69,7 +70,7 @@ function dbsearch(req, options, cb) {
     }
 
     var user = req.user? new mongoose.Types.ObjectId(req.user.id.toString()): null
-    var query, andClause
+    var query = options.query, andClause
     function addAndCondition(cond) {
         if (andClause)
             andClause.push(cond)
@@ -80,9 +81,9 @@ function dbsearch(req, options, cb) {
     }
     if (options.model.schema.paths.public) {
         if (req.query.public == 'true')
-            query = {public: true}
+            addAndCondition({public: true})
         else
-            query = {$or: [{public: true}, {user: user}]}
+            addAndCondition({$or: [{public: true}, {user: user}]})
     }
     if (req.query.keywords) {
         var kw = req.query.keywords.toLowerCase().split(',')

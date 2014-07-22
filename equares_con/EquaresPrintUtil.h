@@ -106,6 +106,7 @@ struct BoxPropPrinter {
         if (!boxProp.resolveUserType.isEmpty())
             os << ",\n     resolveUserType: '" << escapeString(boxProp.resolveUserType) << "'";
         os << ",\n     critical: " << (boxProp.critical? "true": "false");
+        os << ",\n     snippet: '" << boxProp.snippet << "'";
         os << "}";
     }
 private:

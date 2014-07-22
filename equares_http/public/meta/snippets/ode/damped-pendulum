@@ -1,0 +1,40 @@
+/*#
+# Damped pendulum
+
+The damped pendulum equation of motion is as follows:
+$$
+\ddot\varphi + 2n\dot\varphi + \frac gl \sin\varphi = 0
+$$
+It is similar to ?[simple pendulum](/doc#box/Pendulum),
+but here we have the additional term $2n\dot\varphi$.
+*/
+
+#include <cmath>
+
+struct DampedPendulum {
+    int paramCount() const {
+        return 3;       // l, g, n
+    }
+    const char *paramNames() const {
+        return "l,g,n";   // Can also return empty string or null ptr
+    }
+    int varCount() const {
+        return 2;       // q, dq
+    }
+    const char *varNames() const {
+        return "q,dq";  // Can also return empty string or null ptr
+    }
+
+    // Auxiliary parameters
+    double g_l, _2n;
+    void prepare(const double *param) {
+        g_l = param[1]/param[0];
+        _2n = 2*param[2];
+    }
+
+    void rhs(double *out, const double *param, const double *state) const {
+        out[0] = state[1];
+        out[1] = -g_l * sin(state[0]) - _2n*state[1];
+    }
+};
+

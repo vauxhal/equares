@@ -197,6 +197,7 @@ struct EQUARES_CORESHARED_EXPORT BoxProperty
     QStringList deps;
     QString resolveUserType;
     bool critical;
+    QString snippet;
     BoxProperty& loadSettings(QSettings& settings);
 };
 typedef QList<BoxProperty> BoxPropertyList;

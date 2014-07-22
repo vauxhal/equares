@@ -74,6 +74,7 @@ app.get('/simheaders', routes.simheaders);
 app.get('/simtable', routes.simtable);
 
 require('./images')(app)
+require('./snippets')(app)
 require('./docs')(app)
 
 app.use(function(err, req, res, next){
