@@ -25,13 +25,14 @@ var SnippetSchema = mongoose.Schema({
     keywords:       {type: [String], index: true},
     type:           {type: String, index: true},
     data:           String,
+    doc:            String,
     user:           {type: ObjectId, index: true}
 })
 
 // give our schema text search capabilities
 SnippetSchema.plugin(textSearch);
 
-SnippetSchema.index({name: 1, user: 1, type: 1}, {unique: true})
+SnippetSchema.index({name: 1, user: 1, type: 1, doc: 1}, {unique: true})
 SnippetSchema.index({name: 'text', title: 'text', keywords: 'text'})
 
 SnippetSchema.statics.upsert = function(snippet, done) {
@@ -62,7 +63,7 @@ function snippetFromText(text) {
             }
             var m = line.match(rxKeywords)
             if (m) {
-                m = m[1].split(',')
+                m = m[1].toLowerCase().split(',')
                 for (var ik=0; ik<m.length; ++ik) {
                     var kw = m[ik].trim()
                     if (kw)
@@ -126,7 +127,7 @@ function snippetSelection (req, res) {
         res.write('<div class="snippet-previews">')
         for (var i=0; i<count; ++i) {
             var snippet = result.records[i],
-                a = ['', 'snippet', snippet.type, snippet.user? snippet.user: '-', snippet.name],
+                a = ['', 'snippet', req.query.type, snippet.user? snippet.user: '-', snippet.name],
                 name = a.join('/')
             res.write('<div class="snippet-container">')
             res.write('<a href="' + name + '">' + snippet.name + ' - ' + snippet.title + '</a>')
@@ -134,7 +135,6 @@ function snippetSelection (req, res) {
                 res.write(
                     '<div class="snippet-control">' +
                         '<div class="snippet-tool snippet-edit"></div><div class="snippet-tool snippet-remove"></div>' +
-                        '<div class="snippet-kw">' + snippet.keywords.join(', ') + '</div>' +
                     '</div>'
                 )
             res.write('</div>')

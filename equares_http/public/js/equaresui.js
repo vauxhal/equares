@@ -299,7 +299,7 @@ equaresui.setSceneSource = function() {
             .appendTo(extrasDiv)
         if (prop.userType === 't')
             textarea.linenum()
-        else if (prop.userType === 'M') {
+        if (prop.snippet || prop.userType === 'M') {
             // Add 'image' button
             $('.scheme-box-extras-tools').prepend(
                 $('<input type="button" title="Image" value=" ">').addClass('icon-button ui-icon-image')
@@ -307,6 +307,18 @@ equaresui.setSceneSource = function() {
                         imageView.pick(function(url) {
                             replaceSel(textarea, '![](' + url + ')')
                             textarea.focus()
+                        })
+                    })
+            )
+        }
+
+        if (prop.snippet) {
+            // Add 'snippet' button
+            $('.scheme-box-extras-tools').prepend(
+                $('<input type="button" title="Snippet" value=" ">').addClass('icon-button ui-icon-script')
+                    .click(function() {
+                        snippetView.pick(prop.snippet, function(text) {
+                            textarea.val(text).focus().trigger('input')
                         })
                     })
             )
@@ -670,7 +682,8 @@ equaresui.setSceneSource = function() {
                 userType: userType,
                 getter: p.getter instanceof Function ?   p.getter :   makeGetter(pname, props),
                 setter: p.setter instanceof Function ?   p.setter :   makeSetter(pname, props),
-                doc: p.doc
+                doc: p.doc,
+                snippet: p.snippet
             }
             makeEditor(wrap("td").appendTo(row), prop)
         }
