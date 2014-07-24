@@ -9,37 +9,21 @@
 
 #pick-snippet(title='Pick a snippet' style='display: none;')
     style.
+        #pick-snippet-content {
+            position: absolute;
+            left: 1em;
+            top: 0.5em;
+            right: 1em;
+            bottom: 0.5em;
+        }
         #pick-snippet {
             overflow: hidden;
         }
-        .snippet-container {
-            display: inline-block;
-            margin: 10px;
-            height: 100px;
-            // background-color: #ffc;
-        }
-        .snippet-control {
-            display: inline-block;
-            height: 100%;
-            width: 20px;
-            // background-color: #cfc;
-        }
-        .snippet-tool {
-            height: 20px;
-            background-repeat: no-repeat;
-            background-position: center;
-            cursor: pointer;
-        }
-        .snippet-edit {
-            //background-color: #ccf;
-            background-image: url('/images/edit.png');
-        }
-        .snippet-remove {
-            //background-color: #fcc;
-            background-image: url('/images/trash.png');
-        }
-        .snippet-kw {
-            display: none;
+        #snippet-filter {
+            position: absolute;
+            top: 0px;
+            left: 0px;
+            right: 115px;
         }
         #snippet-filter > * {
             font-size: smaller;
@@ -70,6 +54,102 @@
             position: relative;
             top: 5px;
         }
+        #snippets {
+            position: absolute;
+            top: 3.5em;
+            bottom: 0px;
+            width: 100%;
+        }
+        #snippets > div {
+            width: 50%;
+            height: 100%;
+            padding: 0px;
+            margin: 0px;
+            position: absolute;
+            top: 0px;
+        }
+        #snippet-list {
+            overflow: auto;
+            left: 0px;
+        }
+        #current-snippet {
+            overflow: hidden;
+            right: 0px;
+        }
+        #current-snippet-name,#current-snippet-rename {
+            position: absolute;
+            width: 100%;
+            height: 2em;
+        }
+        #current-snippet-doc,#current-snippet-code {
+            position: absolute;
+            width: 100%;
+            top: 2em;
+            bottom: 0px;
+            overflow: auto;
+        }
+        #snippet-tools {
+            position: absolute;
+            width: 115px;
+            height: 20px;
+            top: 3px;
+            right: 0px;
+        }
+
+        .snippet-container {
+            line-height: 90%
+            padding: 0px 0.5em;
+        }
+
+        .snippet-container a {
+            text-decoration: none;
+            color: #2a6;
+        }
+        .snippet-container a:link {
+        }
+        .snippet-container a:visited {
+            color: #172;
+        }
+        .snippet-container a:hover {
+            text-decoration: underline;
+        }
+        .snippet-container a.current-snippet {
+            text-decoration: underline;
+        }
+        #snippet-tools > input[type=button] {
+            height: 20px;
+            border: 1px solid #bbb;
+            border-radius: 3px;
+            background-color: #eee;
+        }
+
+        /*
+        .snippet-container {
+            background-color: #8f8;
+        }
+        .snippet-control {
+            display: inline-block;
+            height: 100%;
+            width: 20px;
+            // background-color: #cfc;
+        }
+        .snippet-tool {
+            height: 20px;
+            background-repeat: no-repeat;
+            background-position: center;
+            cursor: pointer;
+        }
+        .snippet-edit {
+            //background-color: #ccf;
+            background-image: url('/images/edit.png');
+        }
+        .snippet-remove {
+            //background-color: #fcc;
+            background-image: url('/images/trash.png');
+        }
+        .snippet-kw {
+            display: none;
+        }
         .snippet-pagenum {
             padding-bottom: 10px;
             padding-top: 10px;
@@ -93,53 +173,33 @@
         .snippet-pagenum a:hover {
             text-decoration: underline;
         }
-        #snippets {
-            height: 100%;
-        }
-        #snippets > div {
-            display: inline-block;
-            width: 45%;
-            height: 100%;
-            overflow: auto;
-            padding: 0px;
-            margin: 0px;
-            background-color: red;
-        }
-
-    if req.isAuthenticated()
-        .accordion
-            h3 Select a snippet
-            #snippet-list-container
-                #snippet-filter
-                    form
-                        img#snippet-filter-icon(src='images/search.png' alt='Filter')
-                        input(type='text' name='text')
-                        #snippet-advanced-search(style='display: none;')
-                            label Username
-                            input(type='text' name='user')
-                            label Keywords
-                            input(type='text' name='keywords')
-                        input#snippet-apply-filter(type='submit' value='Apply filter')
-                        a#snippet-toggle-advanced(href='#') Advanced
-                #snippets
-                    #snippet-list
-                    div
-                        #current-snippet-name Snippet name
-                        #current-snippet-code Snippet code
-            h3 Or upload your own snippet
-            div#snippet-upload-container
-                label(for='code') Code
-                textarea#snippet-code(name='code')
-                label(for='name') Name
-                input#snippet-upload-name(type='text' name='name')
-                input#snippet-upload(type='button' value='Upload' disabled)
-    else
-        p Select a snippet
+        */
+    #pick-snippet-content
+        #snippet-filter
+            form
+                img#snippet-filter-icon(src='images/search.png' alt='Filter')
+                input(type='text' name='text')
+                #snippet-advanced-search(style='display: none;')
+                    label Username
+                    input(type='text' name='user')
+                    label Keywords
+                    input(type='text' name='keywords')
+                input#snippet-apply-filter(type='submit' value='Apply filter')
+                a#snippet-toggle-advanced(href='#') Advanced
+        #snippet-tools
+            input.icon-button.ui-icon-document#snippet-tool-new(type='button' title='New snippet' value=' ')
+            input.icon-button.ui-icon-copy#snippet-tool-clone(type='button' title='Clone snippet' value=' ')
+            input.icon-button.ui-icon-pencil#snippet-tool-edit(type='button' title='Edit snippet' value=' ')
+            input.icon-button.ui-icon-disk#snippet-tool-save(type='button' title='Save snippet' value=' ')
+            input.icon-button.ui-icon-trash#snippet-tool-remove(type='button' title='Remove snippet' value=' ')
         #snippets
             #snippet-list
-            div
+            #current-snippet
                 #current-snippet-name
-                #current-snippet-code
+                input#current-snippet-rename(type='text' style='display: none;')
+                #current-snippet-doc
+                textarea#current-snippet-code(style='display: none;')
+
 #confirm-snippet-remove(title='Remove snippet' style='display: none;')
     span(class='ui-icon ui-icon-alert' style='float:left; margin:0 7px 20px 0;')
     span.dlgmsg

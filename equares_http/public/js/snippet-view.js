@@ -37,6 +37,11 @@ function searchQuery(type) {
     return result
 }
 
+function clearCurrentSnippet() {
+    $('#current-snippet-doc').html('')
+    $('#current-snippet-name').html('')
+}
+
 function loadSnippetList(type, cbks, page) {
     $('#snippet-apply-filter').attr('disabled', true)
     var rq = searchQuery(type)
@@ -49,10 +54,25 @@ function loadSnippetList(type, cbks, page) {
             pagenum.find('a').click(function(e) {
                 loadSnippetList(type, cbks, $(this).text()-1)
             })
-            previews.find('a').click(function(e) {
+            var previewLinks = previews.find('a')
+            previewLinks.click(function(e) {
                 e.preventDefault()
-                // TODO: Load snippet code
-                callback.call(this, 'pick', cbks)
+                // Load snippet code
+                var a = this
+                $.get(this.href.replace('/snippet/', '/snippet-obj/'), function(snippet) {
+                    formatInfo.update(snippet.doc, $('#current-snippet-doc')[0])
+                    $('#current-snippet-name').text(snippet.name)
+//                    $('#current-snippet-doc').hide('slow')
+//                    $('#current-snippet-code').show('slow')
+//                    $('#current-snippet-name').hide('slow')
+//                    $('#current-snippet-rename').show('slow')
+                    previewLinks.removeClass('current-snippet')
+                    $(a).addClass('current-snippet')
+                })
+                .fail(function(xhr) {
+                    clearCurrentSnippet()
+                    errorMessage(xhr.responseText || xhr.statusText || ("Failed to modify snippet: " + xhr.status));
+                })
             })
             function snippetRef() {
                 var d = $(this).parent(), info = {}, a = d.prev()
@@ -94,6 +114,7 @@ function loadSnippetList(type, cbks, page) {
                     }
                 })
             })
+            clearCurrentSnippet()
         })
         .fail(function(xhr) {
             $('#snippet-list').html('ERROR')
@@ -112,11 +133,17 @@ function show(type, cbks) {
             height: 600,
             modal: true,
             open: function() {
-                $('.accordion').accordion({ heightStyle: "fill" })
                 loadSnippetList(type, cbks)
                 callback('open', cbks)
             },
             buttons: {
+                Pick: function() {
+                    var links = $('#snippet-list a.current-snippet')
+                    if (links.length != 1)
+                        return errorMessage('Please select a snippet')
+                    callback.call(links[0], 'pick', cbks)
+                    $(this).dialog("close")
+                },
                 Close: function() {
                     $(this).dialog("close")
                     callback('close', cbks)
@@ -139,6 +166,7 @@ function show(type, cbks) {
                     e.preventDefault()
                     findSnippets()
                 })
+                $('#snippet-tools').children().click(function(e) { warningMessage('TODO: ' + this.title) })
                 function rm() {
                     if (pickSnippet) {
                         pickSnippet.remove()

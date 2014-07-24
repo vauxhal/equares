@@ -130,7 +130,7 @@ function snippetSelection (req, res) {
                 a = ['', 'snippet', req.query.type, snippet.user? snippet.user: '-', snippet.name],
                 name = a.join('/')
             res.write('<div class="snippet-container">')
-            res.write('<a href="' + name + '">' + snippet.name + ' - ' + snippet.title + '</a>')
+            res.write('<a href="' + name + '">' + (snippet.title || snippet.name) + '</a>')
             if (snippet.edit)
                 res.write(
                     '<div class="snippet-control">' +
@@ -198,6 +198,7 @@ function getSnippetObj(req, res) {
             keywords:   snippet.keywords,
             type:       snippet.type,
             data:       snippet.data,
+            doc:        snippet.doc,
             user:       snippet.username
         }
     })

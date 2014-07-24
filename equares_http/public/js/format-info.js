@@ -42,7 +42,7 @@ formatInfo.init = function (elementId) {
     })
 
     MathJax.Hub.Register.MessageHook("End Process", function (message) {
-        var e = $('#' + elementId)
+        var e = $(message[1])
         e.html(marked(e.html(), {renderer: myren}))
     })
 
@@ -51,7 +51,7 @@ formatInfo.init = function (elementId) {
         ams.startNumber = 0
         ams.labels = {}
     }
-    formatInfo.update = function(data) {
+    formatInfo.update = function(data, e) {
         data = data.replace("http:///", location.origin+'/')
         var rx = /(^|\s+)(\?|=)\[([^\]]*)]\(([^)]*)\)/, rxg = new RegExp(rx.source, 'g')
         var m = data.match(rxg)
@@ -61,9 +61,9 @@ formatInfo.init = function (elementId) {
                 var a = myren.link(mm[4], null, mm[3], mm[2] === '?')
                 data = data.replace(v, mm[1] + a)
             }
-        var e = $('#' + elementId)
-        e.html(data)
-        MathJax.Hub.Queue(LatexEquationNumbersReset, ["Typeset", MathJax.Hub, e[0]])
+        e = e || document.getElementById(elementId)
+        $(e).html(data)
+        MathJax.Hub.Queue(LatexEquationNumbersReset, ["Typeset", MathJax.Hub, e])
     }
 
     marked.setOptions({
