@@ -34,9 +34,12 @@ License agreement can be found in file LICENSE.md in the EquaRes root directory.
             var lh = parseInt(t.css('line-height'))
 
             function scrollLineNum() {
-                var h = t0.scrollHeight + 10
-                var nmin = ln.height() / lh
-                while (ln0.scrollHeight < h || n < nmin)
+                var h = t0.scrollHeight + 10,
+                    nmin = ln.height() / lh,
+                    nmax = 10000
+                if (ln0.scrollHeight == 0)
+                    nmax = 100 // It's likely that the textarea element is not visible
+                while ((ln0.scrollHeight < h || n < nmin) && n < nmax)
                     ln0.value += ++n + "\n"
                 ln0.scrollTop = t0.scrollTop
             }

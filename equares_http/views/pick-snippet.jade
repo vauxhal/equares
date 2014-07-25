@@ -76,24 +76,97 @@
             overflow: hidden;
             right: 0px;
         }
-        #current-snippet-name,#current-snippet-rename {
-            position: absolute;
-            width: 100%;
-            height: 2em;
-        }
-        #current-snippet-doc,#current-snippet-code {
-            position: absolute;
-            width: 100%;
-            top: 2em;
-            bottom: 0px;
+
+        #current-snippet-doc {
             overflow: auto;
+            position: absolute;
+            left: 30px;
+            right: 0px;
         }
+        #current-snippet-doc h1 {
+            margin-top: 0px;
+            margin-bottom: 5px;
+        }
+
+        #current-snippet-tools {
+            position: absolute;
+            width: 23px;
+            height: 69px;
+            top: 0.5em;
+            left: 0px;
+            display: none;
+        }
+        #current-snippet-tools > input[type=button] {
+            height: 20px;
+            border-left: 1px solid #bbb;
+            border-top: 1px solid #bbb;
+            border-bottom: 1px solid #bbb;
+            border-right-style: none;
+            border-top-left-radius: 5px;
+            border-bottom-left-radius: 5px;
+            background-color: #eee;
+            cursor: point;
+        }
+
+        #edit-snippet {
+            overflow: hidden;
+            left: 0px;
+        }
+        #edit-snippet-code-container {
+            overflow: visible;
+            position: absolute;
+            left: 0px;
+            right: 25px;
+            height: 100%;
+        }
+        #edit-snippet-code {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            padding-top: 0px;
+            resize: none;
+            outline: none;
+        }
+        #edit-snippet-code.modified {
+            background-color: #ffe;
+        }
+        #edit-snippet textarea {
+            font-family: monospace;
+        }
+
+        #edit-snippet-tools {
+            position: absolute;
+            width: 23px;
+            height: 46px;
+            top: 0.5em;
+            right: 0px;
+        }
+        #edit-snippet-tools > input[type=button] {
+            height: 20px;
+            border-right: 1px solid #bbb;
+            border-top: 1px solid #bbb;
+            border-bottom: 1px solid #bbb;
+            border-left-style: none;
+            border-top-right-radius: 5px;
+            border-bottom-right-radius: 5px;
+            background-color: #eee;
+            cursor: point;
+        }
+
         #snippet-tools {
             position: absolute;
             width: 115px;
             height: 20px;
             top: 3px;
             right: 0px;
+        }
+        #snippet-tools > input[type=button] {
+            height: 20px;
+            border: 1px solid #bbb;
+            border-radius: 3px;
+            background-color: #eee;
+            cursor: pointer;
         }
 
         .snippet-container {
@@ -115,12 +188,6 @@
         }
         .snippet-container a.current-snippet {
             text-decoration: underline;
-        }
-        #snippet-tools > input[type=button] {
-            height: 20px;
-            border: 1px solid #bbb;
-            border-radius: 3px;
-            background-color: #eee;
         }
 
         /*
@@ -188,17 +255,20 @@
                 a#snippet-toggle-advanced(href='#') Advanced
         #snippet-tools
             input.icon-button.ui-icon-document#snippet-tool-new(type='button' title='New snippet' value=' ')
-            input.icon-button.ui-icon-copy#snippet-tool-clone(type='button' title='Clone snippet' value=' ')
-            input.icon-button.ui-icon-pencil#snippet-tool-edit(type='button' title='Edit snippet' value=' ')
-            input.icon-button.ui-icon-disk#snippet-tool-save(type='button' title='Save snippet' value=' ')
-            input.icon-button.ui-icon-trash#snippet-tool-remove(type='button' title='Remove snippet' value=' ')
         #snippets
             #snippet-list
             #current-snippet
-                #current-snippet-name
-                input#current-snippet-rename(type='text' style='display: none;')
                 #current-snippet-doc
-                textarea#current-snippet-code(style='display: none;')
+                #current-snippet-tools
+                    input.icon-button.ui-icon-copy#snippet-tool-clone(type='button' title='Clone snippet' value=' ')
+                    input.icon-button.ui-icon-pencil#snippet-tool-edit(type='button' title='Edit snippet' value=' ')
+                    input.icon-button.ui-icon-trash#snippet-tool-remove(type='button' title='Remove snippet' value=' ')
+            #edit-snippet(style='display: none;')
+                #edit-snippet-code-container
+                    textarea#edit-snippet-code
+                #edit-snippet-tools
+                    input.icon-button.ui-icon-disk#snippet-tool-save(type='button' title='Save snippet' value=' ')
+                    input.icon-button.ui-icon-close#snippet-tool-cancel(type='button' title='Cancel editing' value=' ')
 
 #confirm-snippet-remove(title='Remove snippet' style='display: none;')
     span(class='ui-icon ui-icon-alert' style='float:left; margin:0 7px 20px 0;')

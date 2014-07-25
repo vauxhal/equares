@@ -234,6 +234,7 @@ Using workaround with bbox instead.
     height: 16px;
     margin-left: 2px;
     margin-right: 2px;
+    cursor: pointer;
 }
 
 #scheme-box-extras-text {

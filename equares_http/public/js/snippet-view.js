@@ -14,6 +14,15 @@ var snippetView = {}
 
 var pickSnippet
 
+function currentSnippetLink() {
+    var links = $('#snippet-list a.current-snippet')
+    return links.length === 1 ?   links[0] :   null
+}
+function currentSnippetRef() {
+    var link = currentSnippetLink()
+    return link ?   link.href :   undefined
+}
+
 function callback(name, callbacks) {
     var cb
     if (arguments.length > 1) {
@@ -39,7 +48,7 @@ function searchQuery(type) {
 
 function clearCurrentSnippet() {
     $('#current-snippet-doc').html('')
-    $('#current-snippet-name').html('')
+    $('#current-snippet-tools').hide()
 }
 
 function loadSnippetList(type, cbks, page) {
@@ -61,11 +70,7 @@ function loadSnippetList(type, cbks, page) {
                 var a = this
                 $.get(this.href.replace('/snippet/', '/snippet-obj/'), function(snippet) {
                     formatInfo.update(snippet.doc, $('#current-snippet-doc')[0])
-                    $('#current-snippet-name').text(snippet.name)
-//                    $('#current-snippet-doc').hide('slow')
-//                    $('#current-snippet-code').show('slow')
-//                    $('#current-snippet-name').hide('slow')
-//                    $('#current-snippet-rename').show('slow')
+                    $('#current-snippet-tools').show()
                     previewLinks.removeClass('current-snippet')
                     $(a).addClass('current-snippet')
                 })
@@ -138,10 +143,10 @@ function show(type, cbks) {
             },
             buttons: {
                 Pick: function() {
-                    var links = $('#snippet-list a.current-snippet')
-                    if (links.length != 1)
+                    var snippetLink = currentSnippetLink()
+                    if (!snippetLink)
                         return errorMessage('Please select a snippet')
-                    callback.call(links[0], 'pick', cbks)
+                    callback.call(snippetLink, 'pick', cbks)
                     $(this).dialog("close")
                 },
                 Close: function() {
@@ -166,13 +171,77 @@ function show(type, cbks) {
                     e.preventDefault()
                     findSnippets()
                 })
-                $('#snippet-tools').children().click(function(e) { warningMessage('TODO: ' + this.title) })
+                // $('#snippet-tools').children().click(function(e) { warningMessage('TODO: ' + this.title) })
                 function rm() {
                     if (pickSnippet) {
                         pickSnippet.remove()
                         pickSnippet = undefined
                     }
                 }
+
+                var snippetCode = $('#edit-snippet-code')
+                snippetCode.linenum()
+
+                function reloadSnippetDoc() {
+                    var snippetDoc = snippetCode.val() // TODO
+                    formatInfo.update(snippetDoc, $('#current-snippet-doc')[0])
+                }
+
+                var firstInput = true
+                snippetCode.on('input', function() {
+                    $(this).addClass('modified')
+                    reloadSnippetDoc()
+                    if (firstInput) {
+                        firstInput = false
+
+                        // Warn user that it's necessary to press Ok
+                        warningMessage('press Save button to save!')
+                        var savebtn = $('#snippet-tool-save')
+                        var c = savebtn.css('backgroundColor')
+                        savebtn.css({backgroundColor: '#c00'})
+                        savebtn.animate({backgroundColor: c})
+                    }
+                })
+
+                var openEditor, closeEditor
+                ;(function() {
+                    var hiddenByEditor = $('#snippet-list,#current-snippet-tools'),
+                        editor = $('#edit-snippet')
+                    openEditor = function() {
+                        hiddenByEditor.hide('fast')
+                        snippetCode.removeClass('modified')
+                        editor.show('fast')
+                        firstInput = true
+                        reloadSnippetDoc()
+                    }
+                    closeEditor = function() {
+                        editor.hide('fast')
+                        hiddenByEditor.show('fast')
+                    }
+                })()
+
+                $('#snippet-tool-new').click(function(e) {
+                    snippetCode.val('/*#\ntitle: Snippet title\nkeywords: keyword1, key word 2\n\n# Snippet title\n\nSnippet description\n*/\n\n// Add snippet code here\n')
+                    openEditor()
+                })
+
+                $('#snippet-tool-edit').click(function(e) {
+                    var snippetRef = currentSnippetRef()
+                    if (!snippetRef)
+                        return
+                    $.get(snippetRef)
+                        .done(function(text) {
+                            snippetCode.val(text)
+                            openEditor()
+                        })
+                        .fail(function(xhr) {
+                            errorMessage(xhr.responseText || xhr.statusText || ("Failed to load snippet code: " + xhr.status));
+                        })
+                })
+                $('#snippet-tool-cancel').click(function(e) {
+                    closeEditor()
+                })
+
                 ;(function(ids){
                     for (var i=0; i<ids.length; ++i) {
                         var id = ids[i]
@@ -183,9 +252,9 @@ function show(type, cbks) {
                     }
                 })(['after_login_action', 'after_logout_action'])
                 show(type, cbks)
-            })
+                })
             .fail(function(xhr) {
-                errorMessage(xhr.responseText || xhr.statusText || ("Failed to load image view: " + xhr.status));
+                errorMessage(xhr.responseText || xhr.statusText || ("Failed to load snippet view: " + xhr.status));
             })
     }
 
@@ -199,7 +268,7 @@ snippetView.pick = function(type, callback) {
                 callback(text)
             })
             .fail(function(xhr) {
-                errorMessage(xhr.responseText || xhr.statusText || ("Failed to load image view: " + xhr.status));
+                errorMessage(xhr.responseText || xhr.statusText || ("Failed to load snippet: " + xhr.status));
             })
         }
     })
