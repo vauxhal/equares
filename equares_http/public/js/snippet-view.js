@@ -22,6 +22,7 @@ function currentSnippetRef() {
     var link = currentSnippetLink()
     return link ?   link.href :   undefined
 }
+var currentSnippetId
 
 function callback(name, callbacks) {
     var cb
@@ -49,6 +50,7 @@ function searchQuery(type) {
 function clearCurrentSnippet() {
     $('#current-snippet-doc').html('')
     $('#current-snippet-tools').hide()
+    currentSnippetId = undefined
 }
 
 function loadSnippetList(type, cbks, page) {
@@ -73,6 +75,7 @@ function loadSnippetList(type, cbks, page) {
                     $('#current-snippet-tools').show()
                     previewLinks.removeClass('current-snippet')
                     $(a).addClass('current-snippet')
+                    currentSnippetId = snippet.id
                 })
                 .fail(function(xhr) {
                     clearCurrentSnippet()
@@ -130,6 +133,8 @@ function loadSnippetList(type, cbks, page) {
         })
 }
 
+var openEditor, closeEditor, saveCurrentSnippet
+
 function show(type, cbks) {
     if (pickSnippet) {
         pickSnippet.dialog({
@@ -141,6 +146,7 @@ function show(type, cbks) {
                 loadSnippetList(type, cbks)
                 callback('open', cbks)
             },
+            close: closeEditor,
             buttons: {
                 Pick: function() {
                     var snippetLink = currentSnippetLink()
@@ -171,7 +177,6 @@ function show(type, cbks) {
                     e.preventDefault()
                     findSnippets()
                 })
-                // $('#snippet-tools').children().click(function(e) { warningMessage('TODO: ' + this.title) })
                 function rm() {
                     if (pickSnippet) {
                         pickSnippet.remove()
@@ -183,7 +188,7 @@ function show(type, cbks) {
                 snippetCode.linenum()
 
                 function reloadSnippetDoc() {
-                    var snippetDoc = snippetCode.val() // TODO
+                    var snippetDoc = equaresBox.Box.snippetDoc(snippetCode.val())
                     formatInfo.update(snippetDoc, $('#current-snippet-doc')[0])
                 }
 
@@ -203,25 +208,47 @@ function show(type, cbks) {
                     }
                 })
 
-                var openEditor, closeEditor
                 ;(function() {
-                    var hiddenByEditor = $('#snippet-list,#current-snippet-tools'),
-                        editor = $('#edit-snippet')
+                    var hiddenByEditor = $('#snippet-list,#current-snippet-tools,#snippet-filter,#snippet-tools'),
+                        editor = $('#edit-snippet'),
+                        editorIsOpen = false
                     openEditor = function() {
                         hiddenByEditor.hide('fast')
                         snippetCode.removeClass('modified')
                         editor.show('fast')
                         firstInput = true
                         reloadSnippetDoc()
+                        editorIsOpen = true
                     }
                     closeEditor = function() {
                         editor.hide('fast')
                         hiddenByEditor.show('fast')
+                        editorIsOpen = false
+                    }
+                    saveCurrentSnippet = function(cb) {
+                        if (!editorIsOpen)
+                            return cb()
+                        var url,   data = { type: type, text: snippetCode.val() }
+                        if (currentSnippetId) {
+                            url = '/edit-snippet'
+                            data.snippetId = currentSnippetId
+                        }
+                        else
+                            url = '/upload-snippet'
+                        $.post(url, data)
+                        .done(function(reply) {
+                            snippetCode.removeClass('modified')
+                            cb(reply)
+                        })
+                        .fail(function(xhr) {
+                            errorMessage(xhr.responseText || xhr.statusText || ("Failed to save snippet: " + xhr.status));
+                        })
                     }
                 })()
 
                 $('#snippet-tool-new').click(function(e) {
                     snippetCode.val('/*#\ntitle: Snippet title\nkeywords: keyword1, key word 2\n\n# Snippet title\n\nSnippet description\n*/\n\n// Add snippet code here\n')
+                    clearCurrentSnippet()
                     openEditor()
                 })
 
@@ -240,6 +267,11 @@ function show(type, cbks) {
                 })
                 $('#snippet-tool-cancel').click(function(e) {
                     closeEditor()
+                })
+                $('#snippet-tool-save').click(function(e) {
+                    saveCurrentSnippet(function(reply) {
+                        infoMessage('Saved snippet ' + reply)
+                    })
                 })
 
                 ;(function(ids){

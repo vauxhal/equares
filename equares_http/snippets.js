@@ -32,8 +32,8 @@ var SnippetSchema = mongoose.Schema({
 // give our schema text search capabilities
 SnippetSchema.plugin(textSearch);
 
-SnippetSchema.index({name: 1, user: 1, type: 1, doc: 1}, {unique: true})
-SnippetSchema.index({name: 'text', title: 'text', keywords: 'text'})
+SnippetSchema.index({name: 1, user: 1, type: 1}, {unique: true})
+SnippetSchema.index({name: 'text', title: 'text', keywords: 'text', doc: 'text'})
 
 SnippetSchema.statics.upsert = function(snippet, done) {
     this.update({user: snippet.user, name: snippet.name, type: snippet.type}, snippet, {upsert: true}, done)
@@ -199,7 +199,8 @@ function getSnippetObj(req, res) {
             type:       snippet.type,
             data:       snippet.data,
             doc:        snippet.doc,
-            user:       snippet.username
+            user:       snippet.username,
+            id:         snippet._id
         }
     })
 }
@@ -209,22 +210,41 @@ function checkName(name, res, options) {
         options = options || {}
         return options.errmsg || 'Bad name'
     }
-    if (!(typeof name == 'string')) {
+    if (typeof name !== 'string') {
         res.send(400, errmsg() + ' - value is missing or has an invalid type')
         return false
     }
-    if (name.indexOf('/') === -1) {
+    if (name.indexOf('/') !== -1) {
         res.send(400, errmsg() + ' - must contain no slashes')
+        return false
+    }
+    if (name.length < 1) {
+        res.send(400, errmsg() + ' - empty string')
         return false
     }
     return true
 }
 
-function uploadSnippet(req, res) {
+function snippetName(title) {
+    var result = ''
+    if (typeof title != 'string')
+        return result
+    var badChar = ' /&%\\#?=\t.,:;[](){}<>|+&*@~!^`\'"'
+    title = title.toLowerCase()
+    for (var i=0, n=title.length; i<n; ++i) {
+        var c = title[i]
+        if (badChar.indexOf(c) !== -1)
+            c = ' '
+        result += c
+    }
+    return escape(result.trim().replace(/\s+/g, '-'))
+}
+
+function snippetFromReq(req, res) {
     if (!req.isAuthenticated())
         return res.send(401, 'You are not logged in')
     var snippet = snippetFromText(req.body.text)
-    snippet.name = req.body.name
+    snippet.name = snippetName(snippet.title)
     snippet.type = req.body.type
     snippet.user = req.user.id
     snippet.date = new Date()
@@ -232,6 +252,13 @@ function uploadSnippet(req, res) {
     if (!checkName(snippet.name, res, {errmsg: 'Bad snippet name'}))
         return
     if (!checkName(snippet.type, res, {errmsg: 'Bad snippet type'}))
+        return
+    return snippet
+}
+
+function uploadSnippet(req, res) {
+    var snippet = snippetFromReq(req, res)
+    if (!snippet)
         return
 
     function save() {
@@ -265,28 +292,43 @@ function copyProps(dst, src) {
 }
 
 function editSnippet(req, res) {
-    if (!req.isAuthenticated())
-        return res.send(401, 'You are not logged in')
-    var snippet = JSON.parse(req.body.snippet)
-    if (typeof snippet.name != 'string')
-        return res.send(400, 'Invalid query')
-    Snippet.findOne({name: snippet.name, user: req.user.id, type: snippet.type}, function(err, s) {
+    var snippet = snippetFromReq(req, res)
+    if (!snippet)
+        return
+    if (!req.body.snippetId)
+        return res.send(400, 'Missing snippet id')
+
+    Snippet.findById(req.body.snippetId, function(err, s) {
         if (err) {
             console.log(err)
             res.send(500, err)
         }
         else if (s) {
-            delete snippet.name
-            delete snippet.type
-            copyProps(s, snippet)
-            s.save(function(err) {
-                if (err) {
-                    console.log(err)
-                    res.send(500, 'Failed to modify snippet')
-                }
-                else
-                    res.send(['', 'snippet', snippet.type, req.user.username, snippet.name].join('/'))
-            })
+            if (!s.user || s.user.toString() !== req.user.id.toString())
+                return res.send(403, 'Cannot modify snippets other than yours')
+            function save() {
+                delete snippet.type
+                copyProps(s, snippet)
+                s.save(function(err) {
+                    if (err) {
+                        console.log(err)
+                        res.send(500, 'Failed to save snippet: ' + err)
+                    }
+                    else
+                        res.send(['', 'snippet', snippet.type, req.user.username, snippet.name].join('/'))
+                })
+            }
+            if (s.name === snippet.name)
+                save()
+            else
+                Snippet.have(snippet, function(err, count) {
+                    if (err)
+                        res.send(500)
+                    else if (count > 0)
+                        res.send(403, 'Snippet with the specified name and type already exists')
+                    else
+                        save()
+                })
         }
         else
             res.send(404, 'No such snippet')
@@ -332,7 +374,7 @@ function refreshSnippets() {
                 snippet = snippetFromText(text)
             console.log('  ' + type + '/' + name + ': ' + snippet.title)
             snippet.type = type
-            snippet.name = name
+            snippet.name = snippetName(snippet.title)
             snippet.user = null
             snippet.date = date
             Snippet.upsert(snippet, function(err, doc) {

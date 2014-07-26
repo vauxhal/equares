@@ -467,7 +467,7 @@ var equaresBox = {};
                 doc.push(line)
             }
         }
-        if (doc.length < 1)
+        if (doc.length < 1   &&   propName)
             return 'Advice: Add description for property ```' + propName + '``` by adding ?[markdown text](http://daringfireball.net/projects/markdown/)' +
                     ' (you can also use ?[gfm](https://help.github.com/articles/github-flavored-markdown) and ?[TeX](http://tug.org/) formulas) as follows:<br/>' +
                     '<pre>```/*#```\n' +
