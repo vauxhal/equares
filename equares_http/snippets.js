@@ -110,13 +110,25 @@ function pickSnippet(req, res) {
     res.render('pick-snippet', {req: req})
 }
 
+// Note, TODO better: dbsearch() turned user field from user id to username string
+function snippetPreview(snippet) {
+    var a = ['', 'snippet', snippet.type, snippet.user? snippet.user: '-', snippet.name],
+        name = a.join('/'),
+        text = '<div class="snippet-container">' +
+                '<a href="' + name + '">' + (snippet.title || snippet.name) + '</a>'
+    if (snippet.user)
+        text += '<span class="snippet-username"> (' + snippet.user + ')</span>'
+    text += '</div>'
+    return text
+}
+
 function snippetSelection (req, res) {
     if (typeof req.query.type != 'string')
         return res.send(400)
     dbsearch(req, {
         model: Snippet,
         query: {type: req.query.type},
-        project: {name: 1, user: 1, keywords: 1, title: 1},
+        project: {name: 1, user: 1, keywords: 1, title: 1, type: 1},
         pageSize: 100
     }, function(result) {
         if (result.err)
@@ -125,20 +137,8 @@ function snippetSelection (req, res) {
         if (result.pagenum)
             res.write('<div class="snippet-pagenum">' + result.pagenum + '</div>')
         res.write('<div class="snippet-previews">')
-        for (var i=0; i<count; ++i) {
-            var snippet = result.records[i],
-                a = ['', 'snippet', req.query.type, snippet.user? snippet.user: '-', snippet.name],
-                name = a.join('/')
-            res.write('<div class="snippet-container">')
-            res.write('<a href="' + name + '">' + (snippet.title || snippet.name) + '</a>')
-            if (snippet.edit)
-                res.write(
-                    '<div class="snippet-control">' +
-                        '<div class="snippet-tool snippet-edit"></div><div class="snippet-tool snippet-remove"></div>' +
-                    '</div>'
-                )
-            res.write('</div>')
-        }
+        for (var i=0; i<count; ++i)
+            res.write(snippetPreview(result.records[i]))
         res.end('</div>')
     })
 }
@@ -147,7 +147,7 @@ function getSnippet(req, res, transform) {
     var a = req.path.split('/')
     if(a.length != 4)
         return res.send(404, 'Snippet is not found')
-    var type = a[1], user = a[2], name = a[3]
+    var type = a[1], user, username = a[2], name = a[3]
 
     function serve() {
         Snippet.findOne({name: name, user: user, type: type}, function(err, snippet) {
@@ -157,7 +157,7 @@ function getSnippet(req, res, transform) {
             }
             else if (snippet) {
                 snippet = snippet.toObject()
-                snippet.username = user
+                snippet.username = username
                 res.send(transform(snippet))
             }
             else
@@ -165,12 +165,12 @@ function getSnippet(req, res, transform) {
         })
     }
 
-    if (user == '-') {
+    if (username == '-') {
         user = null
         serve()
     }
     else
-        auth.User.findUser(user, function(err, userId) {
+        auth.User.findUser(username, function(err, userId) {
             if (err) {
                 console.log(err)
                 return res.send(500, 'Unable to resolve user')
@@ -200,8 +200,16 @@ function getSnippetObj(req, res) {
             data:       snippet.data,
             doc:        snippet.doc,
             user:       snippet.username,
-            id:         snippet._id
+            id:         snippet._id,
+            editable:   snippet.username === req.user.username
         }
+    })
+}
+
+function getSnippetPreview(req, res) {
+    return getSnippet(req, res, function(snippet) {
+        snippet.user = snippet.username
+        return snippetPreview(snippet)
     })
 }
 
@@ -307,6 +315,7 @@ function editSnippet(req, res) {
             if (!s.user || s.user.toString() !== req.user.id.toString())
                 return res.send(403, 'Cannot modify snippets other than yours')
             function save() {
+                var snippetType = snippet.type
                 delete snippet.type
                 copyProps(s, snippet)
                 s.save(function(err) {
@@ -315,7 +324,7 @@ function editSnippet(req, res) {
                         res.send(500, 'Failed to save snippet: ' + err)
                     }
                     else
-                        res.send(['', 'snippet', snippet.type, req.user.username, snippet.name].join('/'))
+                        res.send(['', 'snippet', snippetType, req.user.username, snippet.name].join('/'))
                 })
             }
             if (s.name === snippet.name)
@@ -393,6 +402,7 @@ module.exports = function(app) {
     app.get('/snippet-selection', snippetSelection)
     app.use('/snippet', getSnippetText)
     app.use('/snippet-obj', getSnippetObj)
+    app.use('/snippet-preview', getSnippetPreview)
     app.post('/upload-snippet', uploadSnippet)
     app.post('/edit-snippet', editSnippet)
     app.get('/remove-snippet', removeSnippet)

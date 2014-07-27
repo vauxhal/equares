@@ -50,7 +50,27 @@ function searchQuery(type) {
 function clearCurrentSnippet() {
     $('#current-snippet-doc').html('')
     $('#current-snippet-tools').hide()
+    $('.snippet-previews').find('a').removeClass('current-snippet')
     currentSnippetId = undefined
+}
+
+function clickSnippetPreview(e) {
+    e.preventDefault()
+    // Load snippet code
+    var a = $(this)
+    $.get(this.href.replace('/snippet/', '/snippet-obj/'), function(snippet) {
+        formatInfo.update(snippet.doc, $('#current-snippet-doc')[0])
+        $('#current-snippet-tools').show()
+        var editActions = $('#snippet-tool-edit,#snippet-tool-remove')
+        editActions[snippet.editable? 'show': 'hide'].call(editActions)
+        a.parentsUntil('.snippet-previews').parent().find('a').removeClass('current-snippet')
+        a.addClass('current-snippet')
+        currentSnippetId = snippet.id
+    })
+    .fail(function(xhr) {
+        clearCurrentSnippet()
+        errorMessage(xhr.responseText || xhr.statusText || ("Failed to get snippet: " + xhr.status));
+    })
 }
 
 function loadSnippetList(type, cbks, page) {
@@ -60,68 +80,16 @@ function loadSnippetList(type, cbks, page) {
         rq.page = page
     $.get('/snippet-selection', rq)
         .done(function(data) {
-            var tn = $('#snippet-list').html(data)
-            var pagenum = tn.children('.snippet-pagenum'), previews = tn.children('.snippet-previews')
+            var snilletList = $('#snippet-list').html(data)
+            var pagenum = snilletList.children('.snippet-pagenum')
             pagenum.find('a').click(function(e) {
                 loadSnippetList(type, cbks, $(this).text()-1)
             })
-            var previewLinks = previews.find('a')
-            previewLinks.click(function(e) {
-                e.preventDefault()
-                // Load snippet code
-                var a = this
-                $.get(this.href.replace('/snippet/', '/snippet-obj/'), function(snippet) {
-                    formatInfo.update(snippet.doc, $('#current-snippet-doc')[0])
-                    $('#current-snippet-tools').show()
-                    previewLinks.removeClass('current-snippet')
-                    $(a).addClass('current-snippet')
-                    currentSnippetId = snippet.id
-                })
-                .fail(function(xhr) {
-                    clearCurrentSnippet()
-                    errorMessage(xhr.responseText || xhr.statusText || ("Failed to modify snippet: " + xhr.status));
-                })
-            })
+            snilletList.children('.snippet-previews').find('a').click(clickSnippetPreview)
             function snippetRef() {
                 var d = $(this).parent(), info = {}, a = d.prev()
                 return a.attr('href')
             }
-            tn.find('.snippet-edit').click(function() {
-                var ref = snippetRef.call(this)
-                var dlg = $('#snippet-edit')
-                $.get(ref)
-                    .done(function(text) {
-                        // dlg.find('#snippet-edit-code').val(text)
-                        infoMessage('TODO: Edit snippet')
-                    })
-                    .fail(function(xhr) {
-                        errorMessage(xhr.responseText || xhr.statusText || ("Failed to modify snippet: " + xhr.status));
-                    })
-            })
-            tn.find('.snippet-remove').click(function() {
-                var ref = snippetRef.call(this)
-                var dlg = $('#confirm-snippet-remove')
-                dlg.find('span.dlgmsg').html('This will permanently remove snippet <b>' + name + '</b> from database. Continue?')
-                dlg.dialog({
-                    resizable: false,
-                    width: 450,
-                    modal: true,
-                    buttons: {
-                        "Remove": function() {
-                            debugger
-                            $.get('remove-snippet', {type: 'TODO', name: 'TODO'})
-                                .done(function() {loadSnippetList(type, cbks, page)})
-                                .fail(function(xhr) {
-                                    errorMessage(xhr.responseText || xhr.statusText || ("Failed to remove snippet: " + xhr.status));
-                                })
-                            $(this).dialog("close")
-                        },
-                        Cancel: function() {
-                            $(this).dialog("close")
-                        }
-                    }
-                })
-            })
             clearCurrentSnippet()
         })
         .fail(function(xhr) {
@@ -252,6 +220,21 @@ function show(type, cbks) {
                     openEditor()
                 })
 
+                $('#snippet-tool-clone').click(function(e) {
+                    var snippetRef = currentSnippetRef()
+                    if (!snippetRef)
+                        return
+                    $.get(snippetRef)
+                        .done(function(text) {
+                            clearCurrentSnippet()
+                            snippetCode.val(text)
+                            openEditor()
+                        })
+                        .fail(function(xhr) {
+                            errorMessage(xhr.responseText || xhr.statusText || ("Failed to load snippet code: " + xhr.status));
+                        })
+                })
+
                 $('#snippet-tool-edit').click(function(e) {
                     var snippetRef = currentSnippetRef()
                     if (!snippetRef)
@@ -267,10 +250,54 @@ function show(type, cbks) {
                 })
                 $('#snippet-tool-cancel').click(function(e) {
                     closeEditor()
+                    var snippetLink = currentSnippetLink()
+                    if (snippetLink)
+                        snippetLink.click()
+                    else
+                        clearCurrentSnippet()
                 })
                 $('#snippet-tool-save').click(function(e) {
                     saveCurrentSnippet(function(reply) {
-                        infoMessage('Saved snippet ' + reply)
+                        var snippetLink = currentSnippetLink()
+                        $.get(reply.replace('/snippet/', '/snippet-preview/'))
+                            .done(function(text) {
+                                var preview = $(text)
+                                if (snippetLink)
+                                    $(snippetLink).parentsUntil('.snippet-previews').replaceWith(preview)
+                                else
+                                    $('.snippet-previews').prepend(preview)
+                                preview.find('a').click(clickSnippetPreview).addClass('current-snippet')
+                                infoMessage('Saved snippet ' + reply)
+                            })
+                    })
+                })
+                $('#snippet-tool-remove').click(function(e) {
+                    var snippetLink = currentSnippetLink()
+                    if (!snippetLink)
+                        return
+                    var dlg = $('#confirm-snippet-remove')
+                    dlg.find('span.dlgmsg').html('This will permanently remove snippet <b>' + $(snippetLink).text() + '</b> from database. Continue?')
+                    dlg.dialog({
+                        resizable: false,
+                        width: 450,
+                        modal: true,
+                        buttons: {
+                            "Remove": function() {
+                                var name = snippetLink.href.match(/\/([^\/]+)$/)[1]
+                                $.get('remove-snippet', {type: type, name: name})
+                                    .done(function() {
+                                        $(snippetLink).parentsUntil('.snippet-previews').remove()
+                                        clearCurrentSnippet()
+                                    })
+                                    .fail(function(xhr) {
+                                        errorMessage(xhr.responseText || xhr.statusText || ("Failed to remove snippet: " + xhr.status));
+                                    })
+                                $(this).dialog("close")
+                            },
+                            Cancel: function() {
+                                $(this).dialog("close")
+                            }
+                        }
                     })
                 })
 
