@@ -144,7 +144,7 @@ function snippetSelection (req, res) {
 }
 
 function getSnippet(req, res, transform) {
-    var a = req.path.split('/')
+    var a = decodeURI(req.path).split('/')
     if(a.length != 4)
         return res.send(404, 'Snippet is not found')
     var type = a[1], user, username = a[2], name = a[3]
@@ -245,7 +245,7 @@ function snippetName(title) {
             c = ' '
         result += c
     }
-    return escape(result.trim().replace(/\s+/g, '-'))
+    return result.trim().replace(/\s+/g, '-')
 }
 
 function snippetFromReq(req, res) {
@@ -350,6 +350,7 @@ function removeSnippet(req, res) {
     var name = req.query.name, type = req.query.type
     if (typeof name != 'string')
         return res.send(400, 'Invalid query')
+    name = decodeURI(name)
     Snippet.findOne({name: name, user: req.user.id, type: type}, function(err, s) {
         if (err) {
             console.log(err)
