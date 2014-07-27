@@ -201,7 +201,7 @@ function getSnippetObj(req, res) {
             doc:        snippet.doc,
             user:       snippet.username,
             id:         snippet._id,
-            editable:   snippet.username === req.user.username
+            editable:   req.isAuthenticated()?   snippet.username === req.user.username:   false
         }
     })
 }
@@ -249,8 +249,10 @@ function snippetName(title) {
 }
 
 function snippetFromReq(req, res) {
-    if (!req.isAuthenticated())
-        return res.send(401, 'You are not logged in')
+    if (!req.isAuthenticated()) {
+        res.send(401, 'You are not logged in')
+        return
+    }
     var snippet = snippetFromText(req.body.text)
     snippet.name = snippetName(snippet.title)
     snippet.type = req.body.type

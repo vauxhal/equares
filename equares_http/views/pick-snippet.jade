@@ -69,8 +69,22 @@
             top: 0px;
         }
         #snippet-list {
-            overflow: auto;
+            overflow: visible;
             left: 0px;
+        }
+        .snippet-pagenum {
+            position: absolute;
+            width: 100%;
+            top: 0px;
+            height: 2em;
+            overflow: visible;
+        }
+        .snippet-previews {
+            position: absolute;
+            width: 100%;
+            top: 2em;
+            bottom: 0px;
+            overflow: auto;
         }
         #current-snippet {
             overflow: hidden;
@@ -195,6 +209,30 @@
             margin-left: 0.5em;
         }
 
+        .snippet-pagenum {
+            padding-bottom: 10px;
+            padding-top: 10px;
+            font-size: smaller;
+        }
+        .snippet-pagenum > a, .snippet-pagenum > span {
+            margin: 4px;
+            padding: 2px 5px;
+            border-radius: 5px;
+        }
+        .snippet-pagenum > a {
+            background-color: #fd8;
+        }
+        .snippet-pagenum > span {
+            background-color: #ddc;
+            font-weight: bold;
+        }
+        .snippet-pagenum a {
+            text-decoration: none;
+            color: #55b;
+        }
+        .snippet-pagenum a:hover {
+            text-decoration: underline;
+        }
         /*
         .snippet-container {
             background-color: #8f8;
@@ -219,29 +257,6 @@
         }
         .snippet-kw {
             display: none;
-        }
-        .snippet-pagenum {
-            padding-bottom: 10px;
-            padding-top: 10px;
-        }
-        .snippet-pagenum > a, .snippet-pagenum > span {
-            margin: 7px;
-            padding: 2px 5px;
-            border-radius: 5px;
-        }
-        .snippet-pagenum > a {
-            background-color: #fd8;
-        }
-        .snippet-pagenum > span {
-            background-color: #ddc;
-            font-weight: bold;
-        }
-        .snippet-pagenum a {
-            text-decoration: none;
-            color: #55b;
-        }
-        .snippet-pagenum a:hover {
-            text-decoration: underline;
         }
         */
     #pick-snippet-content
