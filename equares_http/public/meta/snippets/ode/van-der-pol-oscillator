@@ -1,0 +1,39 @@
+/*#
+title: Van der Pol oscillator
+keywords: oscillator
+
+# Van der Pol oscillator
+
+The equation of Van der Pol oscillator is as follows:
+$$
+\ddot x - \mu\left(1-x^2\right)\dot x + x = 0
+$$
+See this ?[article in Wikipedia](http://en.wikipedia.org/wiki/Van_der_Pol_oscillator) for more information.
+*/
+
+#include <cmath>
+
+struct VanDerPolOscillator {
+    int paramCount() const {
+        return 1;       // mu
+    }
+    const char *paramNames() const {
+        return "mu";   // Can also return empty string or null ptr
+    }
+    int varCount() const {
+        return 2;       // q, dq
+    }
+    const char *varNames() const {
+        return "q,dq";  // Can also return empty string or null ptr
+    }
+
+    // Auxiliary parameters
+    void prepare(const double *param) {
+    }
+
+    void rhs(double *out, const double *param, const double *state) const {
+        out[0] = state[1];
+        out[1] = param[0]*(1-state[0]*state[0])*state[1] - state[0];
+    }
+};
+

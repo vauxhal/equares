@@ -1,0 +1,43 @@
+/*#
+title: Duffing free oscillator
+keywords: oscillator
+
+# Duffing free oscillator
+
+The equation of free Duffing oscillator oscillator is as follows:
+$$
+\ddot x + \delta\dot x + \alpha x + \beta x^3 = 0
+$$
+See this ?[article in Wikipedia](http://en.wikipedia.org/wiki/Duffing_oscillator) for more information.
+*/
+
+#include <cmath>
+
+struct DuffingFreeOscillator {
+    int paramCount() const {
+        return 3;       // alpha, beta, delta
+    }
+    const char *paramNames() const {
+        return "alpha, beta, delta";   // Can also return empty string or null ptr
+    }
+    int varCount() const {
+        return 2;       // q, dq
+    }
+    const char *varNames() const {
+        return "q,dq";  // Can also return empty string or null ptr
+    }
+
+    // Auxiliary parameters
+    void prepare(const double *param) {
+    }
+
+    void rhs(double *out, const double *param, const double *state) const {
+        double x = state[0], v = state[1],
+               alpha = param[0],
+               beta = param[1],
+               delta = param[2];
+        out[0] = v;
+        out[1] = -delta*v - x*(alpha + beta*x*x);
+    }
+};
+

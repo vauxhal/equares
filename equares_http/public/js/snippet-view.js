@@ -58,19 +58,20 @@ function clickSnippetPreview(e) {
     e.preventDefault()
     // Load snippet code
     var a = $(this)
-    $.get(this.href.replace('/snippet/', '/snippet-obj/'), function(snippet) {
-        formatInfo.update(snippet.doc, $('#current-snippet-doc')[0])
-        $('#current-snippet-tools').show()
-        var editActions = $('#snippet-tool-edit,#snippet-tool-remove')
-        editActions[snippet.editable? 'show': 'hide'].call(editActions)
-        a.parentsUntil('.snippet-previews').parent().find('a').removeClass('current-snippet')
-        a.addClass('current-snippet')
-        currentSnippetId = snippet.id
-    })
-    .fail(function(xhr) {
-        clearCurrentSnippet()
-        errorMessage(xhr.responseText || xhr.statusText || ("Failed to get snippet: " + xhr.status));
-    })
+    $.get(this.href.replace('/snippet/', '/snippet-obj/'))
+        .done(function(snippet) {
+            formatInfo.update(snippet.doc, $('#current-snippet-doc')[0])
+            $('#current-snippet-tools').show()
+            var editActions = $('#snippet-tool-edit,#snippet-tool-remove')
+            editActions[snippet.editable? 'show': 'hide'].call(editActions)
+            a.parentsUntil('.snippet-previews').parent().find('a').removeClass('current-snippet')
+            a.addClass('current-snippet')
+            currentSnippetId = snippet.id
+        })
+        .fail(function(xhr) {
+            clearCurrentSnippet()
+            errorMessage(xhr.responseText || xhr.statusText || ("Failed to get snippet: " + xhr.status));
+        })
 }
 
 function loadSnippetList(type, cbks, page) {
@@ -80,12 +81,12 @@ function loadSnippetList(type, cbks, page) {
         rq.page = page
     $.get('/snippet-selection', rq)
         .done(function(data) {
-            var snilletList = $('#snippet-list').html(data)
-            var pagenum = snilletList.children('.snippet-pagenum')
+            var snippetList = $('#snippet-list').html(data)
+            var pagenum = snippetList.children('.snippet-pagenum')
             pagenum.find('a').click(function(e) {
                 loadSnippetList(type, cbks, $(this).text()-1)
             })
-            snilletList.children('.snippet-previews').find('a').click(clickSnippetPreview)
+            snippetList.children('.snippet-previews').find('a').click(clickSnippetPreview)
             function snippetRef() {
                 var d = $(this).parent(), info = {}, a = d.prev()
                 return a.attr('href')
@@ -117,11 +118,13 @@ function show(type, cbks) {
             close: closeEditor,
             buttons: {
                 Pick: function() {
-                    var snippetLink = currentSnippetLink()
-                    if (!snippetLink)
-                        return errorMessage('Please select a snippet')
-                    callback.call(snippetLink, 'pick', cbks)
-                    $(this).dialog("close")
+                    saveCurrentSnippet(function() {
+                        var snippetLink = currentSnippetLink()
+                        if (!snippetLink)
+                            return errorMessage('Please select a snippet')
+                        callback.call(snippetLink, 'pick', cbks)
+                        $(this).dialog("close")
+                    })
                 },
                 Close: function() {
                     $(this).dialog("close")
@@ -203,10 +206,35 @@ function show(type, cbks) {
                         }
                         else
                             url = '/upload-snippet'
+                        var snippetLink = currentSnippetLink()
                         $.post(url, data)
                         .done(function(reply) {
                             snippetCode.removeClass('modified')
-                            cb(reply)
+                            $.get(reply.replace('/snippet/', '/snippet-preview/'))
+                                .done(function(text) {
+                                    var preview = $(text)
+                                    if (snippetLink)
+                                        $(snippetLink).parentsUntil('.snippet-previews').replaceWith(preview)
+                                    else
+                                        $('.snippet-previews').prepend(preview)
+                                    preview.find('a').click(clickSnippetPreview).addClass('current-snippet')
+                                    if (currentSnippetId)
+                                        cb(reply)
+                                    else {
+                                        $.get(reply.replace('/snippet/', '/snippet-obj/'))
+                                            .done(function(snippet) {
+                                                currentSnippetId = snippet.id
+                                                cb(reply)
+                                            })
+                                            .fail(function(xhr) {
+                                                clearCurrentSnippet()
+                                                errorMessage(xhr.responseText || xhr.statusText || ("Failed to get snippet: " + xhr.status));
+                                            })
+                                    }
+                                })
+                                .fail(function(xhr) {
+                                    errorMessage(xhr.responseText || xhr.statusText || ("Failed to load snippet preview: " + xhr.status));
+                                })
                         })
                         .fail(function(xhr) {
                             errorMessage(xhr.responseText || xhr.statusText || ("Failed to save snippet: " + xhr.status));
@@ -258,17 +286,7 @@ function show(type, cbks) {
                 })
                 $('#snippet-tool-save').click(function(e) {
                     saveCurrentSnippet(function(reply) {
-                        var snippetLink = currentSnippetLink()
-                        $.get(reply.replace('/snippet/', '/snippet-preview/'))
-                            .done(function(text) {
-                                var preview = $(text)
-                                if (snippetLink)
-                                    $(snippetLink).parentsUntil('.snippet-previews').replaceWith(preview)
-                                else
-                                    $('.snippet-previews').prepend(preview)
-                                preview.find('a').click(clickSnippetPreview).addClass('current-snippet')
-                                infoMessage('Saved snippet ' + reply)
-                            })
+                        infoMessage('Saved snippet ' + reply)
                     })
                 })
                 $('#snippet-tool-remove').click(function(e) {

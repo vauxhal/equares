@@ -1,0 +1,45 @@
+/*#
+title: Duffing forced oscillator
+keywords: oscillator
+
+# Duffing forced oscillator
+
+The equation of forced Duffing oscillator oscillator is as follows:
+$$
+\ddot x + \delta\dot x + \alpha x + \beta x^3 = \gamma\cos(\omega t)
+$$
+See this ?[article in Wikipedia](http://en.wikipedia.org/wiki/Duffing_oscillator) for more information.
+*/
+
+#include <cmath>
+
+struct DuffingFreeOscillator {
+    int paramCount() const {
+        return 5;       // alpha, beta, delta, gamma, omega
+    }
+    const char *paramNames() const {
+        return "alpha, beta, delta, gamma, omega";   // Can also return empty string or null ptr
+    }
+    int varCount() const {
+        return 2;       // q, dq
+    }
+    const char *varNames() const {
+        return "q,dq";  // Can also return empty string or null ptr
+    }
+
+    // Auxiliary parameters
+    void prepare(const double *param) {
+    }
+
+    void rhs(double *out, const double *param, const double *state) const {
+        double x = state[0], v = state[1], t = state[2],
+               alpha = param[0],
+               beta = param[1],
+               delta = param[2],
+               gamma = param[3],
+               omega = param[4];
+        out[0] = v;
+        out[1] = gamma*cos(omega*t) - delta*v - x*(alpha + beta*x*x);
+    }
+};
+
