@@ -28,6 +28,7 @@ script.
             li: a(href='/doc#page/general-overview') Overview
             li: a(href='/doc#page/general-items') Boxes, ports, and links
             li: a(href='/doc#page/general-data') Port data
+            li: a(href='/doc#page/general-snippets') Snippets
     h3#doc-menu-editorpane Editor panes
     div
         ul
@@ -46,6 +47,7 @@ script.
             li: a(href='/doc#page/editor-usage-text-script') Editing source code
             li: a(href='/doc#page/editor-usage-text-info') Editing info text
             li: a(href='/doc#page/editor-usage-images') Adding images
+            li: a(href='/doc#page/editor-usage-snippets') Using snippets
             li: a(href='/doc#page/editor-usage-replacebox') Changing box type
             li: a(href='/doc#page/editor-usage-boxhelp') Displaying box help
     h3#doc-menu-simfile Simulation files
@@ -65,6 +67,11 @@ script.
         ul
             each box in boxTypes
                 li: a(href='/doc#box/' + box) #{box}
+    h3#doc-menu-box Snippets
+    div
+        ul
+            li: a(href='/doc#snippet/ode') ode
+            li: a(href='/doc#snippet/fde') fde
     h3#doc-menu-dev Development
     div
         ul

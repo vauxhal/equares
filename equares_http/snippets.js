@@ -107,7 +107,7 @@ function snippetToText(snippet) {
 }
 
 function pickSnippet(req, res) {
-    res.render('pick-snippet', {req: req})
+    res.render('pick-snippet', {req: req, doc: false})
 }
 
 // Note, TODO better: dbsearch() turned user field from user id to username string

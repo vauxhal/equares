@@ -8,6 +8,9 @@ The header of the editor displays the name of parameter being editing and the **
 
 If editing the **info** =[simulation property](/doc#page/editor-usage-simprop), the editor header also displays the **Image** button for =[adding images](/doc#page/editor-usage-images).
 
-If editing =[source code](/doc#page/editor-usage-text-script), the editor displays line numbers. It is important to know them when locating errors basing on compile error messages.
+In certain cases, such as editing =[source code](/doc#page/editor-usage-text-script), the property might support =[snippets](/doc#page/general-snippets). If so, the editor displays the
+**Snippet** button for =[using snippets](/doc#page/editor-usage-snippets). It also contain the **Image** button to help user add images to snippet documentation.
+
+If editing source code, the editor displays line numbers. It is important to know them when locating errors basing on compile error messages.
 
 **Important:** to commit changes after text editing, it is necessary to press the **Ok** button in the pane header. Otherwise the changes will be lost.

@@ -111,4 +111,7 @@ module.exports = function(app) {
     app.use('/doc/page', function(req, res, next) {
         res.redirect('/meta/doc/page' + req.path + '.md')
     })
+    app.use('/doc/snippet', function(req, res, next) {
+        res.render('pick-snippet', {req: req, doc: true})
+    })
 }

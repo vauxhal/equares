@@ -7,7 +7,7 @@
     Full text of copyright notice can be found in file copyright_notice.txt in the EquaRes root directory.
     License agreement can be found in file LICENSE.md in the EquaRes root directory.
 
-#pick-snippet(title='Pick a snippet' style='display: none;')
+#pick-snippet(title='Pick a snippet' style='display: ' + (doc? 'block': 'none') + ';')
     style.
         #pick-snippet-content {
             position: absolute;
@@ -96,6 +96,7 @@
             position: absolute;
             left: 30px;
             right: 0px;
+            height: 100%;
         }
         #current-snippet-doc h1 {
             margin-top: 0px;
@@ -233,32 +234,6 @@
         .snippet-pagenum a:hover {
             text-decoration: underline;
         }
-        /*
-        .snippet-container {
-            background-color: #8f8;
-        }
-        .snippet-control {
-            display: inline-block;
-            height: 100%;
-            width: 20px;
-            // background-color: #cfc;
-        }
-        .snippet-tool {
-            height: 20px;
-            background-repeat: no-repeat;
-            background-position: center;
-            cursor: pointer;
-        }
-        .snippet-edit {
-            background-image: url('/images/edit.png');
-        }
-        .snippet-remove {
-            background-image: url('/images/trash.png');
-        }
-        .snippet-kw {
-            display: none;
-        }
-        */
     #pick-snippet-content
         #snippet-filter
             form
@@ -289,8 +264,5 @@
                     input.icon-button.ui-icon-close#snippet-tool-cancel(type='button' title='Cancel editing' value=' ')
 
 #confirm-snippet-remove(title='Remove snippet' style='display: none;')
-    span(class='ui-icon ui-icon-alert' style='float:left; margin:0 7px 20px 0;')
-    span.dlgmsg
-#confirm-snippet-overwrite(title='Overwrite snippet' style='display: none;')
     span(class='ui-icon ui-icon-alert' style='float:left; margin:0 7px 20px 0;')
     span.dlgmsg
