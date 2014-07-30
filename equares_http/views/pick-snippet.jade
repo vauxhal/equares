@@ -7,7 +7,7 @@
     Full text of copyright notice can be found in file copyright_notice.txt in the EquaRes root directory.
     License agreement can be found in file LICENSE.md in the EquaRes root directory.
 
-#pick-snippet(title='Pick a snippet' style='display: ' + (doc? 'block': 'none') + ';')
+#pick-snippet(title=(doc? '': 'Pick a snippet') style='display: ' + (doc? 'block': 'none') + ';')
     style.
         #pick-snippet-content {
             position: absolute;
@@ -248,12 +248,12 @@
         #snippet-filter
             form
                 img#snippet-filter-icon(src='images/search.png' alt='Filter')
-                input(type='text' name='text')
+                input#snippet-filter-text(type='text' name='text')
                 #snippet-advanced-search(style='display: none;')
                     label Username
-                    input(type='text' name='user')
+                    input#snippet-filter-user(type='text' name='user')
                     label Keywords
-                    input(type='text' name='keywords')
+                    input#snippet-filter-keywords(type='text' name='keywords')
                 input#snippet-apply-filter(type='submit' value='Apply filter')
                 a#snippet-toggle-advanced(href='#') Advanced
         #snippet-tools

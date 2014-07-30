@@ -164,7 +164,11 @@ function dbsearch(req, options, cb) {
         }
     }
 
-    if (req.query.user) {
+    if (req.query.user === '-') {
+        addAndCondition({user: null})
+        doSearch()
+    }
+    else if (req.query.user) {
         auth.User.findUser(req.query.user, function(err, user) {
             if (err) {
                 console.log(err)

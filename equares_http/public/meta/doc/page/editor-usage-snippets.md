@@ -14,6 +14,7 @@ snippet is underlined so user can understand it is the current one.
 
 1. Find the snippet you are going to pick and click its title in the list of snippet.
 2. Click the **Pick** button at the bottom of the dialog.
+3. Don't forget to click the **Ok** button in the text editor to accept new value of box property.
 
 ## Creating new snippet
 
@@ -45,3 +46,21 @@ snippet is underlined so user can understand it is the current one.
   as well as ?[TeX](http://tug.org/) formulas. For more information, see =[simulation info property](/doc#page/editor-usage-text-info)
 * Snippets have names based on their titles. An attempt to save snippet with the same title as one of your other snippets will fail. In this case,
   change snippet title. Notice also that the existing snippet with the same title as new snippet will never get overwritten.
+* There is a place in the documentation where all snippets can be viewed and edited. See entries under the **Snippets** category in the documentation menu,
+  e.g., =[ode snippets](/doc#snippet/ode).
+
+## Referring snippets in documentation pages
+To refer the documentation page for an individual snippet from other documentation pages, use this URL format:
+<pre>
+/doc?user=USER&name=NAME#snippet/TYPE
+</pre>
+where
+
+* ```USER``` is the name of the user who added the snippet, or ```-``` for built-in snippets (can be found from link address in the snippet list)
+* ```NAME``` is the snippet name (can be found from link address in the snippet list)
+* ```TYPE``` snippet type
+
+For example, this code
+<pre style="display: inline;">[Van der Pol oscillator]</pre><pre style="display: inline;">(/doc?user=-&name=van-der-pol-oscillator#snippet/ode)</pre><br/>
+
+produces the following link: =[Van der Pol oscillator](/doc?user=-&name=van-der-pol-oscillator#snippet/ode)

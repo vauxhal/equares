@@ -50,7 +50,7 @@ block otherScripts
                         else
                             $('#doc-page').html(data)
                         var hi = h.split('/')
-                        hdr = $(hi[0] == 'box'? '#doc-menu-box': hi[0] == 'snippet'? '#doc-menu-snippet': '#doc-menu-'+hi[1].split('-')[0])
+                        hdr = $('#doc-menu-' + (hi[0] == 'page'? hi[1].split('-')[0]: hi[0]))
                         hdr.click()
                         $('#doc-menu-pane').find('a').each(function() {
                             var m = $(this).attr('href').match(/#(.*)/)

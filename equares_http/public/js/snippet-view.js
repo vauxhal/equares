@@ -92,6 +92,7 @@ function loadSnippetList(type, cbks, page) {
                 return a.attr('href')
             }
             clearCurrentSnippet()
+            callback('snippetListLoaded', cbks)
         })
         .fail(function(xhr) {
             $('#snippet-list').html('ERROR')
@@ -104,11 +105,48 @@ function loadSnippetList(type, cbks, page) {
 
 var openEditor, closeEditor, saveCurrentSnippet
 
+// see http://stackoverflow.com/questions/901115/how-can-i-get-query-string-values-in-javascript
+function getUrlParams() {
+    var match,
+        pl     = /\+/g,  // Regex for replacing addition symbol with a space
+        search = /([^&=]+)=?([^&]*)/g,
+        decode = function (s) { return decodeURIComponent(s.replace(pl, " ")); },
+        query  = window.location.search.substring(1)
+    var urlParams = {}
+    while (match = search.exec(query))
+       urlParams[decode(match[1])] = decode(match[2])
+    return urlParams
+}
+
 function show(type, options) {
     options = options || {}
     var cbks = options.cbks
+
+    var findSnippets = loadSnippetList.bind(null, type, cbks)
+    function toggleAdvancedSearch(raw) {
+        var adv = $('#snippet-advanced-search'), wasadv = adv.is(':visible')
+        $(this).html(wasadv? 'Advanced': 'Basic')
+        if (raw)
+            adv.toggle()
+        else
+            adv.fadeToggle('fast', findSnippets)
+    }
+
     if (pickSnippet) {
         if (options.showDoc) {
+            var urlParams = getUrlParams()
+            if (urlParams.name) {
+                toggleAdvancedSearch.call($('#snippet-toggle-advanced')[0], true)
+                $('#snippet-filter-text').val(urlParams.name)
+                $('#snippet-filter-user').val(urlParams.user || '-')
+            }
+            cbks.snippetListLoaded = function() {
+                cbks.snippetListLoaded = undefined
+                var links = $('#snippet-list .snippet-previews a')
+                if (links.length > 0)
+                    links[0].click()
+            }
+
             loadSnippetList(type, cbks)
             callback('open', cbks)
         }
@@ -125,12 +163,13 @@ function show(type, options) {
                 close: closeEditor,
                 buttons: {
                     Pick: function() {
+                        var dlg = this
                         saveCurrentSnippet(function() {
                             var snippetLink = currentSnippetLink()
                             if (!snippetLink)
                                 return errorMessage('Please select a snippet')
                             callback.call(snippetLink, 'pick', cbks)
-                            $(this).dialog("close")
+                            $(dlg).dialog("close")
                         })
                     },
                     Close: function() {
@@ -144,12 +183,9 @@ function show(type, options) {
         $.ajax('/pick-snippet', {cache: false})
             .done(function(data) {
                 pickSnippet = $(data).appendTo($('body')).filter('#pick-snippet')
-                var findSnippets = loadSnippetList.bind(null, type, cbks)
                 $('#snippet-toggle-advanced').click(function(e) {
                     e.preventDefault()
-                    var adv = $('#snippet-advanced-search'), wasadv = adv.is(':visible')
-                    $(this).html(wasadv? 'Advanced': 'Basic')
-                    $('#snippet-advanced-search').fadeToggle('fast', findSnippets)
+                    toggleAdvancedSearch.call(this)
                 })
                 $('#snippet-apply-filter').click(function(e) {
                     e.preventDefault()
