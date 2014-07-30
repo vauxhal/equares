@@ -104,34 +104,41 @@ function loadSnippetList(type, cbks, page) {
 
 var openEditor, closeEditor, saveCurrentSnippet
 
-function show(type, cbks) {
+function show(type, options) {
+    options = options || {}
+    var cbks = options.cbks
     if (pickSnippet) {
-        pickSnippet.dialog({
-            // resizable: false,
-            width: 800,
-            height: 600,
-            modal: true,
-            open: function() {
-                loadSnippetList(type, cbks)
-                callback('open', cbks)
-            },
-            close: closeEditor,
-            buttons: {
-                Pick: function() {
-                    saveCurrentSnippet(function() {
-                        var snippetLink = currentSnippetLink()
-                        if (!snippetLink)
-                            return errorMessage('Please select a snippet')
-                        callback.call(snippetLink, 'pick', cbks)
-                        $(this).dialog("close")
-                    })
+        if (options.showDoc) {
+            loadSnippetList(type, cbks)
+            callback('open', cbks)
+        }
+        else
+            pickSnippet.dialog({
+                // resizable: false,
+                width: 800,
+                height: 600,
+                modal: true,
+                open: function() {
+                    loadSnippetList(type, cbks)
+                    callback('open', cbks)
                 },
-                Close: function() {
-                    $(this).dialog("close")
-                    callback('close', cbks)
+                close: closeEditor,
+                buttons: {
+                    Pick: function() {
+                        saveCurrentSnippet(function() {
+                            var snippetLink = currentSnippetLink()
+                            if (!snippetLink)
+                                return errorMessage('Please select a snippet')
+                            callback.call(snippetLink, 'pick', cbks)
+                            $(this).dialog("close")
+                        })
+                    },
+                    Close: function() {
+                        $(this).dialog("close")
+                        callback('close', cbks)
+                    }
                 }
-            }
-        })
+            })
     }
     else {
         $.ajax('/pick-snippet', {cache: false})
@@ -186,7 +193,9 @@ function show(type, cbks) {
                     openEditor = function() {
                         hiddenByEditor.hide('fast')
                         snippetCode.removeClass('modified')
-                        editor.show('fast')
+                        editor.show('fast', function() {
+                            snippetCode.focus()
+                        })
                         firstInput = true
                         reloadSnippetDoc()
                         editorIsOpen = true
@@ -328,7 +337,7 @@ function show(type, cbks) {
                         e.click(rm)
                     }
                 })(['after_login_action', 'after_logout_action'])
-                show(type, cbks)
+                show(type, options)
                 })
             .fail(function(xhr) {
                 errorMessage(xhr.responseText || xhr.statusText || ("Failed to load snippet view: " + xhr.status));
@@ -338,7 +347,7 @@ function show(type, cbks) {
 }
 
 snippetView.pick = function(type, callback) {
-    show(type, {
+    show(type, { cbks: {
         pick: function() {
             $.get(this.href).done(function(text) {
                 pickSnippet.dialog('close')
@@ -348,7 +357,12 @@ snippetView.pick = function(type, callback) {
                 errorMessage(xhr.responseText || xhr.statusText || ("Failed to load snippet: " + xhr.status));
             })
         }
-    })
+    }})
+}
+
+snippetView.showDoc = function(type, cbks) {
+    pickSnippet = undefined
+    show(type, {showDoc: true, cbks: cbks || {}})
 }
 
 })()

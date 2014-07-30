@@ -17,7 +17,7 @@
             bottom: 0.5em;
         }
         #pick-snippet {
-            overflow: hidden;
+            overflow: visible;
         }
         #snippet-filter {
             position: absolute;
@@ -50,9 +50,9 @@
             display: inline;
         }
         #snippet-filter-icon {
-            margin-right: 10px;
+            margin-right: 8px;
             position: relative;
-            top: 5px;
+            top: 4px;
         }
         #snippets {
             position: absolute;
@@ -87,7 +87,7 @@
             overflow: auto;
         }
         #current-snippet {
-            overflow: hidden;
+            overflow: visible;
             right: 0px;
         }
 
@@ -120,11 +120,11 @@
             border-top-left-radius: 5px;
             border-bottom-left-radius: 5px;
             background-color: #eee;
-            cursor: point;
+            cursor: pointer;
         }
 
         #edit-snippet {
-            overflow: hidden;
+            overflow: visible;
             left: 0px;
         }
         #edit-snippet-code-container {
@@ -135,6 +135,7 @@
             height: 100%;
         }
         #edit-snippet-code {
+            display: block;
             position: absolute;
             width: 100%;
             height: 100%;
@@ -142,6 +143,9 @@
             padding-top: 0px;
             resize: none;
             outline: none;
+            border-top: 1px solid #ccc;
+            border-right: 1px solid #ccc;
+            border-bottom: 1px solid #ccc;
         }
         #edit-snippet-code.modified {
             background-color: #ffe;
@@ -166,7 +170,7 @@
             border-top-right-radius: 5px;
             border-bottom-right-radius: 5px;
             background-color: #eee;
-            cursor: point;
+            cursor: pointer;
         }
 
         #snippet-tools {
@@ -234,6 +238,12 @@
         .snippet-pagenum a:hover {
             text-decoration: underline;
         }
+    if doc
+        script.
+            (function() {
+                var snippetType = window.location.hash.match(/^#snippet\/(\w+)/)[1]
+                snippetView.showDoc(snippetType)
+            })()
     #pick-snippet-content
         #snippet-filter
             form

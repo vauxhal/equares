@@ -109,3 +109,12 @@ div.outputFile {
     font-weight: bold;
     text-shadow: 1px 1px 0 #fff;
 }
+.icon-button {
+    background-image: url(ui-lightness/images/ui-icons_222222_256x240.png);
+    background-repeat: no-repeat;
+    width: 19px;
+    height: 16px;
+    margin-left: 2px;
+    margin-right: 2px;
+    cursor: pointer;
+}

@@ -50,13 +50,13 @@ block otherScripts
                         else
                             $('#doc-page').html(data)
                         var hi = h.split('/')
-                        hdr = $(hi[0] == 'box'? '#doc-menu-box': '#doc-menu-'+hi[1].split('-')[0])
+                        hdr = $(hi[0] == 'box'? '#doc-menu-box': hi[0] == 'snippet'? '#doc-menu-snippet': '#doc-menu-'+hi[1].split('-')[0])
                         hdr.click()
                         $('#doc-menu-pane').find('a').each(function() {
                             var m = $(this).attr('href').match(/#(.*)/)
                             if (m) {
                                 var hh = m[1]
-                                console.log( '[' + h + '] <-> [' + hh + ']')
+                                // console.log( '[' + h + '] <-> [' + hh + ']')
                                 var j = $(this)
                                 j[hh === h? 'addClass': 'removeClass'].call(j, 'selected-doc-menu-item')
                             }

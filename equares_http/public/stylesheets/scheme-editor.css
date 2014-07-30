@@ -227,15 +227,6 @@ Using workaround with bbox instead.
     border-radius: 3px;
     background-color: #eee;
 }
-.icon-button {
-    background-image: url(ui-lightness/images/ui-icons_222222_256x240.png);
-    background-repeat: no-repeat;
-    width: 19px;
-    height: 16px;
-    margin-left: 2px;
-    margin-right: 2px;
-    cursor: pointer;
-}
 
 #scheme-box-extras-text {
     position: absolute;
