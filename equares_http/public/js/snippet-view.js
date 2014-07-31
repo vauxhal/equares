@@ -41,8 +41,9 @@ function searchQuery(type) {
     var result = {type: type}
     for (var i=0, n=f.length; i<n; ++i) {
         var e = $(f[i])
-        if (e.is(':visible'))
-            result[e.attr('name')] = e.val()
+        var name = e.attr('name')
+        if (name && e.is(':visible'))
+            result[name] = e.val()
     }
     return result
 }
