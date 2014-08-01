@@ -5,7 +5,19 @@
 Equares is a tool for numeric analysis of ordinary differential equations
 
 ## Motivation
-TODO
+
+We have formulated our requirements as follows:
+* Speed matters. Equares performs faster than
+  [MATLAB](http://www.mathworks.com/products/matlab/),
+  [SciLab](http://www.scilab.org/), and the like.
+* Freedom matters. Equares is free software. Thus, everyone can extend its functionality.
+* Ease of use matters.
+  * User should be able to use it easily without having to do advanced training.
+  * User shouldn't have to install a ton of software to get it all work.
+
+Fast basically means implementation of your custom equations in a native language, e.g. C++. So our system needs a compiler to compile your equations.
+But we don't want to force user to install a compiler! That's why Equares is an online system: we install everything on the server, you just use it.
+
 
 ## Architecture
 
