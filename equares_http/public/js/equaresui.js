@@ -1278,7 +1278,7 @@ equaresui.setSceneSource = function() {
                             fi = outFileInfo[name]
                             switch(fi.type) {
                             case "image":
-                                fi.jq.attr("src", svrname + "#" + new Date().getTime())
+                                fi.jq.attr("src", newimgref(svrname))
                                 break
                             case "text":
                                 $.get('cmd/simtextfile', {file:name}).done(function(data) {

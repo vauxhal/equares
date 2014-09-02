@@ -88,7 +88,7 @@ script.
                 .always(function() { loadLoginForm(loginDiv) })
         })
         loginDiv.find('#newcaptcha').click(function() {
-            $('#captchaimg').attr('src', '/captcha.png#' + (new Date).toGMTString())
+            $('#captchaimg').attr('src', newimgref('/captcha.png'))
         })
         $("a#signup").click(function(e) {
             e.preventDefault()

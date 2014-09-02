@@ -79,6 +79,9 @@ html
             ctm = {initPage: [], initMenu: []}
         block otherScripts
         script.
+            function newimgref(url) {
+                return url.replace(/\.[a-z]+$/, '=' + new Date().getTime() + '$&')
+            }
             function loadLoginForm(loginDiv) {
             $.ajax('/loginform', {cache: false})
                 .done(function(data) {
