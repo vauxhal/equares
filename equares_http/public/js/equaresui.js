@@ -14,6 +14,14 @@ var equaresui = {};
 
 function wrap(tag) { return $("<" + tag + "></" + tag + ">") }
 
+function resolveOffsetXY( e ) {
+    if( e.offsetX === undefined ) {
+        var pos = $(e.target).offset()
+        e.offsetX = e.pageX - pos.left
+        e.offsetY = e.pageY - pos.top
+    }
+}
+
 formatInfo.init('simInfo')
 
 equaresui.setSceneSource = function() {
@@ -1166,6 +1174,7 @@ equaresui.setSceneSource = function() {
                                                 switch (iref.type) {
                                                 case 'image':
                                                     function sendPointInput(e) {
+                                                        resolveOffsetXY(e)
                                                         $.ajax("cmd/input", {data: {cmd: inputPrefix + iref.consumer + ' ' + e.offsetX + ' ' + e.offsetY}, type: "GET", cache: false})
                                                         .fail(function(error) {
                                                             errorMessage(error.responseText || error.statusText || ("Ajax error: " + error.status))
@@ -1215,13 +1224,17 @@ equaresui.setSceneSource = function() {
                                                             timeoutId = setTimeout(sendUpdatedRange, 300)
                                                     }
                                                     fi.jq.mousewheel(function(e) {
+                                                        event.stopPropagation()
                                                         e.preventDefault()
                                                         if (e.shiftKey)
                                                             // reset range
                                                             iref.range = { x: {v1: iref.xmin, v2: iref.xmax}, y: {v1: iref.ymin, v2: iref.ymax} }
                                                         else {
-                                                            zoomRange(iref.range.x, e.offsetX/this.width, e.deltaY)
-                                                            zoomRange(iref.range.y, 1-e.offsetY/this.height, e.deltaY)
+                                                            resolveOffsetXY(e)
+                                                            if (iref.keepAspectRatio   ||   !e.altKey)
+                                                                zoomRange(iref.range.x, e.offsetX/this.width, e.deltaY)
+                                                            if (iref.keepAspectRatio   ||   !e.ctrlKey)
+                                                                zoomRange(iref.range.y, 1-e.offsetY/this.height, e.deltaY)
                                                         }
                                                         if (timeoutId)
                                                             clearTimeout(timeoutId)
