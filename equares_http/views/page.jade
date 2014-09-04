@@ -80,7 +80,7 @@ html
         block otherScripts
         script.
             function newimgref(url) {
-                return url.replace(/\.[a-z]+$/, '=' + new Date().getTime() + '$&')
+                return url + '?' + new Date().getTime()
             }
             function loadLoginForm(loginDiv) {
             $.ajax('/loginform', {cache: false})

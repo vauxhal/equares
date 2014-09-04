@@ -219,6 +219,11 @@ function auth(app) {
             if (!req.url.match('^/users/' + username + '/'))
                 return res.send(403)
         }
+        /* TODO: Remove
+        // Force image file downloads to respond with 200 rather than 304 when query is a number
+        if (req.url.match(/^.+\.(png|jpg|jpeg)\?\d+$/))
+            res.setHeader('Last-Modified', (new Date()).toUTCString())
+        */
         next()
     })
     fs.mkdir('users', function() {})

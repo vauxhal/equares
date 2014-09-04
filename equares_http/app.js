@@ -57,13 +57,6 @@ require('./userprofile')(app)
 
 app.use(app.router);
 
-// Redirect all urls of the form 'path/to/image=number.imgtype' to 'path/to/image.imgtype'
-// (force browser to reload modified images)
-require('./redirect-url.js')(app, function(path) {
-    if (path.match(/^.+\=\d+\.(png|jpg|gpeg)$/))
-        return path.replace(/=\d+(\.[a-z]+)$/, '$1')
-})
-
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/cmd', equares())
 
