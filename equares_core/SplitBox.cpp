@@ -75,6 +75,11 @@ void SplitBox::resizePorts(int n)
         p.setName(QString("out_%1").arg(n0+1));
         p.setOwner(this);
     }
+    if (context()) {
+        QScriptValue jsThis = thisObject();
+        addPortProperties(jsThis, outputPorts());
+        // TODO better: Remove ports if new size is less than old size
+    }
 }
 
 
