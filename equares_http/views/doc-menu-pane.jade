@@ -72,6 +72,11 @@ script.
         ul
             li: a(href='/doc#snippet/ode') ode
             li: a(href='/doc#snippet/fde') fde
+    h3#doc-menu-tut Tutorials
+    div
+        ul
+            each tutorial in tutorials
+                li: a(href='/doc#tut/' + tutorial.name) #{tutorial.title}
     h3#doc-menu-dev Development
     div
         ul

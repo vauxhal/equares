@@ -10,6 +10,7 @@ License agreement can be found in file LICENSE.md in the EquaRes root directory.
 
 var fs = require('fs')
 var boxInfo = require('./routes/equares').boxInfo
+var tutorials = require('./tutorials')
 
 function PortFormat(port)
 {
@@ -50,7 +51,13 @@ module.exports = function(app) {
     app.get('/doc-menu-pane', function(req, res) {
         boxInfo(req, 'boxTypes', function(box, info) {
             info = eval(JSON.parse(info).stdout)
-            res.render('doc-menu-pane', {boxTypes: info})
+            tutorials.findTutorials(function(err, tutorialList) {
+                if (err) {
+                    console.log(err)
+                    return res.send(500, err)
+                }
+                res.render('doc-menu-pane', {boxTypes: info, tutorials: tutorialList})
+            })
         })
     })
 
@@ -113,5 +120,8 @@ module.exports = function(app) {
     })
     app.use('/doc/snippet', function(req, res, next) {
         res.render('pick-snippet', {req: req, doc: true})
+    })
+    app.use('/doc/tut', function(req, res, next) {
+        res.redirect('/tutorial' + req.path)
     })
 }

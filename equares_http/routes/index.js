@@ -17,7 +17,7 @@ var dbsearch = require('../dbsearch')
 
 function readExamples(cb) {
     var examples = []
-    Sim.find({$query: {user: null}, $orderby: {description: 1}}, {name: 1, description: 1}).stream()
+    Sim.find({$query: {user: null, keywords: 'example'}, $orderby: {description: 1}}, {name: 1, description: 1}).stream()
         .on('data', function (doc) {
             examples.push(doc)
         }).on('error', function (err) {

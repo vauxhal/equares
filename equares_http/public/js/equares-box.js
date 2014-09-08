@@ -1193,6 +1193,7 @@ $.extend(equaresBox.rules, {
                     return errorMessage('Invalid number of input ports')
                 }
                 box.resizeInputPorts(nin)
+                box.emit('critical')
             }
         },
         port: function(port) {

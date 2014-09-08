@@ -75,6 +75,11 @@ void MergeBox::resizePorts(int n)
         p.setName(QString("in_%1").arg(n0+1));
         p.setOwner(this);
     }
+    if (context()) {
+        QScriptValue jsThis = thisObject();
+        addPortProperties(jsThis, inputPorts());
+        // TODO better: Remove ports if new size is less than old size
+    }
 }
 
 
