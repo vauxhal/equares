@@ -98,7 +98,7 @@ function getTutorial(req, res, transform) {
             else if (tutorial) {
                 tutorial = tutorial.toObject()
                 tutorial.username = username
-                res.send(transform(tutorial))
+                transform(req, res, tutorial)
             }
             else
                 res.send(404, 'Tutorial is not found')
@@ -124,14 +124,47 @@ function getTutorial(req, res, transform) {
 
 
 function getTutorialText(req, res) {
-    return getTutorial(req, res, function(tutorial) {
-        return tutorialToText(tutorial)
+    getTutorial(req, res, function(req, res, tutorial) {
+        var relatedSim = []
+        var sent
+        Sim.find({user: tutorial.user, keywords: 'tutorial ' + tutorial.name}, {name: 1, description: 1, keywords: 1}).stream()
+            .on('data', function (doc) {
+                var path = '/editor?sim=';
+                if (tutorial.user)
+                    path += tutorial.username + '/'
+                path += doc.name
+                var order = 0, kw = doc.keywords
+                for (var i=0; i<kw.length; ++i) {
+                    var m = kw[i].match(/^tutorial-order\s+(\d+)$/)
+                    if (m) {
+                        order = +m[1]
+                        break
+                    }
+                }
+                relatedSim.push({order: order, text: '- =[' + doc.description + '](' + path + ')'})
+            }).on('error', function (err) {
+                console.log(err)
+                if (!sent)
+                    res.send(500)
+                sent = true
+            }).on('close', function () {
+                var text = tutorialToText(tutorial)
+                if (relatedSim.length > 0) {
+                    relatedSim.sort(function(a, b) { return a.order < b.order? -1: b.order < a.order? 1: 0 })
+                    text += '\n\n# Related simulations\n'
+                    for (var i=0; i<relatedSim.length; ++i)
+                        text += relatedSim[i].text + '\n'
+                }
+                if (!sent)
+                    res.send(text)
+                sent = true
+            })
     })
 }
 
 function getTutorialObj(req, res) {
-    return getTutorial(req, res, function(tutorial) {
-        return {
+    getTutorial(req, res, function(req, res, tutorial) {
+        res.send({
             name:       tutorial.name,
             title:      tutorial.title,
             date:       tutorial.date,
@@ -140,7 +173,7 @@ function getTutorialObj(req, res) {
             user:       tutorial.username,
             id:         tutorial._id,
             editable:   req.isAuthenticated()?   tutorial.username === req.user.username:   false
-        }
+        })
     })
 }
 
