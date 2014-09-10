@@ -1,0 +1,53 @@
+/*#
+title: Lorenz system
+keywords: lorenz, lorenz system, lorenz attractor
+
+# Lorenz system
+
+The ?[Lorenz system](http://en.wikipedia.org/wiki/Lorenz_system) is as follows:
+
+$$
+\begin{array}{rcl}
+\dot x &=& \sigma(y-x),\\
+\dot y &=& x(\rho-z) - y,\\
+\dot z &=& xy - \beta z.
+\end{array}
+$$
+This system is well known due to its chaotical behavior.
+
+See also the ?[Lorenz attractor](/editor?sim=lorenz-attractor) example.
+*/
+
+#include <cmath>
+
+struct LorenzSystem {
+    int paramCount() const {
+        return 3;       // sigma, rho, beta
+    }
+    const char *paramNames() const {
+        return "sigma,rho,beta";
+    }
+    int varCount() const {
+        return 3;       // x, y, z
+    }
+    const char *varNames() const {
+        return "x,y,z";
+    }
+
+    void prepare(const double *param) {}
+
+    void rhs(double *out, const double *param, const double *state) const {
+        double
+            sigma = param[0],
+            rho = param[1],
+            beta = param[2],
+            x = state[0],
+            y = state[1],
+            z = state[2];
+
+        out[0] = sigma*(y-x);
+        out[1] = x*(rho-z) - y;
+        out[2] = x*y - beta*z;
+    }
+};
+
