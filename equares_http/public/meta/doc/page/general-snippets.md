@@ -11,3 +11,5 @@ Snippets are typed. This means that a type name is assigned to each snippet. Sni
 snippet type as supported.
 
 There are a number of built-in snippets. Users can easily add their own snippets. Once a user adds a snippet, it can be shared by all users.
+
+All snippets can be viewed in documentation &mdash; e.g., see [ODE snippets](/doc#snippet/ode).
