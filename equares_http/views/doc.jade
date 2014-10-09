@@ -49,6 +49,7 @@ block otherScripts
                             formatInfo.update(data)
                         else
                             $('#doc-page').html(data)
+                        $('#doc-page').attr("tabindex",-1).focus()
                         var hi = h.split('/')
                         hdr = $('#doc-menu-' + (hi[0] == 'page'? hi[1].split('-')[0]: hi[0]))
                         hdr.click()
@@ -82,7 +83,7 @@ block otherScripts
 
             var pageCell = layout.add( { title: "Docs content" } )
             docPageContainer = wrap('div').addClass('doc-page').attr('id', 'doc-page').appendTo($(pageCell.dom))
-            docPageContainer.html(content)
+            docPageContainer.html(content).focus()
         })
 block content
     h1 Equares documentation

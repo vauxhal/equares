@@ -155,10 +155,82 @@ This step is completed by removing link solver:initState &mdash; isInput:output 
 - isSplit:out_3 &mdash; clickedPoints:flush (important to flush *after* write).
 
 ## Step 4. Adding pan/zoom
-TODO
+At this step we add another input box to the simulation; the box provides the way to interactively pan and zoom canvas.
+
+Following this step will result in ?[this simulation](/editor?sim=interactive-phase-portrait-4).
+
+We need to add a box of type =[RectInput](/doc#box/RectInput) (and we name it **pan-zoom**). The box has just one output port, named **output**.
+The port generates data frames each containing four numbers: $x_{\min}$, $x_{\max}$, $y_{\min}$, and $y_{\max}$. These numbers determine the ranges
+for abscissa and ordinate on the canvas. A new frame is generated each time user rotates the mouse wheel on target bitmap, or drags (the contents of)
+the target bitmap.
+
+Importantly, the **pan-zoom** box is now the only one where we have to define the initial coordinate ranges for both **canvas** and **isInput** (previously we
+entered these ranges right in the two boxes). Now these ranges are transferred from **pan-zoom** to **canvas** and **isInput** if we connect the port pan-zoom:output
+to input ports canvas:range and isInput:range.
+
+Similarly to the **isInput** box, we have to specify the **refBitmap** parameter of **pan-zoom** (set it to ```result.pbg```, since this is our only output image), so
+it can know where we are going to do pan/zoom.
+
+And the last bot not least important thing to do is to set the **restartOnInput** parameter of **pan-zoom** to ```true``` (check the box next to parameter name
+in the =[parameter editor](/doc#page/editorpane-prop)). This will restart simulation from the beginning after each pan/zoom user action. As a result,
+the simulation will clear canvas and show phase curve starting at the last clicked point.
 
 ## Step 5. Adding phase curve in the time decrement direction
-TODO
+Our simulation displays parts of phase curves starting at points clicked by user. It would be nice, however, if we could see each phase curve _passing through_ the
+point clicked, rather than starting at that point. At this step we accomplish this task and end up with =[this simulation](/editor?sim=interactive-phase-portrait-5).
+
+Obviously, to make phase curve pass through some point, we can generate two parts of it. One part is just the same as before. The other one starts at the
+same point, but this time we go in time decrement direction (we can always do it by supplying a negative value of the integration step to **solver**).
+
+So we need to start numerical integration twice per initial point, each time with different sign of the intefration step. To do so, we need to do the following
+modifications.
+- Replace type of the **solverParam** box to =[ParamArray](/doc#box/ParamArray).
+- Set the **withActivator** parameters of **solverParam** to ```true``` (check the box  next to parameter name in the =[parameter editor](/doc#page/editorpane-prop)).
+  After that, the box will have the **activator** port. When any data frame comes to this port, the box outputs all elements of its data array to the **output** port.
+- Increase output port of **isSplit** by one, so that now the **outputPortCount** parameter is 4. We need the additional output to activate **solverParam**
+  each time user clicks a point.
+- Insert box of type =[Replicator](/doc#box/Replicator) and name it **replicator**. It has to be between **solverParam** and **isSplit** on one side, and **solver**
+  on the other side. Replicator has two input ports, **control_in** and **value_in**, and two output ports, **control_out** and **value_out**. Replicator will
+  activate both output ports each time a new data frame arrives at **control_in** (processing will be cancelled if there is no data at **value_in** yet).
+  The new data frame arrived to **control_in** will be passed to **control_out**, and then the last frame arrived to **value_in** will be sent to **value_out**.
+  In our case, **control_in** is for solver parameters, and **value_in** is for initial point (it will be replicated to generate two parts of phase curve
+  with different solver parameters).
+- Edit connections between box ports:
+    - remove isSplit:out_1 &mdash; solver:initState;
+    - remove isSplit:out_2 &mdash; clickedPoints:input;
+    - remove isSplit:out_3 &mdash; clickedPoints:flush;
+    - remove solverParam:output &mdash; solver:parameters;
+    - add isSplit:out_1 &mdash; replicator:value_in (here it's important to feed replicator:value_in before replicator:control_in);
+    - add isSplit:out_2 &mdash; solverParam:activator (then solverParam will regenerate its output data);
+    - add isSplit:out_3 &mdash; clickedPoints:input;
+    - add isSplit:out_4 &mdash; clickedPoints:flush;
+    - add solverParam:output &mdash; replicator:control_in;
+    - add replicator:control_out &mdash; solver:parameters (we will set solver parameters <i>before</i> starting solver);
+    - add replicator:value_out &mdash; solver:initState (we will start solver each time its parameters are changed);
+- If necessary, position box ports by dragging them with the ```Ctrl``` key pressed down.
+- Specify the **data** parameter of **solverParam** box. We need two array elements, so you will need to click the ```+``` button next to parameter name twice.
+  Then enter the following parameters:
+    - **data[0].h** = h;
+    - **data[0].n** = 100000;
+    - **data[0].nout** = 1;
+    - **data[1].h** = -h;
+    - **data[1].n** = 100000;
+    - **data[1].nout** = 1;
+
+Now the simulation should do what we want. One thing you might notice is that the resulting bitmap gets updated twice per point &mdash; once
+for each part of the phase curve. To fix that, let's insert a counted filter between ports solver:finish and canvas:flush. If we set filter counter to 2,
+it will pass each second signal, so we'll get what we want: one bitmap update per initial point.
+
+So let's now do it:
+- add a box of type =[CountedFilter](/doc#box/CountedFilter) and name it **flushFilter**;
+- add a box of type =[Param](/doc#box/Param) and name it **flushFilterParam** (it will hold the filter count parameter);
+- add connection flushFilterParam:output &mdash; flushFilter:count;
+- set the **count** parameter of the **flushFilterParam** box to 2;
+- remove connection solver:finish &mdash; canvas:flush (we need to filter data frames there);
+- add connection solver:finish &mdash; flushFilter:input;
+- add connection flushFilter:output &mdash; canvas:flush.
+
+We are done! Now the output bitmap will update once per point clicked.
 
 ## Step 6. Marking phase curve with different colors
 TODO
