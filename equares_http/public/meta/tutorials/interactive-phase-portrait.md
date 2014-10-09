@@ -233,5 +233,51 @@ So let's now do it:
 We are done! Now the output bitmap will update once per point clicked.
 
 ## Step 6. Marking phase curve with different colors
-TODO
+After trying to use our simulation to make phase portraits, you could soon notice that it's difficult to understand where the positive directions
+of phase curves are. Both parts of phase curve passing through the point clicked look the same, unfortunately. But if the two parts of each phase curve
+were looking differently, we could recognize positive direction easily.
 
+At this step, we solve this problem. What we do here is showing time-positive parts of phase curves in blue color, and time-negative ones in red color.
+At the end of this step you should obtain ?[this simulation](/editor?sim=interactive-phase-portrait-6).
+
+To have a color image on output, two things are absolutely necessary:
+- Canvas should store values at its pixels. A value should accompany each input point. In other words, the **input** port of **canvas**
+  will receive data frames consisting of three elements: two coordinates and pixel value. To make canvas understand this format, set its
+  **withInputValue** parameter to ```true``` by checking the box next to parameter name in the =[parameter editor](/doc#page/editorpane-prop).
+- Bitmap should have a _color map_ to map pixel values to pixel colors. To set up the color map, the **colorMap** parameter of **bitmap** should be edited.
+
+So, we should provide one value for time-positive part of phase curve, and another value for its time-negative part. Besides,
+both values should be nonzero because the value of zero is used for canvas background. You can notice that the value of integration step
+is just what we need.
+
+Now we should glue coordinates of phase curve points together with the value of integration step and pass that composite data to the canvas.
+To do that, we will need three new boxes:
+- One box of type =[Projection](/doc#box/Projection) (name it **proj_h**) will take solver parameters and separate the integration step, passing it to the output.
+- One box of type =[Replicator](/doc#box/Replicator) (name it **repl_h**) will provide a copy of current integration step value for each of the output points
+of the phase curve.
+- One box of type =[Join](/doc#box/Join) (name it **join_h**) will glue point coordinates together with integration step value into a composite value.
+
+Once the boxes are created, we can edit connections:
+- remove connection proj:output &mdash; canvas:input (we need some processing in between);
+- add connection replicator:control_out &mdash; proj_h:input (the projection will take integration step from here);
+- add connection proj:output &mdash; repl_h:control_in;
+- add connection proj_h:output &mdash; repl_h:value_in;
+- add connection repl_h:control_out &mdash; join_h:in_1;
+- add connection repl_h:value_out &mdash; join_h:in_2;
+- add connection join_h:out &mdash; canvas:input.
+
+We also need to set the **indices** parameters of box **proj_h**. It should be set to 0, since we need the first element of input data
+(it's the integration step).
+
+Finally, the color map should be defined for the output bitmap. We do it by making the following modifications of parameters of the **bitmap** box.
+- **valueRange.vmin** = -h;
+- **valueRange.vmax** = h;
+- add a new color map entry before the first one by clicking the ```+``` button located in the first entry.
+- **colorMap[0].pos** = 0 (corresponds to value -h);
+- **colorMap[0].color** = ff0000 (red);
+- **colorMap[1].pos** = 0.5 (corresponds to value 0, which is the canvas background);
+- **colorMap[1].color** = ffffff (white);
+- **colorMap[2].pos** = 1 (corresponds to value h);
+- **colorMap[1].color** = 0000ff (blue);
+
+Now run the simulation and enjoy colored phase curves.
