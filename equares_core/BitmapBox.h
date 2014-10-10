@@ -58,10 +58,18 @@ public:
         pos = m_items.last().pos;
         if (pos < 1)
             m_items.push_back(BitmapBoxColorMapItem(1, 0x000000));
-        while(m_items.first().pos < 0)
-            m_items.pop_front();
-        while(m_items.last().pos > 1)
-            m_items.pop_back();
+        if (m_items.first().pos < 0) {
+            int c = color( 1e-5 );
+            while(m_items.first().pos < 0)
+                m_items.pop_front();
+            m_items.push_front(BitmapBoxColorMapItem(0, c));
+        }
+        if (m_items.last().pos > 1) {
+            int c = color( 1-1e-5 );
+            while(m_items.last().pos > 1)
+                m_items.pop_back();
+            m_items.push_back(BitmapBoxColorMapItem(1, c));
+        }
         Q_ASSERT(m_items.size() > 1);
     }
     const Items& items() const {
