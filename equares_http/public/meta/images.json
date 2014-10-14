@@ -1,2 +1,4 @@
-[{"name":"pendulum.png", "contentType": "image/png", "title":"Pendulum", "keywords":["pendulum"]}]
+[{"name":"pendulum.png", "contentType": "image/png", "title":"Pendulum", "keywords":["pendulum"]},
+ {"name":"double-pendulum.png", "contentType": "image/png", "title":"Double pendulum", "keywords":["pendulum", "double pendulum"]}
+]
 

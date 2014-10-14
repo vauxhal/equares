@@ -11,7 +11,7 @@ where $\varphi$ is the angle between the pendulum and the vertical direction, $g
 The box obtains its parameters, $l$ and $g$, from the **parameters** port, and its state variables, $\varphi$ and $\dot\varphi$, and the time, $t$,
 from the **state** port (on that port, =[data hints](/doc#page/general-data) for state variables and time are **q**, **dq**, **t** respectively).
 
-Once data on both port is available, the box outputs ODE right hand side each time any of the inputs obtains a new data frame.
+Once data on both ports is available, the box outputs ODE right hand side each time any of the inputs obtains a new data frame.
 The right hand side $\dot\varphi$, $\ddot\varphi$ is then written to the **oderhs** port (on that port, data hints for elements are **dq** and **d2q** respectively).
 
 The **state** and **oderhs** ports can be connected, for example, to the **rhsState** and **rhs** ports of an =[ODE solver](/doc#box/Rk4) box respectively,
