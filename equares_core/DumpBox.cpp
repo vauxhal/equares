@@ -65,7 +65,7 @@ DumpRuntimeBox::DumpRuntimeBox(const DumpBox *box)
     QString fileName = box->fileName();
     if (fileName.isEmpty())
         throwBoxException(QString("DumpRuntimeBox: Output file name is not specified (parameter fileName)"));
-    if (QFileInfo(fileName).absolutePath() != QDir::current().absolutePath())
+    if (!(fileName.endsWith(".txt"))   ||   QFileInfo(fileName).absolutePath() != QDir::current().absolutePath())
         throwBoxException(QString("DumpRuntimeBox: Output file name is not valid (parameter fileName)"));
     else {
         m_cfile = fopen(fileName.toUtf8().data(), "w");
