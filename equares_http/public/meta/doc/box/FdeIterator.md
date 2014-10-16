@@ -53,3 +53,4 @@ the FDE iterator will make the following assumptions about these ports:
     * =[Mandelbrot set](/editor?sim=mandelbrot) (simple example);
     * =[Chaos induced by logistic mapping](/editor?sim=logistic-mapping-chaos) (another simple example, shows how to use the **nskip** parameter);
     * =[Mandelbrot set (enhanced, color-1)](/editor?sim=mandelbrot-enhanced-color-1) (shows how to use the **stop** port).
+* The =[Rk4](/doc#box/Rk4) box is very similar to the FDE iterator but is designed to numerically solve ordinary differential equations (ODE).
