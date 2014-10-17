@@ -1,4 +1,4 @@
-The box interprets data frames coming to the **input** port as sequential points of a curve. It interpolates the curve linearly between neighboring points.
+The box interprets data frames coming to the **input** port as consecutive points of a curve. It interpolates the curve linearly between neighboring points.
 Points of intersection with a hyperplane are computed. These points, and nothing else, are sent to the **output** port, provided that the crossing direction
 is matched.
 

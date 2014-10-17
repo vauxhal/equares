@@ -283,21 +283,22 @@ function refreshImages() {
     var date = new Date(2014, 3, 29)
     imginfo = JSON.parse(imginfo)
     for (var i=0; i<imginfo.length; ++i) {
-        var img = imginfo[i]
-        img.date = date
-        img.user = null
-        img.data = fs.readFileSync(dir + img.name).toString('binary')
-        imgresize(img, [100, 100], function(err, resized) {
-            if (err)
-                console.log('ERROR: Failed to generate image preview')
-            else {
-                img.preview = resized
-                Img.upsert(img, function(err, doc) {
-                    if (err)
-                        console.log(err)
-                })
-            }
-        })
+        (function(img) {
+            img.date = date
+            img.user = null
+            img.data = fs.readFileSync(dir + img.name).toString('binary')
+            imgresize(img, [100, 100], function(err, resized) {
+                if (err)
+                    console.log('ERROR: Failed to generate image preview')
+                else {
+                    img.preview = resized
+                    Img.upsert(img, function(err, doc) {
+                        if (err)
+                            console.log(err)
+                    })
+                }
+            })
+        })(imginfo[i])
     }
 }
 

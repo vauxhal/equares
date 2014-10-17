@@ -110,7 +110,7 @@ bool IntervalFilterRuntimeBox::processInput(int)
     double pos = m_d2[m_param.index];
     if (!m_hasPrevData) {
         m_hasPrevData = true;
-        m_nextPos = ceil(pos/m_param.interval)*m_param.interval;
+        m_nextPos = ceil((pos-m_param.offset)/m_param.interval)*m_param.interval + m_param.offset;
         return true;
     }
     double prevPos = m_d1[m_param.index];
