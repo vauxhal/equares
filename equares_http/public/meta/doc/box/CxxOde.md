@@ -4,8 +4,14 @@ Its job is to map state variables coming to the **state** input port onto their 
 and to write them to the **oderhs** output port. Data frames coming to the **parameters** input port provide
 values of additional parameters for the mapping.
 
+In other words, the main task for the box is to provide the mapping
+$$
+  [q_1, \ldots, q_n, t]^T \longrightarrow [\dot q_1, \ldots, \dot q_n]^T,
+$$
+where $q_1, \ldots, q_n$ are state variables, and $t$ is the time. The mapping can depend on additional parameters.
+
 ### Data processing
-When a new data frame containing the FDE system state is passed to the **state** input port, the box generates time-derivatives of state variables and sends them to the **oderhs** port.
+When a new data frame containing the ODE system state is passed to the **state** input port, the box generates time-derivatives of state variables and sends them to the **oderhs** port.
 However, to make this processing possible, parameters have to be available. This means that at least one data frame must be passed to the **parameters** port before anything can
 be sent to **oderhs**. Therefore, the processing of **state** data frame is cancelled if no data frames have come to the **parameters** port yet.
 The evaluation of the next system state is done with the last set of parameters passed to the **parameters** port.
@@ -47,7 +53,7 @@ is necessary if you are going to make you code available as a =[snippet](/doc#pa
 ### Providing ODE source code
 A working code example can be taken from the **srcExample** parameter and then edited as necessary.
 
-Another way to provide source code is to use =[snippets](/doc#page/general-snippets). The list of FDE snippets currently available can be found in
+Another way to provide source code is to use =[snippets](/doc#page/general-snippets). The list of ODE snippets currently available can be found in
 the [ODE snippets](/doc#snippet/ode) page.
 
 ### Difference between CxxOde and CxxFde

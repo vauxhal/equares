@@ -1,4 +1,5 @@
-### Differential equation
+### Overview
+
 Simple pendulum is described by well known nonlinear equation
 $$
   \ddot \varphi + \frac{g}{l}\sin \varphi = 0,
@@ -7,14 +8,18 @@ where $\varphi$ is the angle between the pendulum and the vertical direction, $g
 
 ![](/img/-/pendulum.png)
 
+The box obtains its parameters,  $l$ and $g$, from port **parameters** ([data hints](/doc#page/general-data) **l** and **g** respectively),
+and system state vector $[\varphi, \dot\varphi, t]^T$ from port **state** (data hints **q**, **dq**, **t**);
+it sends ODE right hand side vector $[\dot\varphi, \ddot\varphi]^T$ (data hints **dq** and **d2q**) to port **oderhs**.
+
 ### Data processing
-The box obtains its parameters, $l$ and $g$, from the **parameters** port, and its state variables, $\varphi$ and $\dot\varphi$, and the time, $t$,
-from the **state** port (on that port, =[data hints](/doc#page/general-data) for state variables and time are **q**, **dq**, **t** respectively).
 
-Once data on both ports is available, the box outputs ODE right hand side each time any of the inputs obtains a new data frame.
-The right hand side $\dot\varphi$, $\ddot\varphi$ is then written to the **oderhs** port (on that port, data hints for elements are **dq** and **d2q** respectively).
+The data processing for this box is the same as for any other ODE box, e.g., =[CxxOde](/doc#box/CxxOde).
+It produces an output data frame with ODE right hand side as soon as system state comes to port **state**, provided
+some parameters are already available at port **parameters** (if not, the processing is cancelled). Sending
+data frames to port **parameters** *does not* cause ODE right hand side to be computed and data frame to be sent to port **oderhs**.
 
-The **state** and **oderhs** ports can be connected, for example, to the **rhsState** and **rhs** ports of an =[ODE solver](/doc#box/Rk4) box respectively,
-and the **parameters** port can be connected to the output port of a [Param](/doc#box/Param) box.
+### See also
 
-See also the =[example of pendulum simulation](/editor?sim=z%2Fsimple-pendulum-1).
+- The =[example of pendulum simulation](/editor?sim=z%2Fsimple-pendulum-1)
+- The =[Rk4](/doc#box/Rk4) box is currently the only ODE solver that can be connected to ports **state** and **oderhs**
