@@ -19,6 +19,9 @@ It produces an output data frame with ODE right hand side as soon as system stat
 some parameters are already available at port **parameters** (if not, the processing is cancelled). Sending
 data frames to port **parameters** *does not* cause ODE right hand side to be computed and data frame to be sent to port **oderhs**.
 
+The **state** and **oderhs** ports are typically connected to the **rhsState** and **rhs** ports of an =[ODE solver](/doc#box/Rk4) box respectively,
+and the **parameters** port can be connected, for example, to the output port of a [Param](/doc#box/Param) box.
+
 ### See also
 
 - The =[example of pendulum simulation](/editor?sim=z%2Fsimple-pendulum-1)

@@ -10,6 +10,9 @@ However, to make this processing possible, parameters have to be available. This
 be sent to **nextState**. Therefore, the processing of **state** data frame is cancelled if no data frames have come to the **parameters** port yet.
 The evaluation of the next system state is done with the last set of parameters passed to the **parameters** port.
 
+The **state** and **nextState** ports are typically connected to the **fdeOut** and **fdeIn** ports of an =[FDE iterator](/doc#box/FdeIterator) box respectively,
+and the **parameters** port can be connected, for example, to the output port of a [Param](/doc#box/Param) box.
+
 ### Source code requirements
 The code in the **src** parameter must contain an arbitrarily named class containing the following public methods:
 - ```int paramCount() const;```<br/>

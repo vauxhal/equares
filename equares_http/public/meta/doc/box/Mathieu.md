@@ -18,7 +18,10 @@ It produces an output data frame with ODE right hand side as soon as system stat
 some parameters are already available at port **parameters** (if not, the processing is cancelled). Sending
 data frames to port **parameters** *does not* cause ODE right hand side to be computed and data frame to be sent to port **oderhs**.
 
-In addition to this behavior, the box has one more output port, **period**. A data frame is always available at this port;
+The **state** and **oderhs** ports are typically connected to the **rhsState** and **rhs** ports of an =[ODE solver](/doc#box/Rk4) box respectively,
+and the **parameters** port can be connected, for example, to the output port of a [Param](/doc#box/Param) box.
+
+In addition to the standard ODE box behavior, this box has one more output port, **period**. A data frame is always available at this port;
 it contains one element, which is the period of time dependency of equation coefficients (it equals $\pi$).
 Notice that the box never causes any other boxes attached to this port to start processing that data. Instead,
 they can use the period when they need it.
