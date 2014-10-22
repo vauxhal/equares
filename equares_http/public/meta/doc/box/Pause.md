@@ -1,5 +1,5 @@
 ### Overview
-The box is used to support interactive input.
+The box is used to support =[interactive input](/doc#page/general-interactive-input).
 It has no output ports and one input port, **activator**.
 
 The box is activated when one of the following conditions is met:
@@ -17,11 +17,11 @@ and simulation continues (the continuation point depends on the logic of box tha
 Notice that there can be many user input boxes in simulation, and user input can happen in any of them.
 
 ### See also
-* step 2 of the =[Interactive phase portrait](/doc#tut/-/interactive-phase-portrait) tutorial;
-* the =[Interactive phase portrait, #6](/editor?sim=interactive-phase-portrait-6) simulation;
-* the following input boxes:
-    * =[PointInput](/doc#box/PointInput);
-    * =[RangeInput](/doc#box/RangeInput);
-    * =[RectInput](/doc#box/RectInput);
-    * =[SignalInput](/doc#box/SignalInput);
-    * =[SimpleInput](/doc#box/SignalInput).
+* Step 2 of the =[Interactive phase portrait](/doc#tut/-/interactive-phase-portrait) tutorial
+* The =[Interactive phase portrait, #6](/editor?sim=interactive-phase-portrait-6) simulation
+* The following input boxes
+    * =[PointInput](/doc#box/PointInput)
+    * =[RangeInput](/doc#box/RangeInput)
+    * =[RectInput](/doc#box/RectInput)
+    * =[SignalInput](/doc#box/SignalInput)
+    * =[SimpleInput](/doc#box/SimpleInput)
