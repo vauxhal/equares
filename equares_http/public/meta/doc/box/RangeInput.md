@@ -37,6 +37,7 @@ The data processing for this box, as well as parameters **restartOnInput** and *
 
 ### See also
 
-The following simulations show examples of usage for the **PointInput** box:
-* =[Double pendulum, Poincare map (interactive 2)](/editor?sim=z%2Fdouble-pendulum-psec-interactive2);
-* =[Julia set for quadratic polynomial](/editor?sim=julia).
+* The =[SimpleInput](/doc#box/SimpleInput) box allows user to input arbitrary values.
+* The following simulations show examples of usage for the **PointInput** box:
+    * =[Double pendulum, Poincare map (interactive 2)](/editor?sim=z%2Fdouble-pendulum-psec-interactive2);
+    * =[Julia set for quadratic polynomial](/editor?sim=julia).

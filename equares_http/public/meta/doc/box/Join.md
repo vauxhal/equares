@@ -2,10 +2,10 @@
 The box glues together each two data frames coming to input ports **in_1** and **in_2**. Both input data frames must contain 1D data,
 and the output data frame is also 1D.
 
-Suppose that the input data frame at port **in_1** has $n_1$ elements $x^{in,1}_1,\ldots x^{in,1}_{n_1}$, and
-the input data frame at port **in_2** has $n_2$ elements $x^{in,2}_1,\ldots x^{in,2}_{n_2}$.
+Suppose that the input data frame at port **in_1** has $n_1$ elements $x^{in,1}_0,\ldots x^{in,1}_{n_1-1}$, and
+the input data frame at port **in_2** has $n_2$ elements $x^{in,2}_0,\ldots x^{in,2}_{n_2-1}$.
 Then the output data frame consists of all elements of data frame at port **in_1**, followed by all elements of data frame at port **in_2**:
-$x^{in,1}_1,\ldots x^{in,1}_{n_1}, x^{in,2}_1,\ldots x^{in,2}_{n_2}$, so it has $n_1+n_2$ elements.
+$x^{in,1}_0,\ldots x^{in,1}_{n_1-1}, x^{in,2}_0,\ldots x^{in,2}_{n_2-1}$, so it has $n_1+n_2$ elements.
 
 ### Data processing
 The box has two boolean state variables, $s_1$ and $s_2$, indicating that an unprocessied data frame is pending at input ports **in_1** and **in_2** respectively. The value of ```true``` means

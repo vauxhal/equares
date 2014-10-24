@@ -7,14 +7,30 @@ Input data frames coming from the **input** port
 are considered to be Cartesian coordinates $[x,y]^T$ of 2D points, if the **withInputValue** parameter is ```false```. Otherwise, if **withInputValue** is ```true```,
 input data frames should also contain values, $v$, so that they are $[x,y,v]^T$. In the former case, the canvas assumes $v=1$.
 
-These points are mapped onto the pixels of canvas. If a point falls into a canvas pixel, that pixel
-obtains the value of $v$.
+These points are mapped onto the pixels of canvas. If a point falls into a canvas pixel with coordinates $x^c, y^c$, that pixel
+obtains the value of $v$. The mapping is done as follows.
+$$
+x^c = \left\lfloor N_x\frac{x-x_{\min}}{x_{\max}-x_{\min}}\right\rfloor,\qquad
+y^c = \left\lfloor N_y\frac{y-y_{\min}}{y_{\max}-y_{\min}}\right\rfloor,\\
+$$
+where
+* $x_{\min}$ is the value of parameter **param.x.xmin** or first element of last data frame obtained at port **range**;
+* $x_{\max}$ is the value of parameter **param.x.xmax** or second element of last data frame obtained at port **range**;
+* $y_{\min}$ is the value of parameter **param.y.xmin** or third element of last data frame obtained at port **range**;
+* $y_{\max}$ is the value of parameter **param.y.xmax** or fourth element of last data frame obtained at port **range**;
+* $N_x$ is the number of canvas pixels in the horizontal direction, **param.x.resolution**;
+* $N_y$ is the number of canvas pixels in the vertical direction, **param.y.resolution**.
 
 Canvas writes output on its **output** port only if one of the following events occurs.
 * There is an input on the **flush** input port.
 * The **refreshInterval** parameter has a positive value and the time elapsed since last output exceeds it.
 
 Each output frame of the canvas is its matrix of pixel data in the current state.
+
+If a data frame comes to the **range** port, its data defines
+new values of $x_{\min}, x_{\max}, y_{\min}, y_{\max}$.
+This feature is typically used in combination with the =[RectInput](/doc#box/RectInput) box that supplies
+new ranges as user pans/zoom output image.
 
 ### Canvas geometry
 The geometry of canvas is determined by its _range_ and _resolution_ in each of its two dimensions.
