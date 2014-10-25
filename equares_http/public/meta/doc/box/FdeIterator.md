@@ -3,15 +3,15 @@ The box is designed to iterate (or numerically solve) systems of finite differen
 the solver can evaluate each next state of the system by writing the current state to **fdeOut** and then read next state from **fdeIn**.
 
 The process of numerical solution starts as soon as any data frame comes to the **initState** port. At this point, some data frame must be available in the **parameters**
-port (see below); otherwise, the processing is cancelled. The data on the **initState** port is the state of the FDE system from which
+port (see below); otherwise, the processing is cancelled. The data on the **initState** port is the state of the FDE system from which iterations start.
 
 As the solver iterates the FDE system, it writes its sequential states to port **nextState**; these data frames can be utilized by other parts of simulation workflow.
-Notice that the initial state itself
+Notice that the initial state itself will be sent to that port if **nskip**=0 and **nout**=1 (see below). The last state _will not_ be sent to port **nextState**.
 
 The iterations stop when all requested iterations are done, or when the **stop** port receives any data frame. At this point, the solver sends empty data frame to its **finish** port
 to let the rest of the workflow know that the iterations have finished.
 
-The number of iterations and the output control is specified by parameters coming to port **parameters**. These parameters are as follows:
+The number of iterations and the output control parameters are specified by data frames coming to port **parameters**. These parameters are as follows:
 * **n** &mdash; the total number of iterations to perform;
 * **nskip** &mdash; determines how many initial iterations to perform before anything is sent to port **nextState**;
 * **nout** &mdash; determines how many iterations should be done between two consequent frames sent to port **nextState**:
@@ -20,7 +20,7 @@ The number of iterations and the output control is specified by parameters comin
 ### Data proceessing
 Let us describe the data processing in more detail.
 * When a data frame comes to port **parameters**, it specifies solver parameters **n**, **nskip**, and **nout** for one or more further solution processes.
-* When a data frame comes to port **initState** it contains the initial state $x_0$ of the FDE system. The solution process then starts then.
+* When a data frame comes to port **initState** it contains the initial state $x_0$ of the FDE system. The solution process starts then.
     * Solver parameters are read from port **parameters**. If no data is available there, the data processing is cancelled. Notice the following about the solver parameters.
         * If **n** is zero, it is set to the maximum integer number, so the number of iterations becomes practically infinite.
         * If **nout** is zero or negative, only the last system state, $x_{n}$, will be written to port **nextState**.
@@ -34,13 +34,13 @@ Let us describe the data processing in more detail.
         * If $k$ is greater than or equal to **nskip**, then $x_k$ is probably output to the **nextState** port. To decide whether to output or not,
           $s$ is decreased by one, and if it reaches zero, the output is done; in this case, $s$ is set to **nout** again.
           Notice that sending data to **nextState** can cancel the processing, if some other box is not ready.
-        * Next system state $x_{k+1}$ is evaluated by sending $x_k$ to port **fdeOutput**, followed by reading from port **fdeInput**.
+        * Next system state $x_{k+1}$ is evaluated by sending $x_k$ to port **fdeOut**, followed by reading from port **fdeIn**.
         * Iteration number $k$ is increased by one.
     * Empty data frame is sent to port **finish**.
 * When a data frame comes to the **stop** port, the termination flag is set, which causes the currently running solution to exit the iteration loop.
   This has no effect if there is no solution process currently running.
 
-Note that ports **fdeIn** and **fdeOut** must not be connected to anythin other than an FDE system. As follows from the data processing algorithm above,
+Note that ports **fdeIn** and **fdeOut** must not be connected to anything other than an FDE system. As follows from the data processing algorithm above,
 the FDE iterator will make the following assumptions about these ports:
 * When a data frame is sent to **fdeOut**, one of two things can happen:
     * exactly one data frame comes to **fdeIn**;
