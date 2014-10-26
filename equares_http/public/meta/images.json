@@ -1,4 +1,5 @@
 [{"name":"pendulum.png", "contentType": "image/png", "title":"Pendulum", "keywords":["pendulum"]},
- {"name":"double-pendulum.png", "contentType": "image/png", "title":"Double pendulum", "keywords":["pendulum", "double pendulum"]}
+ {"name":"double-pendulum.png", "contentType": "image/png", "title":"Double pendulum", "keywords":["pendulum", "double pendulum"]},
+ {"name":"vibrating-pendulum.png", "contentType": "image/png", "title":"Pendulum on vibrating support", "keywords":["pendulum", "vibrating pendulum"]}
 ]
 

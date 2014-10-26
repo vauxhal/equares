@@ -14,10 +14,10 @@
    id="svg2"
    version="1.1"
    inkscape:version="0.48.3.1 r9886"
-   sodipodi:docname="pendulum.svg"
-   inkscape:export-filename="/home/stepan/equares/equares_http/public/meta/pendulum.png"
-   inkscape:export-xdpi="53.91"
-   inkscape:export-ydpi="53.91">
+   sodipodi:docname="vibrating-pendulum.svg"
+   inkscape:export-filename="/home/stepan/equares/equares_http/public/meta/vibrating-pendulum.png"
+   inkscape:export-xdpi="54.010845"
+   inkscape:export-ydpi="54.010845">
   <defs
      id="defs4">
     <marker
@@ -81,9 +81,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="5.5398814"
-     inkscape:cx="327.71455"
-     inkscape:cy="717.53177"
+     inkscape:zoom="1.9586439"
+     inkscape:cx="440.48178"
+     inkscape:cy="632.2688"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -119,12 +119,6 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1">
-    <path
-       style="fill:none;stroke:#000000;stroke-width:2;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:2,4;stroke-dashoffset:0"
-       d="m 447.55744,356.89007 c -52.99528,65.71415 -149.22829,76.02483 -214.94245,23.02955 -9.19339,-7.41403 -17.49656,-15.86855 -24.74332,-25.19436"
-       id="path2989"
-       inkscape:connector-curvature="0"
-       sodipodi:nodetypes="csc" />
     <path
        style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        d="m 328.57143,260.93361 90,122.85714"
@@ -174,26 +168,6 @@
        d="m 316.17775,260.93361 24.74873,0"
        id="path5001"
        inkscape:connector-curvature="0" />
-    <path
-       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       d="m 316.45567,260.93361 5.56881,-5.56881"
-       id="path5003"
-       inkscape:connector-curvature="0" />
-    <path
-       inkscape:connector-curvature="0"
-       id="path5005"
-       d="m 339.7146,260.93361 5.56881,-5.56881"
-       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
-    <path
-       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       d="m 331.9616,260.93361 5.56881,-5.56881"
-       id="path5007"
-       inkscape:connector-curvature="0" />
-    <path
-       inkscape:connector-curvature="0"
-       id="path5009"
-       d="m 324.20866,260.93361 5.56881,-5.56881"
-       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
     <text
        xml:space="preserve"
        style="font-size:40px;font-style:oblique;font-variant:normal;font-weight:500;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Computer Modern;-inkscape-font-specification:Computer Modern Bold"
@@ -234,5 +208,26 @@
          y="405.95081"
          x="424.3606"
          sodipodi:role="line">m</tspan></text>
+    <path
+       inkscape:connector-curvature="0"
+       id="path3011"
+       d="m 355.95721,241.84672 0,37.99392"
+       style="fill:none;stroke:#000000;stroke-width:1.44298255;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;marker-start:url(#Arrow2Mstart);marker-mid:none;marker-end:url(#Arrow2Mend)" />
+    <text
+       sodipodi:linespacing="125%"
+       id="text4369"
+       y="269.3053"
+       x="374.49844"
+       style="font-size:40px;font-style:normal;font-variant:normal;font-weight:500;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:jsMath-cmmi10;-inkscape-font-specification:jsMath-cmmi10 Medium"
+       xml:space="preserve"><tspan
+         id="tspan4371"
+         style="font-style:oblique;font-variant:normal;font-weight:500;font-stretch:normal;font-family:Computer Modern;-inkscape-font-specification:Computer Modern Bold"
+         y="269.3053"
+         x="374.49844"
+         sodipodi:role="line">u<tspan
+   style="font-style:normal;-inkscape-font-specification:Computer Modern Bold"
+   id="tspan4383">(</tspan>t<tspan
+   style="font-style:normal"
+   id="tspan4381">)</tspan></tspan></text>
   </g>
 </svg>
