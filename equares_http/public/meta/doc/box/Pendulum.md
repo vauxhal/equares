@@ -24,5 +24,5 @@ and the **parameters** port can be connected, for example, to the output port of
 
 ### See also
 
-- The =[example of pendulum simulation](/editor?sim=z%2Fsimple-pendulum-1)
+- The =[example of pendulum simulation](/editor?sim=simple-pendulum-1)
 - The =[Rk4](/doc#box/Rk4) box is currently the only ODE solver that can be connected to ports **state** and **oderhs**

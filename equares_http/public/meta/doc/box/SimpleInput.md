@@ -1,24 +1,16 @@
 ### Overview
 
-This box provides =[interactive user input](/doc#page/general-interactive-input) in the form of moving sliders.
+This box provides =[interactive user input](/doc#page/general-interactive-input) in the form of entering numerical values.
 It is one of _vector data input boxes_.
 
-The box allows user to set input values in specified ranges, with specified resolution.
+The box allows user to set arbitrary input values as numbers.
 Input values, as well as their indices in output data frame, are specified in the **param** parameter.
 
 The **param** parameter is an array of elements, each of which is a structure with the following fields:
 * **index** &mdash; the index of component of data frame (received at port **input**) to be replaced with the value (to prepare data frame for port **output**);
 * **name** &mdash; name to display near the slider corresponding to the value;
-* **vmin** &mdash; minimum allowed value;
-* **vmax** &mdash; maximum allowed value;
-* **resolution** &mdash; value resolution (determines how many intermediate values can be set between minimum and maximum).
 
-When user moves a slider corresponding to the $i$-th value, he/she sets some parameter $t_i\in[0,1]$, and the value $v_i$ is then computed as follows.
-$$
-v_i = v_{i,\min}(1-t_i^{*}) + v_{i,\max}t_i^{*}, \quad t_i^{*} = \frac1{N_i} \left\lfloor t_i{N_i} \right\rfloor,
-$$
-where $N_i>0$ is the resolution, **param[i].resolution**, $v_{i,\min}$ is the minimum value, **param[i].vmin**, $v_{\max}$ is the maximum value, **param[i].vmax**,
-and $i=0,\ldots,m-1$ is the index in the **param** array of $m$ elements.
+When user edits the $i$-th value and presses ```Enter```, he/she sets the value $v_i$.
 
 Input data frames coming to port **input** are expected to be one-dimensional arrays of $n$ elements, and output data frames sent to port **output** have the same format.
 Output data frames ${\bf x}^{out}=[x^{out}_0,\ldots,x^{out}_{n-1}]^T$ are obtained from input data frames ${\bf x}^{in}=[x^{in}_0,\ldots,x^{in}_{n-1}]^T$ as follows.
@@ -37,7 +29,4 @@ The data processing for this box, as well as parameters **restartOnInput** and *
 
 ### See also
 
-* The =[SimpleInput](/doc#box/SimpleInput) box allows user to input arbitrary values.
-* The following simulations show examples of usage for the **PointInput** box:
-    * =[Double pendulum, Poincare map (interactive 2)](/editor?sim=double-pendulum-psec-interactive2);
-    * =[Julia set for quadratic polynomial](/editor?sim=julia).
+* The =[RangeInput](/doc#box/RangeInput) box allows user to input values within specified ranges, with specified resolution.

@@ -8,7 +8,7 @@ The box sends each input data frame to port **output** as soon as it receives it
 ### See also
 
 See the following simulations using this box:
-- =[Phase volume evolution](/editor?sim=z%2Fsimple-pendulum-phase-volume-evolution);
+- =[Phase volume evolution](/editor?sim=phase-volume-evolution);
 - =[Mandelbrot set (enhanced, color-1)](/editor?sim=mandelbrot-enhanced-color-1);
 - =[Mandelbrot set limit points](/editor?sim=mandelbrot-lim-points);
 - =[Mandelbrot and Julia sets](/editor?sim=mandelbrot-and-julia).
