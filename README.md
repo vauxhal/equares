@@ -2,7 +2,8 @@
 
 ## About
 
-Equares is a tool for numeric analysis of ordinary differential equations
+Equares is a tool for numeric analysis of ordinary differential equations.
+The tool is available online at [equares.ctmech.ru](http://equares.ctmech.ru).
 
 ## Motivation
 
@@ -51,8 +52,42 @@ Technologies involved are as follows
 * Besides, running server app requires the [mongoDB](http://www.mongodb.org/) database engine
 
 ## Building
-TODO
+To build the Equares core, you will need QtCreator (see [qt-project.org](http://qt-project.org/).
+
+Project file to open with QtCreator is ```equares.pro```.
+Optionally, you can build project using the command line:
+<pre>
+mkdir build-equares-release
+cd build-equares-release
+qmake CONFIG+=release ../equares/equares.pro
+make
+<pre>
+
+Nothing more needs to be built
 
 ## Running
-TODO
+To run equares http server, you will need to install
+* [node.js](http://nodejs.org/)
+* [npm](https://www.npmjs.org/)
+* [mongoDB](http://www.mongodb.org/)
+* node modules mentioned above; this is done with the command ```npm install``` issued from the ```equares_http``` subdirectory.
 
+The EQUARES_BIN environment variable must be set to point to the directory containing Equares core binaries, e.g. (on Linux, prvided
+the build root is ```$HOME/build-equares-release```),
+<pre>
+export EQUARES_BIN=$HOME/build-equares-release/bin
+</pre>
+On Linux, you will likely need to set the ```LD_LIBRARY_PATH``` environment variable to the same directory:
+<pre>
+export LD_LIBRARY_PATH=$EQUARES_BIN
+</pre>
+
+Before running the server, you should also do these things.
+* Make sure mongodb server is running on localhost.
+* Provide the file ```equares_http/email-settings.json``` (consider example file ```equares_http/email-settings-example.json```).
+
+The server is started with the command
+<pre>
+node app.js
+</pre>
+issued in the ```equares_http``` subdirectory.
