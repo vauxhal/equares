@@ -61,7 +61,7 @@ mkdir build-equares-release
 cd build-equares-release
 qmake CONFIG+=release ../equares/equares.pro
 make
-<pre>
+</pre>
 
 Nothing more needs to be built
 
