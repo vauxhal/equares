@@ -75,5 +75,5 @@ More likely you will be using the combination **restartOnInput**=```false``` and
 No simulations currently use the combination **restartOnInput**=```true``` and **activateBeforeRestart**=```false```, but it could happen to be what user needs.
 
 **_Important notice._** Even if **restartOnInput** is set to ```false```, user input events cause simulation data processing loop to be exited and entered again, which
-can be treated as a simulation restart by some boxes. For example, if the **clearOnRestart** parameter of =[Canvas](/doc#box/Canvas) box is set to true,
-the canvas will be cleared at each user input event.
+can be treated as a simulation restart by some boxes (see the **User input events** section in the =[Simulation workflow](/doc#page/general-workflow) page).
+For example, if the **clearOnRestart** parameter of =[Canvas](/doc#box/Canvas) box is set to true, the canvas will be cleared at each user input event.

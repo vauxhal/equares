@@ -1,16 +1,11 @@
-# Hotlist
+# TODO: Hotlist
 * core: Rename GridGenerator to Grid.
-* docs: Add section about port activation.
-* core, web: Indicate ports that are activators.
 * web: less strict port equality check (hints are optional).
-* docs: disclaimer; unstable format warning.
 * core: validate number of interactive input values.
-* docs: tutorial, pitfalls.
-* web: split examples to basic and advanced.
+* docs: tutorial upload page.
 * Correct equations for logistic mapping and Mandelbrot set.
-* Canvas box update when withInputValue property changes.
 
-# Roadmap / TODO
+# TODO: Roadmap
 
 ## Core functionality
 ### Common tasks
@@ -19,8 +14,9 @@
    2. Phase portraits (autonomous systems with two phase variables)
 2. Cellular automata
 3. Simulation output
-   1. Plots with various captions
+   1. Plots with axes, labels, marks, and captions
    2. Animations
+   3. 3D data (e.g., curves)
 4. Solvers
    1. ODE solver for conservative system (RK2 trapezoid rule)
    2. CVODE solver
@@ -31,12 +27,28 @@
    2. GPU
    3. Cluster
 
-### Boxes
-1. GridGenerator (with output port containing the description of the grid of frames)
-2. Canvas with additional input port containing output data format
-3. Phase portrait generator
-4. Input transformer
-5. Canvas painter
+### New boxes wanted
+1. **CxxTransform** &mdash; transforms input to output accordingly to algrithm specified by user.
+   * Has input ports **input**, **output**, and **param**, much like =[CxxFde](/doc#box/CxxFde) or =[CxxOde](/doc#box/CxxOde),
+     but with independent description of input and output formats.
+2. **Integrate** &mdash; similar to =[Differentiate](/doc#box/Differentiate), but different formula: should accumulate total
+   sum of input data frames and output it as soon as a new data frame is received.
+3. **Sum** &mdash; has two input ports, **in_1** and **in_2**, and one output port, **out**. All ports have the same format,
+   output frame is computed from each two input frames (just like for =[Join](/doc#box/Join)). Output components are equal to
+   the sums of components of both inputs.
+3. **AffineTransform** &mdash; transforms input to output using an affine transformation specified
+   by the **transformParam** parameter or (if connected) the **transform** port. The value of the **transformParam**
+   parameter should be entered as text containing space-delimited elements of the transformation matrix, one line per matrix row;
+   or, even better, a table should be provided by web interface to input the matrix.
+4. **DistanceFilter** &mdash; similar to =[IntervalFilter](/doc#box/IntervalFilter), but curve parameter is computed from point coordinates
+   according to **parameter**; the parameter must be an array of structures with fields **index**, **weight**.
+
+### Box enhancement
+Probably its reasonable to add functionality to some boxes, rather than achieve that functionality with chains of other boxes in
+simulations. For example
+1. The following parameters could be added to =[Canvas](/doc#box/Canvas) that control how incoming values are mapped to pixels:
+   **pointSize** &mdash; controls how big should be the square of pixels representing each incoming point;
+   **stroke** &mdash; boolean, ```true``` means that intermediate points are generated, so that lines are drawn instead of separate points.
 
 ## Web interface
 1. View for curves in 3D

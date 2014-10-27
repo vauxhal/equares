@@ -11,5 +11,6 @@
    * Write a ```scriptInit()``` static function that registers the above conversion functions in the QtScript module using the ```qScriptRegisterMetaType()``` function
    * Register your ```scriptInit()``` function using the ```REGISTER_SCRIPT_INIT_FUNC``` macro
 5. Provide an entry in file ```equares_core/res/BoxSettings.ini``` for your box
-6. Add box logics to filt ```equares_http/public/js/equares-box.js```
-7. Build, restart server, enjoy!
+6. Add box logics to file ```equares_http/public/js/equares-box.js```
+7. Add box documentation &mdash; it will be read from file ```equares_http/public/meta/box/BoxName.md```, where ```BoxName``` is the name of the box visible to the end users.
+8. Build, restart server, enjoy!

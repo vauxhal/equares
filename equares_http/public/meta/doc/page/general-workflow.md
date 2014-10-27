@@ -68,11 +68,11 @@ can receive activation notifications.
 
 The above process normally takes place during the simulation. In addition, there could be events that break the processing
 of the queue of notifications. These events are caused by =[interactive user input](/doc#page/general-interactive-input).
-Once a user input event occurs, an exception is thrown, which leads to the unwinding any nested link activation calls and
+Once a user input event occurs, an exception is thrown, which leads to the unwinding of any nested link activation calls and
 the change of the queue of notifications. Besides, each box gets notified about simulation restart.
 
 The queue of notifications is changed as follows when user input occurs. First, the queue is cleared. Then one of two things
-happen
+happens.
 * If the box that threw the exception specifies which box should be activated after restart,
   the notifications for that box are enqueued (if the box is a generator, its activation notification is enqueued; otherwise,
   the activation notifications of all links connected to its output ports are enqueued). An input box can only specify
