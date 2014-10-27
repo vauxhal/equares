@@ -63,7 +63,7 @@ qmake CONFIG+=release ../equares/equares.pro
 make
 </pre>
 
-Nothing more needs to be built
+Nothing more needs to be built.
 
 ## Running
 To run equares http server, you will need to install
