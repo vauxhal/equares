@@ -120,6 +120,6 @@ div.outputFile {
 }
 .share {
     position: fixed;
-    top: 50px;
-    right: 180px;
+    bottom: 30px;
+    right: 50px;
 }
