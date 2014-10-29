@@ -33,7 +33,7 @@ body {
 }
 #projectname + div {
     position: absolute;
-    left: 160px;
+    left: 230px;
     top: 0px;
     z-index: 30;
 }
@@ -117,4 +117,9 @@ div.outputFile {
     margin-left: 2px;
     margin-right: 2px;
     cursor: pointer;
+}
+.share {
+    position: fixed;
+    top: 50px;
+    right: 180px;
 }

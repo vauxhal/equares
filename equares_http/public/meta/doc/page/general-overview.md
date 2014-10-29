@@ -1,6 +1,6 @@
 # Basic idea
 
-Equares provides a way to investigate dynamic systems numerically.
+NumEquaRes provides a way to investigate dynamic systems numerically.
 An investigation is done by **simulation**. Simulation itself is a description of what and how needs to be done.
 
 User prepares a simulation by creating **boxes** and connecting them by **links**. It's also necessary to specify **parameters** of all boxes.

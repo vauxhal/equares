@@ -1,33 +1,33 @@
-# Equares
+# NumEquaRes
 
 ## About
 
-Equares is a tool for numeric analysis of ordinary differential equations.
+NumEquaRes is a tool for numerical analysis of ordinary differential equations.
 The tool is available online at [equares.ctmech.ru](http://equares.ctmech.ru).
 
 ## Motivation
 
 We have formulated our requirements as follows:
-* Speed matters. Equares performs faster than
+* Speed matters. NumEquaRes performs faster than
   [MATLAB](http://www.mathworks.com/products/matlab/),
   [SciLab](http://www.scilab.org/), and the like.
-* Freedom matters. Equares is free software. Thus, everyone can extend its functionality.
+* Freedom matters. NumEquaRes is free software. Thus, everyone can extend its functionality.
 * Ease of use matters.
   * User should be able to use it easily without having to do advanced training.
   * User shouldn't have to install a ton of software to get it all work.
 
 Fast basically means implementation of your custom equations in a native language, e.g. C++. So our system needs a compiler to compile your equations.
-But we don't want to force user to install a compiler! That's why Equares is an online system: we install everything on the server, you just use it.
+But we don't want to force user to install a compiler! That's why NumEquaRes is an online system: we install everything on the server, you just use it.
 
 
 ## Architecture
 
-Equares is built of the following components
+NumEquaRes is built of the following components
 * Core
   * ```equares_core``` (C++): library providing the computational functionality
   * ```equares_con``` (C++): console front-end to ```equares_core```
 * Web interface
-  * ```equares_http``` (node.js): HTTP-server providing the Web interface to Equares
+  * ```equares_http``` (node.js): HTTP-server providing the Web interface to NumEquaRes
 * Utilities
   * ```captchagen``` (C++): captcha generator
   * ```imgresize``` (C++): image resizer
@@ -52,7 +52,7 @@ Technologies involved are as follows
 * Besides, running server app requires the [mongoDB](http://www.mongodb.org/) database engine
 
 ## Building
-To build the Equares core, you will need QtCreator (see [qt-project.org](http://qt-project.org/).
+To build the NumEquaRes core, you will need QtCreator (see [qt-project.org](http://qt-project.org/).
 
 Project file to open with QtCreator is ```equares.pro```.
 Optionally, you can build project using the command line:
@@ -72,7 +72,7 @@ To run equares http server, you will need to install
 * [mongoDB](http://www.mongodb.org/)
 * node modules mentioned above; this is done with the command ```npm install``` issued from the ```equares_http``` subdirectory.
 
-The EQUARES_BIN environment variable must be set to point to the directory containing Equares core binaries, e.g. (on Linux, prvided
+The EQUARES_BIN environment variable must be set to point to the directory containing  core binaries, e.g. (on Linux, prvided
 the build root is ```$HOME/build-equares-release```),
 <pre>
 export EQUARES_BIN=$HOME/build-equares-release/bin

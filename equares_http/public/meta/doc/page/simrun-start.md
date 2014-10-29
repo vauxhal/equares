@@ -12,7 +12,7 @@ As you do that, the running simulation dialog pops up.
 
 The dialog normally contains running status information (running or finished), followed by =[simulation output](/doc#page/simrun-output).
 
-In case of an error, the simulation dialog will contain error messages from Equares backend.
+In case of an error, the simulation dialog will contain error messages from NumEquaRes backend.
 
 ![simrun dlg error](/meta/doc/page/simrun-start-3.png "Running simulation error")
 

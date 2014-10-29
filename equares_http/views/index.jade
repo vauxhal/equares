@@ -1,5 +1,5 @@
 //-
-    EquaRes - a tool for numerical analysis of equations.
+    NumEquaRes - a tool for numerical analysis of equations.
     Copyright (C) 2014 Stepan Orlov
 
     This file is part of EquaRes.
@@ -9,7 +9,7 @@
 
 extends page
 block vars
-    - var title = 'Equares'
+    - var title = 'NumEquaRes'
 
 block otherCss
     style.
@@ -26,7 +26,7 @@ block content
   div
     <a href="https://github.com/deadmorous/equares"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/e7bbb0521b397edbd5fe43e7f760759336b5e05f/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677265656e5f3030373230302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_green_007200.png"></a>
     h1 About
-    p Equares is an online system for numerical analysis of equations (including, but not limited to ordinary differential equations).
+    p NumEquaRes is an online system for numerical analysis of equations (including, but not limited to ordinary differential equations).
 
     h1 Get started
     ul
@@ -40,11 +40,11 @@ block content
     p We have formulated our requirements as follows:
     ul
         li.
-            Speed matters. Equares performs faster than
+            Speed matters. NumEquaRes performs faster than
             #{xlink("http://www.mathworks.com/products/matlab/", "MATLAB")},
             #{xlink("http://www.scilab.org/", "SciLab")},
             and the like.
-        li Freedom matters. Equares is free software. Thus, everyone can extend its functionality.
+        li Freedom matters. NumEquaRes is free software. Thus, everyone can extend its functionality.
         li Ease of use matters.
             ul
                 li User should be able to use it easily without having to do advanced training.
@@ -52,7 +52,7 @@ block content
 
     p.
         Fast basically means implementation of your custom equations in a native language, e.g. C++. So our system needs a compiler to compile your equations.
-        But we don't want to force user to install a compiler! That's why Equares is an online system: we install everything on the server, you just use it.
+        But we don't want to force user to install a compiler! That's why NumEquaRes is an online system: we install everything on the server, you just use it.
 
     h1 Target audience
     p Everyone having an equation at hand and wishing to investigate it. Students, engineers, maybe even scientists.
@@ -74,3 +74,7 @@ block content
         li Interactive data input during simulation
         li Reusable code snippets that define and document equations
         li Upload and download of simulations
+    .share
+        script(type='text/javascript' src='//yandex.st/share/share.js' charset='utf-8')
+        // .yashare-auto-init(data-yashareL10n='en' data-yashareType='button' data-yashareTheme='counter' data-yashareQuickServices='yaru,vkontakte,facebook,twitter,odnoklassniki,moimir,lj,friendfeed,moikrug,gplus,pinterest' data-yashareLink='http://equares.ctmech.ru/' data-yashareDescription='online system for numerical analysis of equations' data-yashareImage='http://equares.ctmech.ru/images/logo-small.png')
+        .yashare-auto-init(data-yashareL10n='en' data-yashareType='button' data-yashareQuickServices='yaru,vkontakte,facebook,twitter,odnoklassniki,moimir,lj,friendfeed,moikrug,gplus,pinterest' data-yashareLink='http://equares.ctmech.ru/' data-yashareDescription='online system for numerical analysis of equations' data-yashareImage='http://equares.ctmech.ru/images/logo-small.png')
