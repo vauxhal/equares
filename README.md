@@ -34,7 +34,9 @@ NumEquaRes is built of the following components
 
 ## Technology
 Technologies involved are as follows
-* C++ code is using [Qt](http://qt-project.org/)
+* C++ code is using
+  * [Qt](http://qt-project.org/)
+  * [ACML](http://developer.amd.com/tools-and-sdks/cpu-development/amd-core-math-library-acml/) (optional)
 * Server code is written in JavaScript and is run by [node.js](http://nodejs.org/). There are a number of modules that are required to run the server app
   *  ```line```
   *  ```express```
@@ -52,14 +54,23 @@ Technologies involved are as follows
 * Besides, running server app requires the [mongoDB](http://www.mongodb.org/) database engine
 
 ## Building
-To build the NumEquaRes core, you will need QtCreator (see [qt-project.org](http://qt-project.org/).
+To build the NumEquaRes core, you will need QtCreator (see [qt-project.org](http://qt-project.org/)
+or just an installed version of Qt (4.8+, 5.x also supported).
+
+Optionally, you can install and use the [ACML](http://developer.amd.com/tools-and-sdks/cpu-development/amd-core-math-library-acml/) library.
+To use it, supply the ```ACML_DIR``` variable to ```qmake``` like this:
+<pre>
+qmake ACML_DIR=/opt/acml5.3.1/gfortran64 other arguments
+</pre>
+Doing so will enhance the functionality of some boxes. The ```ACML_DIR``` variable must be set to the path to an installed version of ```ACML```. That directory is expected to contain
+files ```include/acml.h``` and ```lib/libacml.so``` (Linux) or ```lib/acml.dll``` (Windows).
 
 Project file to open with QtCreator is ```equares.pro```.
 Optionally, you can build project using the command line:
 <pre>
 mkdir build-equares-release
 cd build-equares-release
-qmake CONFIG+=release ../equares/equares.pro
+qmake CONFIG+=release ACML_DIR=/path/to/acml/installation ../equares/equares.pro
 make
 </pre>
 

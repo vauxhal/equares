@@ -47,6 +47,11 @@ private:
     int m_n;
     QVector<double> m_initStateData;
     double m_resultData;
+    QVector<double> m_mmx;  // Monodromy matrix (+1 extra element)
+#ifdef WITH_ACML
+    QVector<double> m_eigr;
+    QVector<double> m_eigi;
+#endif // WITH_ACML
 
     bool run(int);
 };

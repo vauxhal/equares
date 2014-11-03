@@ -17,6 +17,12 @@ contains(DEFINES, EQUARES_CORE_STATIC) {
     CONFIG += staticlib
 }
 
+!isEmpty(ACML_DIR) {
+    INCLUDEPATH += $$ACML_DIR/include
+    LIBS += -L$$ACML_DIR/lib -lacml
+    DEFINES += WITH_ACML
+}
+
 SOURCES += equares_core.cpp \
     ConstantSourceBox.cpp \
     PendulumBox.cpp \
@@ -63,7 +69,8 @@ SOURCES += equares_core.cpp \
     DifferentiateBox.cpp \
     RectInputBox.cpp \
     CounterBox.cpp \
-    SplitBox.cpp
+    SplitBox.cpp \
+    math_util.cpp
 
 HEADERS += equares_core.h\
         equares_core_global.h \
@@ -115,7 +122,8 @@ HEADERS += equares_core.h\
     DifferentiateBox.h \
     RectInputBox.h \
     CounterBox.h \
-    SplitBox.h
+    SplitBox.h \
+    math_util.h
 
 symbian {
     MMP_RULES += EXPORTUNFROZEN

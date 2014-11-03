@@ -52,8 +52,9 @@ The box expects that the output of a single data frame to port **initState** res
 to port **initState**, nothing comes to port **solution**.
 
 ### Notes
-Currently only second order ODE systems are supported, $n=2$. There are plans to support arbitrary system size; this would rely on an implementation of the
-?[LAPACK](http://www.netlib.org/lapack/) library, and we are planning to use AMD's ?[ACML](http://developer.amd.com/tools-and-sdks/cpu-development/amd-core-math-library-acml/).
+If ```equares_core``` is built without using the AMD's ?[ACML](http://developer.amd.com/tools-and-sdks/cpu-development/amd-core-math-library-acml/)
+library (an implementation of ?[LAPACK](http://www.netlib.org/lapack/)), then only second order ODE systems are supported, $n=2$.
+To support arbitrary $n$, the ```ACML_DIR``` variable needs to be supplied to ```qmake``` when building ```equares_core```.
 
 ### See also
 - The =[Rk4](/doc#box/Rk4) solver is the only box currently capable of solving initial value problems for ODE systems, so it is currently the only box
