@@ -46,6 +46,7 @@ app.use(express.cookieParser('your secret here'));
 app.use(function(req, res, next){
     var ua = uaParser.parseUA(req.headers['user-agent'])
     console.log(ua.toString())
+    console.log(req.headers['user-agent'])
     next()
 })
 app.use(express.session({
