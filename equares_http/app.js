@@ -23,6 +23,7 @@ var captcha = require('./mycaptcha');
 var mongoose = require('mongoose');
 var flash = require('connect-flash');
 var MongoStore = require('connect-mongo')(express);
+var uaParser = require('ua-parser');
 
 var env = process.env.NODE_ENV || 'development',
   config = require('./config/config')[env];
@@ -42,6 +43,11 @@ app.use(express.json());
 app.use(express.urlencoded());
 app.use(express.methodOverride());
 app.use(express.cookieParser('your secret here'));
+app.use(function(req, res, next){
+    var ua = uaParser.parseUA(req.headers['user-agent'])
+    console.log(ua.toString())
+    next()
+})
 app.use(express.session({
     store: new MongoStore({
         url: 'mongodb://localhost/equares-sessions'
