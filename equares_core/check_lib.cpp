@@ -54,15 +54,15 @@ void checkLib(const QString& libName)
     proc.closeWriteChannel();
     if (!proc.waitForFinished())
         throw EquaresException(QObject::tr("Command\n%1\ntakes too long to execute").arg(cmd));
-    QString stderr = QString::fromUtf8(proc.readAllStandardError());
-    if (proc.exitStatus() != QProcess::NormalExit   ||   proc.exitCode() != 0   ||   !stderr.isEmpty())
+    QString procStderr = QString::fromUtf8(proc.readAllStandardError());
+    if (proc.exitStatus() != QProcess::NormalExit   ||   proc.exitCode() != 0   ||   !procStderr.isEmpty())
         throw EquaresException(QObject::tr("Command\n%1\nfailed: code: %2, message: %3")
-            .arg(cmd, QString::number(proc.exitCode()), stderr));
-    QString stdout = QString::fromUtf8(proc.readAllStandardOutput());
-    if (stdout.isEmpty())
+            .arg(cmd, QString::number(proc.exitCode()), procStderr));
+    QString procStdout = QString::fromUtf8(proc.readAllStandardOutput());
+    if (procStdout.isEmpty())
         throw EquaresException(QObject::tr("Command\n%1\nreturned nothing").arg(cmd));
     QSet<QString> prohibitedSymbols;
-    foreach (const QString& line, stdout.split('\n')) {
+    foreach (const QString& line, procStdout.split('\n')) {
         if (line.isEmpty())
             continue;
         if (rx.indexIn(line) != 0)
