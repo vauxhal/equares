@@ -51,7 +51,7 @@ Technologies involved are as follows
   *  ```marked```
   *  ```nodemailer```
   *  ```activator```
-  *  ```ua-parser```
+  *  ```mobile-detect```
 * Besides, running server app requires the [mongoDB](http://www.mongodb.org/) database engine
 
 ## Building
