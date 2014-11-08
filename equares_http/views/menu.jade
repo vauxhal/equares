@@ -6,12 +6,13 @@
 
     Full text of copyright notice can be found in file copyright_notice.txt in the EquaRes root directory.
     License agreement can be found in file LICENSE.md in the EquaRes root directory.
-
+- var menuLinks = {}
+block menulinkmod
 block menu
     ul
         li: a(href="/") Home
         li
-            a#menu-editor(href="/editor") Editor
+            a#menu-editor(href=menuLinks.editor||'/editor') Editor
             block menu-editor
         li
             a#menu-simulations(href="/simulations") Simulations
