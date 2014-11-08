@@ -23,7 +23,7 @@ var captcha = require('./mycaptcha');
 var mongoose = require('mongoose');
 var flash = require('connect-flash');
 var MongoStore = require('connect-mongo')(express);
-var uaParser = require('ua-parser');
+var MobileDetect = require('mobile-detect');
 
 var env = process.env.NODE_ENV || 'development',
   config = require('./config/config')[env];
@@ -44,9 +44,8 @@ app.use(express.urlencoded());
 app.use(express.methodOverride());
 app.use(express.cookieParser('your secret here'));
 app.use(function(req, res, next){
-    var dev = uaParser.parseDevice(req.headers['user-agent'])
-    console.log(dev.toString())
-    console.log(req.headers['user-agent'])
+    var md = new MobileDetect(req.headers['user-agent'])
+    console.log(md.mobile())
     next()
 })
 app.use(express.session({

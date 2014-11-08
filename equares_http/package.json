@@ -19,6 +19,6 @@
     "marked": "0.3.2",
     "nodemailer": "0.7.0",
     "activator": "0.2.8",
-    "ua-parser": "0.3.3"
+    "mobile-detect": "0.4.2"
   }
 }
