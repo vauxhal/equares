@@ -14,6 +14,7 @@ var Sim = simulation.Sim
 var RecentSim = simulation.RecentSim
 var mongoose = require('mongoose')
 var dbsearch = require('../dbsearch')
+var isMobile = require('../is-mobile')
 
 function readExamples(cb) {
     var examples = []
@@ -79,7 +80,7 @@ module.exports = {
         if (!match || typeof (name = match[1]) !== 'string')
             return next()
 
-        var param = {req: req}
+        var param = {req: req, mobile: isMobile(req)}
         function renderMenu() {
             var menuName = name.length > 0? 'menu-' + name: 'menu'
             fs.stat('views/' + menuName + '.jade', function(err, stats) {
