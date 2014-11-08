@@ -127,5 +127,8 @@ module.exports = {
             else
                 res.send(JSON.stringify({pages: result.pages, sims: result.records, pagenum: result.pagenum}))
         })
+    },
+    tryDifferentBrowser: function(req, res) {
+        res.render('try-different-browser', {message: req.query.message})
     }
 }

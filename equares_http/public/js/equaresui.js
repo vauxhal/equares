@@ -945,7 +945,42 @@ equaresui.setSceneSource = function() {
         showBoxes()
     }
 
+    function supportsServerSentEvents() {
+        return typeof EventSource !== 'undefined';
+    }
+
+    function unsupportedBrowser(msg) {
+        var dlg = $('#unsupported-browser-error')
+        function showDlg() {
+            dlg.dialog({
+                modal: true,
+                resizable: false,
+                buttons: {
+                    Ok: function() {
+                        $(this).dialog("close")
+                    }
+                }
+            })
+        }
+        if (dlg.length) {
+            $('#unsupported-browser-error-message').text(msg)
+            showDlg()
+        }
+        else {
+            $.get('try-different-browser', {message:msg})
+                .done(function(data) {
+                    dlg = $(data).appendTo($('body'))
+                    showDlg()
+                })
+                .fail(function(error) {
+                    errorMessage(msg + '<br/>' + (error.responseText || error.statusText || ("Ajax error: " + error.status)))
+                })
+        }
+    }
+
     equaresui.runScheme = function() {
+        if (!supportsServerSentEvents())
+            return unsupportedBrowser('Your browser does not support HTML5 server sent events')
         var simulation = schemeEditor.exportSimulation()
         function dummyStopSim() {}
         equaresui.stopSimulation = dummyStopSim

@@ -1,0 +1,32 @@
+//-
+    NumEquaRes - a tool for numerical analysis of equations.
+    Copyright (C) 2014 Stepan Orlov
+
+    This file is part of EquaRes.
+
+    Full text of copyright notice can be found in file copyright_notice.txt in the EquaRes root directory.
+    License agreement can be found in file LICENSE.md in the EquaRes root directory.
+
+#unsupported-browser-error(title='Unsupported browser' style='display: none;')
+    style.
+        #supported-browsers a {
+            color: #000fee;
+            text-decoration: none;
+        }
+        #supported-browsers a:link {
+        }
+        #supported-browsers a:visited {
+            color: #551a8e;
+        }
+        #supported-browsers a:hover {
+            text-decoration: underline;
+        }
+
+    p#unsupported-browser-error-message(style="color: #c00;")= message || 'Your browser lacks a required feature.'
+    p.
+        Consider using a different browser, e.g. one of the following
+    div#supported-browsers
+        ul
+            li: a(href='https://www.mozilla.org/' target='_blank') Mozilla Firefox
+            li: a(href='http://www.google.com/chrome/' target='_blank') Google Chrome
+            li: a(href='http://www.opera.com/' target='_blank') Opera

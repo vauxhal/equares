@@ -80,6 +80,7 @@ app.get('/examples/*', routes.example);
 app.get('/simulations', routes.simulations);
 app.get('/simheaders', routes.simheaders);
 app.get('/simtable', routes.simtable);
+app.get('/try-different-browser', routes.tryDifferentBrowser);
 
 require('./images')(app)
 require('./snippets')(app)
