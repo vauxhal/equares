@@ -23,8 +23,8 @@ block menu
                 ul
                     li: a(href='/simulations?mode=my') My
                     li: a(href='/simulations?mode=public') Public
-                if mobile
-                    li: a(href='/simulations') All
+                    if mobile
+                        li: a(href='/simulations') All
             else
                 a#menu-simulations(href="/simulations") Simulations
         if req.isAuthenticated()
