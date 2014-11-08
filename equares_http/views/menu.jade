@@ -21,10 +21,10 @@ block menu
                 else
                     a#menu-simulations(href="/simulations") Simulations
                 ul
-                    li: a(href='/simulations?mode=my') My
-                    li: a(href='/simulations?mode=public') Public
                     if mobile
                         li: a(href='/simulations') All
+                    li: a(href='/simulations?mode=my') My
+                    li: a(href='/simulations?mode=public') Public
             else
                 a#menu-simulations(href="/simulations") Simulations
         if req.isAuthenticated()
