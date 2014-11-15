@@ -7,6 +7,9 @@
         <file alias="FdeFileFooter.cpp">res/FdeFileFooter.cpp</file>
         <file alias="FdeClass.cpp">res/FdeClass.cpp</file>
         <file alias="fde.pro">res/fde.pro</file>
+        <file alias="TransformClass.cpp">res/TransformClass.cpp</file>
+        <file alias="TransformFileFooter.cpp">res/TransformFileFooter.cpp</file>
+        <file alias="transform.pro">res/transform.pro</file>
     </qresource>
     <qresource prefix="/box">
         <file alias="settings.ini">res/BoxSettings.ini</file>

@@ -1257,7 +1257,7 @@ $.extend(equaresBox.rules, {
     },
     ThresholdDetector: {
         port: function(port) {
-            var f = port.getFormat(true);
+            var f = port.getFormat(true)
             if (f.valid() && !(f.format.length == 1 && f.format[0] == 1))
                 return setBadPortStatus(this, port.index, 'Must be scalar')
             setGoodStatus(this)
@@ -1282,6 +1282,76 @@ $.extend(equaresBox.rules, {
                 })
                 box.emit('critical')
             }
+        }
+    },
+    CxxTransform: odeOrFdeRules("CxxTransform"),
+    Eigenvalues: {
+        init: function() {
+            setUnspecPortStatus(this, [0,1,2])
+        },
+        port: function(port) {
+            // Propagate port format
+            var fm = this.ports[0].getFormat(true),
+                fr = this.ports[1].getFormat(true),
+                fi = this.ports[2].getFormat(true),
+                bm = fm.valid(),
+                br = fr.valid(),
+                bi = fi.valid(),
+                allValid = bm && br && bi,
+                allInvalid = !(bm || br || bi)
+            if (!(allValid || allInvalid)) {
+                if (bm && fm.format.length == 2 && fm.format[0] == fm.format[1]) {
+                    var fe = {format: [fm.format[0]]}
+                    if (!br) {
+                        setFormat(this.ports[1], fe)
+                        fr = this.ports[1].getFormat(false)
+                        br = true
+                    }
+                    if (!bi) {
+                        setFormat(this.ports[2], fe)
+                        fi = this.ports[2].getFormat(false)
+                        bi = true
+                    }
+                }
+                if (!bm) {
+                    var n = -1;
+                    if (br && fr.format.length == 1)
+                        n = fr.format[0]
+                    else if (bi && fi.format.length == 1)
+                        n = fi.format[0]
+                    if (n != -1) {
+                        setFormat(this.ports[0], {format: [n,n]})
+                        fm = this.ports[0].getFormat(false)
+                        bm = true
+                    }
+                }
+                if (br != bi) {
+                    if (br) {
+                        setFormat(this.ports[2], fr)
+                        fi = this.ports[2].getFormat(false)
+                        br = true
+                    }
+                    if (bi) {
+                        setFormat(this.ports[1], fi)
+                        fr = this.ports[1].getFormat(false)
+                        bi = true
+                    }
+                }
+            }
+            // Check port format
+            var unspec = [];
+            if (!bm)   unspec.push(0)
+            if (!br)   unspec.push(1)
+            if (!bi)   unspec.push(2)
+            if (unspec.length > 0)
+                return setUnspecPortStatus(this, unspec)
+            if (fm.format.length != 2   ||   fm.format[0] < 1   ||   fm.format[0] != fm.format[1])
+                return setBadPortStatus(this, 0, 'Must be 2D square nonempty matrix')
+            if (fr.format.length != 1   ||   fr.format[0] != fm.format[0])
+                return setBadPortStatus(this, 1, 'Must be 1D data matching matrix size')
+            if (fi.format.length != 1   ||   fi.format[0] != fm.format[0])
+                return setBadPortStatus(this, 1, 'Must be 1D data matching matrix size')
+            setGoodStatus(this)
         }
     }
 })

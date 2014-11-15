@@ -70,7 +70,9 @@ SOURCES += equares_core.cpp \
     RectInputBox.cpp \
     CounterBox.cpp \
     SplitBox.cpp \
-    math_util.cpp
+    math_util.cpp \
+    CxxTransformBox.cpp \
+    EigenvaluesBox.cpp
 
 HEADERS += equares_core.h\
         equares_core_global.h \
@@ -123,7 +125,9 @@ HEADERS += equares_core.h\
     RectInputBox.h \
     CounterBox.h \
     SplitBox.h \
-    math_util.h
+    math_util.h \
+    CxxTransformBox.h \
+    EigenvaluesBox.h
 
 symbian {
     MMP_RULES += EXPORTUNFROZEN
