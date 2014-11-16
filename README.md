@@ -63,7 +63,8 @@ To use it, supply the ```ACML_DIR``` variable to ```qmake``` like this:
 <pre>
 qmake ACML_DIR=/opt/acml5.3.1/gfortran64 other arguments
 </pre>
-Doing so will enhance the functionality of some boxes. The ```ACML_DIR``` variable must be set to the path to an installed version of ```ACML```. That directory is expected to contain
+Doing so will enhance the functionality of some boxes; some boxes, e.g. **Eigenvalues**, are not available at all without the use of ACML.
+The ```ACML_DIR``` variable must be set to the path to an installed version of ```ACML```. That directory is expected to contain
 files ```include/acml.h``` and ```lib/libacml.so``` (Linux) or ```lib/acml.dll``` (Windows).
 
 Project file to open with QtCreator is ```equares.pro```.

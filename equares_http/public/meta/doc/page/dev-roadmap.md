@@ -28,12 +28,9 @@
    3. Cluster
 
 ### New boxes wanted
-1. **CxxTransform** &mdash; transforms input to output accordingly to algrithm specified by user.
-   * Has input ports **input**, **output**, and **param**, much like =[CxxFde](/doc#box/CxxFde) or =[CxxOde](/doc#box/CxxOde),
-     but with independent description of input and output formats.
-2. **Integrate** &mdash; similar to =[Differentiate](/doc#box/Differentiate), but different formula: should accumulate total
+1. **Integrate** &mdash; similar to =[Differentiate](/doc#box/Differentiate), but different formula: should accumulate total
    sum of input data frames and output it as soon as a new data frame is received.
-3. **Sum** &mdash; has two input ports, **in_1** and **in_2**, and one output port, **out**. All ports have the same format,
+2. **Sum** &mdash; has two input ports, **in_1** and **in_2**, and one output port, **out**. All ports have the same format,
    output frame is computed from each two input frames (just like for =[Join](/doc#box/Join)). Output components are equal to
    the sums of components of both inputs.
 3. **AffineTransform** &mdash; transforms input to output using an affine transformation specified

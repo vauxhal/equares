@@ -206,7 +206,7 @@ CxxTransformRuntimeBox::CxxTransformRuntimeBox(const CxxTransformBox *box) :
     m_output.init(this, out[0], PortData(2, m_outputData.data()));
     setOutputPorts(RuntimeOutputPorts() << &m_output);
 
-    m_hasParamData = false;
+    m_hasParamData = in[0]->format().dataSize() == 0;
     m_paramData.resize(in[0]->format().dataSize());
 }
 
