@@ -168,6 +168,10 @@ bool GridGeneratorRuntimeBox::processInput(int)
         return true;
     m_in.data().copyTo(&m_data[0]);
     m_midx.fill(0);
+    for (int j=0; j<m_midx.size(); ++j) {
+        const ParamItem& p = m_param[j];
+        m_data[p.index] = p.interp(m_midx[j]);
+    }
     forever {
         m_out.state().setValid();
         if (!m_out.activateLinks())

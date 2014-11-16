@@ -113,18 +113,22 @@ function nativeBox(bx) {
     if (bx.props instanceof Object )
         for (var propName in bx.props)
             try {
+                // Note: sometimes we have to set property twice - to recognize exact types of array elements
                 //*
+                b[propName] = evalProp(bx.props[propName], b[propName])
                 b[propName] = evalProp(bx.props[propName], b[propName])
                 /*/
                 // deBUG
                 {
                 print(bx.name + '.' + propName + ' (' + typeof(b[propName]) + ')')
                 var v = evalProp(bx.props[propName], b[propName])
+                b[propName] = v
+                v = evalProp(bx.props[propName], b[propName])
+                b[propName] = v
                 print('-- before eval')
                 printVal(bx.props[propName])
                 print('-- after eval')
                 printVal(v)
-                b[propName] = v
                 }
                 //*/
             } catch (err) {
