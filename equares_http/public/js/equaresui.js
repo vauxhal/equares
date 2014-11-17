@@ -1108,6 +1108,7 @@ equaresui.setSceneSource = function() {
                                                     errorMessage(error.responseText || error.statusText || ("Ajax error: " + error.status))
                                                 })
                                         }
+                                        function delayed(func) { return function() { setTimeout(func, 10) } }
                                         for (i=0; i<ii.items.length; ++i) {
                                             var r = ii.items[i]
                                             interactiveInput.append(wrap('div')
@@ -1119,8 +1120,8 @@ equaresui.setSceneSource = function() {
                                                     min: +r.vmin,
                                                     max: +r.vmax,
                                                     step: (+r.vmax-r.vmin)/(r.resolution||1),
-                                                    slide: updateLabels,
-                                                    change: send
+                                                    slide: delayed(updateLabels),
+                                                    change: delayed(send)
                                                 }))
                                             )
                                         }
