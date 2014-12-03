@@ -29,16 +29,6 @@ function readExamples(cb) {
         })
 }
 
-function filterKeywords(keywords) {
-    for (var i=0; i<keywords.length;) {
-        if(keywords[i].match(/^tutorial[ -]/))
-            keywords.splice(i, 1)
-        else
-            ++i
-    }
-    return keywords
-}
-
 module.exports = {
     index: function(req, res){
         res.render('index', {req: req})
@@ -135,11 +125,8 @@ module.exports = {
         }, function(result) {
             if (result.err)
                 res.send(result.err.code || 500, result.err.message || result.err.data)
-            else {
-                for (var i=0; i<result.records.length; ++i)
-                    filterKeywords(result.records[i].keywords)
+            else
                 res.send(JSON.stringify({pages: result.pages, sims: result.records, pagenum: result.pagenum}))
-            }
         })
     },
     tryDifferentBrowser: function(req, res) {
